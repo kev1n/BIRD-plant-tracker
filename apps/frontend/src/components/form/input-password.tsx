@@ -9,11 +9,12 @@ export interface InputPasswordProps {
   placeholder?: string;
   value?: string;
   required?: boolean;
+  className?: string;
 }
 
-const InputPassword = ({ title, ...rest }: InputPasswordProps) => {
+const InputPassword = ({ title, className, ...rest }: InputPasswordProps) => {
   return (
-    <TitledInput title={title} required={rest.required}>
+    <TitledInput title={title} required={rest.required} className={className}>
       <PasswordField {...rest} />
     </TitledInput>
   );

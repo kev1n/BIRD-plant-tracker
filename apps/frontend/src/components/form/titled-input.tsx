@@ -1,21 +1,23 @@
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import React from 'react';
-import { InputContainer, InputName, InputTitle, RedSpan } from './styles';
 
 interface TitledInputProps {
   title: string;
   required?: boolean;
   children: React.ReactNode;
+  className?: string;
 }
 
-const TitledInput = ({ title, required, children }: TitledInputProps) => {
+const TitledInput = ({ title, required, children, className }: TitledInputProps) => {
   return (
-    <InputContainer>
-      <InputName>
-        <InputTitle>{title}</InputTitle>
-        {required && <RedSpan>*</RedSpan>}
-      </InputName>
+    <div className={cn("grid w-full items-center gap-1.5", className)}>
+      <Label className="mb-1">
+        {title}
+        {required && <span className="text-destructive ml-0.5">*</span>}
+      </Label>
       {children}
-    </InputContainer>
+    </div>
   );
 };
 

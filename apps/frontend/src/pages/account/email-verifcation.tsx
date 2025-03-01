@@ -1,27 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { styled } from 'styled-components';
-
-const VerificationPage = styled.div`
-  flex: 1 0 0;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding-top: 100px;
-`;
-
-const Title = styled.h1`
-  font-size: 2.5em;
-  font-weight: bold;
-  margin: 0;
-`;
-
-const Subtitle = styled.h2`
-  font-size: 1.5em;
-  margin: 0;
-  font-weight: normal;
-`;
 
 type VerificationStatus = 'checking' | 'success' | 'error';
 
@@ -43,20 +21,20 @@ export default function EmailVerification() {
   }, [searchParams, navigate]);
 
   return (
-    <VerificationPage>
-      {status === 'checking' && <Title>Checking verification status...</Title>}
+    <div className="flex-1 flex flex-col justify-center items-center text-center pt-[100px]">
+      {status === 'checking' && <h1 className="text-4xl font-bold m-0">Checking verification status...</h1>}
       {status === 'success' && (
         <>
-          <Title>Email Verified!</Title>
-          <Subtitle>{"You'll be redirected to login in 3 seconds..."}</Subtitle>
+          <h1 className="text-4xl font-bold m-0">Email Verified!</h1>
+          <h2 className="text-2xl font-normal m-0">{"You'll be redirected to login in 3 seconds..."}</h2>
         </>
       )}
       {status === 'error' && (
         <>
-          <Title>Verification Failed</Title>
-          <Subtitle>Please try signing up again or contact support.</Subtitle>
+          <h1 className="text-4xl font-bold m-0">Verification Failed</h1>
+          <h2 className="text-2xl font-normal m-0">Please try signing up again or contact support.</h2>
         </>
       )}
-    </VerificationPage>
+    </div>
   );
 }

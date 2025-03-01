@@ -1,40 +1,8 @@
-import { useState, FormEvent, ChangeEvent } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { styled } from 'styled-components';
+import type { SignupRequest } from '../../types/auth.ts';
 import { Form } from '../components/form/form';
 import { Input } from '../components/form/input';
-import { RedSpan } from '../components/form/styles';
-import type { SignupRequest } from '../../types/auth.ts';
-
-const SignupContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  padding: 2rem 1rem;
-`;
-
-const StyledLink = styled(Link)`
-  color: #646cff;
-  text-decoration: none;
-  font-size: 0.9rem;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const LoginPrompt = styled.div`
-  margin-top: 16px;
-  text-align: center;
-`;
-
-const ErrorMessage = styled(RedSpan)`
-  text-align: center;
-  display: block;
-  margin-bottom: 8px;
-`;
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -98,7 +66,7 @@ export default function Signup() {
   };
 
   return (
-    <SignupContainer>
+    <div className="flex flex-col items-center justify-center min-h-[80vh] p-8">
       <Form
         onSubmit={handleSubmit}
         title="Create an Account"
@@ -106,7 +74,7 @@ export default function Signup() {
         submitText="Sign Up"
         isSubmitting={isLoading}
       >
-        {error && <ErrorMessage>{error}</ErrorMessage>}
+        {error && <p className="text-destructive text-center mb-2">{error}</p>}
 
         <Input.Text
           title="Email"
@@ -149,10 +117,10 @@ export default function Signup() {
           required
         />
 
-        <LoginPrompt>
-          Already have an account? <StyledLink to="/login">Log in</StyledLink>
-        </LoginPrompt>
+        <div className="mt-4 text-center">
+          Already have an account? <Link to="/login" className="text-primary hover:underline">Log in</Link>
+        </div>
       </Form>
-    </SignupContainer>
+    </div>
   );
 }

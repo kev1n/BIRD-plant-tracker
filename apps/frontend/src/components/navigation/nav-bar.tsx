@@ -1,58 +1,8 @@
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { styled } from 'styled-components';
 import { useUser } from '../../hooks/useUser';
 import LogoutModal from './logout-modal';
-
-const StyledNav = styled.nav`
-  display: flex;
-  gap: 10px;
-  padding: 10px 20px;
-  font-size: 20px;
-`;
-
-const LeftAligned = styled.div`
-  flex: 1;
-  display: flex;
-  gap: 10px;
-`;
-
-const LogoPlaceholder = styled.button`
-  padding: 0;
-  font-size: 1.7rem;
-  font-weight: bold;
-  font-family: monospace;
-  background: none;
-  border: none;
-  cursor: pointer;
-`;
-
-const Button = styled.button`
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-`;
-
-const PrimaryButton = styled(Button)`
-  background-color: #646cff;
-  color: white;
-  border: 1px solid #646cff;
-
-  &:hover {
-    background-color: #535bf2;
-  }
-`;
-
-const SecondaryButton = styled(Button)`
-  background-color: transparent;
-  border: 1px solid #646cff;
-  color: #646cff;
-
-  &:hover {
-    background-color: rgba(100, 108, 255, 0.1);
-  }
-`;
 
 export default function NavBar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -78,19 +28,38 @@ export default function NavBar() {
   };
 
   return (
-    <StyledNav>
-      <LeftAligned>
-        <LogoPlaceholder onClick={() => navigate('/')}>[LOGO]</LogoPlaceholder>
-      </LeftAligned>
+    <nav className="flex gap-2.5 p-2.5 px-5 text-xl">
+      <div className="flex-1 flex gap-2.5">
+        <button
+          className="p-0 text-3xl font-bold font-mono bg-transparent border-none cursor-pointer"
+          onClick={() => navigate('/')}
+        >
+          [LOGO]
+        </button>
+      </div>
       {user ? (
-        <SecondaryButton onClick={handleLogoutClick}>Log Out</SecondaryButton>
+        <Button
+          variant="outline"
+          onClick={handleLogoutClick}
+        >
+          Log Out
+        </Button>
       ) : (
         <>
-          <PrimaryButton onClick={() => navigate('/signup')}>Sign Up</PrimaryButton>
-          <SecondaryButton onClick={() => navigate('/login')}>Login</SecondaryButton>
+          <Button
+            onClick={() => navigate('/signup')}
+          >
+            Sign Up
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/login')}
+          >
+            Login
+          </Button>
         </>
       )}
       <LogoutModal isOpen={isModalOpen} onClose={handleModalClose} onLogout={handleLogoutConfirm} />
-    </StyledNav>
+    </nav>
   );
 }

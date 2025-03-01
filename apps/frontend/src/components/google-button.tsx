@@ -1,76 +1,32 @@
-import { styled } from 'styled-components';
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface GoogleButtonProps {
   isLoading?: boolean;
   onClick: () => void;
   text?: string;
+  className?: string;
 }
-
-const StyledButton = styled.button`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  background-color: white;
-  border: 1px solid #e2e2e2;
-  border-radius: 4px;
-  padding: 8px 16px;
-  color: #5f6368;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #f8f9fa;
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #e8e8e8;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const Divider = styled.div`
-  position: relative;
-  margin: 24px 0;
-  text-align: center;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background-color: #e2e2e2;
-  }
-
-  span {
-    position: relative;
-    background-color: white;
-    padding: 0 12px;
-    color: #666;
-    font-size: 14px;
-  }
-`;
 
 export default function GoogleButton({
   isLoading = false,
   onClick,
   text = 'Sign in with Google',
+  className,
 }: GoogleButtonProps) {
   return (
     <>
-      <Divider>
-        <span>Or continue with</span>
-      </Divider>
-      <StyledButton type="button" onClick={onClick} disabled={isLoading}>
+      <div className="relative my-6 text-center">
+        <div className="absolute top-1/2 left-0 right-0 h-px bg-border"></div>
+        <span className="relative bg-white px-3 text-sm text-muted-foreground">Or continue with</span>
+      </div>
+      <Button
+        variant="outline"
+        type="button"
+        onClick={onClick}
+        disabled={isLoading}
+        className={cn("w-full border-muted-foreground/20 text-muted-foreground", className)}
+      >
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -90,7 +46,7 @@ export default function GoogleButton({
           />
         </svg>
         {text}
-      </StyledButton>
+      </Button>
     </>
   );
 }
