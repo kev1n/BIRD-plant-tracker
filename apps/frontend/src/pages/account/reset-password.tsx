@@ -1,86 +1,9 @@
-import { useEffect, useState, FormEvent, ChangeEvent } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { styled } from 'styled-components';
 import { useUser } from '../../hooks/useUser';
-
-const Container = styled.div`
-  max-width: 400px;
-  margin: 40px auto;
-  padding: 20px;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const Input = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
-const Button = styled.button`
-  padding: 10px;
-  background-color: #646cff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: red;
-  margin-top: 10px;
-`;
-
-const PasswordStrength = styled.div<{ strength: 'weak' | 'medium' | 'strong' | 'none' }>`
-  height: 5px;
-  margin-top: 5px;
-  background-color: ${({ strength }) => {
-    switch (strength) {
-      case 'weak':
-        return '#ff4d4d';
-      case 'medium':
-        return '#ffd700';
-      case 'strong':
-        return '#32cd32';
-      default:
-        return '#ccc';
-    }
-  }};
-  width: ${({ strength }) => {
-    switch (strength) {
-      case 'weak':
-        return '33%';
-      case 'medium':
-        return '66%';
-      case 'strong':
-        return '100%';
-      default:
-        return '0%';
-    }
-  }};
-  transition: all 0.3s ease;
-`;
-
-const PasswordRequirements = styled.ul`
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 5px;
-  padding-left: 20px;
-`;
-
-const PasswordContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
 
 export default function ResetPassword() {
   const [password, setPassword] = useState<string>('');
@@ -193,27 +116,45 @@ export default function ResetPassword() {
     }
   };
 
+  const passwordStrength = checkPasswordStrength(password);
+  const strengthColors = {
+    weak: 'bg-red-500',
+    medium: 'bg-yellow-400',
+    strong: 'bg-green-500',
+    none: 'bg-gray-200'
+  };
+
+  const strengthWidths = {
+    weak: 'w-1/3',
+    medium: 'w-2/3',
+    strong: 'w-full',
+    none: 'w-0'
+  };
+
   return (
-    <Container>
-      <h2>Set New Password</h2>
-      <Form onSubmit={handleSubmit}>
-        <PasswordContainer>
+    <div className="max-w-md mx-auto my-10 p-5">
+      <h2 className="text-xl font-semibold mb-6">Set New Password</h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <div className="flex flex-col">
           <Input
             type="password"
             placeholder="New Password"
             value={password}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             required
+            className="mb-1"
           />
-          <PasswordStrength strength={checkPasswordStrength(password)} />
+          <div className="h-1 mb-2">
+            <div className={cn("h-full transition-all", strengthColors[passwordStrength], strengthWidths[passwordStrength])} />
+          </div>
           {password && (
-            <PasswordRequirements>
+            <ul className="text-xs text-muted-foreground pl-5 list-disc">
               {validatePassword(password).map((req, index) => (
                 <li key={index}>{req}</li>
               ))}
-            </PasswordRequirements>
+            </ul>
           )}
-        </PasswordContainer>
+        </div>
         <Input
           type="password"
           placeholder="Confirm New Password"
@@ -224,8 +165,8 @@ export default function ResetPassword() {
         <Button type="submit" disabled={isLoading}>
           {isLoading ? 'Updating...' : 'Update Password'}
         </Button>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-      </Form>
-    </Container>
+        {error && <p className="text-destructive mt-2">{error}</p>}
+      </form>
+    </div>
   );
 }

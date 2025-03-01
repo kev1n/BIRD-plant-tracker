@@ -1,77 +1,8 @@
-import { useState, FormEvent, ChangeEvent } from 'react';
+import { Input } from '@/components/ui/input';
+import { ChangeEvent, FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { styled } from 'styled-components';
+import { Form as FormUI } from '../../components/form/form';
 import { useUser } from '../../hooks/useUser';
-
-const Container = styled.div`
-  max-width: 400px;
-  margin: 40px auto;
-  padding: 20px;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const Input = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
-const Button = styled.button`
-  padding: 10px;
-  background-color: #646cff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #535bf2;
-  }
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: red;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 4px;
-  background-color: #ffe6e6;
-`;
-
-const SuccessMessage = styled.div`
-  color: #2e7d32;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 4px;
-  background-color: #edf7ed;
-`;
-
-const StyledLink = styled(Link)`
-  color: #646cff;
-  text-decoration: none;
-  text-align: center;
-  margin-top: 10px;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const Title = styled.h2`
-  text-align: center;
-  color: #333;
-  margin-bottom: 20px;
-`;
 
 export default function RequestPasswordReset() {
   const [email, setEmail] = useState<string>('');
@@ -96,34 +27,52 @@ export default function RequestPasswordReset() {
   };
 
   return (
-    <Container>
-      <Title>Reset Password</Title>
+    <div className="max-w-md mx-auto my-10 p-5">
+      <h2 className="text-xl font-semibold text-center text-gray-800 mb-5">Reset Password</h2>
       {!success ? (
-        <Form onSubmit={handleSubmit}>
-          <Input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-          />
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Sending...' : 'Reset Password'}
-          </Button>
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-          <StyledLink to="/login">Back to Login</StyledLink>
-        </Form>
+        <FormUI 
+          onSubmit={handleSubmit}
+          submitText={isLoading ? 'Sending...' : 'Reset Password'}
+          isSubmitting={isLoading}
+        >
+          <div className="mb-4">
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              className="w-full"
+            />
+          </div>
+          
+          {error && (
+            <div className="text-destructive bg-destructive/10 p-3 rounded-md mb-4">
+              {error}
+            </div>
+          )}
+          
+          <div className="text-center mt-4">
+            <Link to="/login" className="text-primary hover:underline">
+              Back to Login
+            </Link>
+          </div>
+        </FormUI>
       ) : (
         <div>
-          <SuccessMessage>
+          <div className="text-green-700 bg-green-50 p-3 rounded-md mb-4">
             Password reset instructions have been sent to your email. Please check your inbox and
             follow the instructions to reset your password. If you don't receive the email within a
             few minutes, please check your spam folder.
-          </SuccessMessage>
-          <StyledLink to="/login">Back to Login</StyledLink>
+          </div>
+          <div className="text-center mt-4">
+            <Link to="/login" className="text-primary hover:underline">
+              Back to Login
+            </Link>
+          </div>
         </div>
       )}
-    </Container>
+    </div>
   );
 }

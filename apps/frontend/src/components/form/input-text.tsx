@@ -9,11 +9,12 @@ export interface InputTextProps {
   placeholder?: string;
   value?: string;
   required?: boolean;
+  className?: string;
 }
 
-const InputText = ({ title, ...rest }: InputTextProps) => {
+const InputText = ({ title, className, ...rest }: InputTextProps) => {
   return (
-    <TitledInput title={title} required={rest.required}>
+    <TitledInput title={title} required={rest.required} className={className}>
       <TextField {...rest} />
     </TitledInput>
   );

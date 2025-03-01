@@ -1,56 +1,6 @@
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { FormEvent, ReactNode } from 'react';
-import { styled } from 'styled-components';
-
-const StyledForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 32px;
-  border-radius: 8px;
-  background-color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 450px;
-`;
-
-const FormHeader = styled.div`
-  margin-bottom: 16px;
-`;
-
-const Title = styled.h2`
-  font-size: 1.8rem;
-  margin: 0;
-  text-align: center;
-`;
-
-const Subtitle = styled.p`
-  color: #666;
-  margin: 8px 0 0;
-  text-align: center;
-`;
-
-const SubmitButton = styled.button`
-  width: 100%;
-  padding: 12px;
-  background-color: #646cff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 16px;
-
-  &:hover {
-    background-color: #535bf2;
-  }
-
-  &:disabled {
-    background-color: #a5a5a5;
-    cursor: not-allowed;
-  }
-`;
 
 interface FormProps {
   children: ReactNode;
@@ -59,6 +9,7 @@ interface FormProps {
   subtitle?: string;
   submitText?: string;
   isSubmitting?: boolean;
+  className?: string;
 }
 
 export function Form({
@@ -68,21 +19,32 @@ export function Form({
   subtitle,
   submitText = 'Submit',
   isSubmitting = false,
+  className,
 }: FormProps) {
   return (
-    <StyledForm onSubmit={onSubmit}>
+    <form 
+      className={cn(
+        "flex flex-col gap-4 p-8 rounded-lg bg-white shadow-md w-full max-w-[450px]",
+        className
+      )}
+      onSubmit={onSubmit}
+    >
       {(title || subtitle) && (
-        <FormHeader>
-          {title && <Title>{title}</Title>}
-          {subtitle && <Subtitle>{subtitle}</Subtitle>}
-        </FormHeader>
+        <div className="mb-4">
+          {title && <h2 className="text-2xl m-0 text-center">{title}</h2>}
+          {subtitle && <p className="text-muted-foreground mt-2 mb-0 text-center">{subtitle}</p>}
+        </div>
       )}
 
       {children}
 
-      <SubmitButton type="submit" disabled={isSubmitting}>
+      <Button 
+        type="submit" 
+        disabled={isSubmitting}
+        className="w-full mt-4"
+      >
         {isSubmitting ? 'Processing...' : submitText}
-      </SubmitButton>
-    </StyledForm>
+      </Button>
+    </form>
   );
 }

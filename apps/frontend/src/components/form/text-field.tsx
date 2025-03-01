@@ -1,5 +1,5 @@
+import { Input } from '@/components/ui/input';
 import { ChangeEvent } from 'react';
-import { StyledInput } from './styles';
 
 interface TextFieldProps {
   name: string;
@@ -7,10 +7,11 @@ interface TextFieldProps {
   placeholder?: string;
   value?: string;
   required?: boolean;
+  className?: string;
 }
 
 const TextField = (props: TextFieldProps) => {
-  return <StyledInput type="text" placeholder={props.placeholder || 'Text Here'} {...props} />;
+  return <Input type="text" placeholder={props.placeholder || 'Text Here'} {...props} />;
 };
 
 export default TextField;

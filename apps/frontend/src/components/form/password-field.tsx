@@ -1,6 +1,6 @@
-import { useState, ChangeEvent } from 'react';
-import { StyledInput, PasswordContainer, IconContainer } from './styles';
-import { EyeIcon, EyeClosedIcon } from './icons';
+import { Input } from '@/components/ui/input';
+import { ChangeEvent, useState } from 'react';
+import { EyeClosedIcon, EyeIcon } from './icons';
 
 interface PasswordFieldProps {
   name: string;
@@ -8,6 +8,7 @@ interface PasswordFieldProps {
   placeholder?: string;
   value?: string;
   required?: boolean;
+  className?: string;
 }
 
 const PasswordField = (props: PasswordFieldProps) => {
@@ -17,12 +18,19 @@ const PasswordField = (props: PasswordFieldProps) => {
   };
 
   return (
-    <PasswordContainer>
-      <StyledInput type={showPassword ? 'text' : 'password'} {...props} />
-      <IconContainer onClick={toggleShowPassword}>
+    <div className="relative w-full">
+      <Input 
+        type={showPassword ? 'text' : 'password'} 
+        placeholder={props.placeholder || 'Password'} 
+        {...props} 
+      />
+      <div 
+        className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+        onClick={toggleShowPassword}
+      >
         {showPassword ? <EyeClosedIcon /> : <EyeIcon />}
-      </IconContainer>
-    </PasswordContainer>
+      </div>
+    </div>
   );
 };
 

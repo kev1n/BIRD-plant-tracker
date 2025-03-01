@@ -1,19 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { styled } from 'styled-components';
 import { useUser } from '../../hooks/useUser';
-
-const Container = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-`;
-
-const LoadingText = styled.p`
-  font-size: 1rem;
-  color: #333;
-`;
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -71,8 +58,8 @@ export default function AuthCallback() {
   }, [navigate, checkAuth]);
 
   return (
-    <Container>
-      <LoadingText>Completing authentication...</LoadingText>
-    </Container>
+    <div className="flex items-center justify-center min-h-screen">
+      <p className="text-base text-gray-700">Completing authentication...</p>
+    </div>
   );
 }
