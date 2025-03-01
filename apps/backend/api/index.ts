@@ -2,7 +2,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
-import authRoutes from './routes/authRoutes.js';
+import authRoutes from '../routes/authRoutes.js';
 
 dotenv.config();
 
@@ -55,6 +55,10 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 
 app.get('/health', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
 
