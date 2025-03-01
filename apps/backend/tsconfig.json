@@ -19,7 +19,7 @@
     "skipLibCheck": true,
     "strict": true,
     "resolveJsonModule": true,
-    "sourceMap": true
+    "noImplicitAny": false
   },
   
   "include": ["./**/*.ts"],
