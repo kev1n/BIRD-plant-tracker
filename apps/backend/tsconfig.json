@@ -1,12 +1,27 @@
 {
-  "extends": "../../packages/typescript-config/node.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "target": "ES2022"
+    "target": "ES2022",
+    "composite": false,
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "inlineSources": false,
+    "isolatedModules": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "preserveWatchOutput": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "sourceMap": true
   },
+  
   "include": ["./**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
