@@ -3,6 +3,8 @@ import { Request } from 'express';
 
 export interface AuthRequest extends Request {
   user?: User;
+  headers: Request['headers'];
+  cookies: Request['cookies'];
 }
 
 export interface UserData {

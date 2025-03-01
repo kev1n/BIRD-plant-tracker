@@ -1,5 +1,5 @@
 {
-  "extends": "@full-stack-template-typescript/typescript-config/node.json",
+  "extends": "../../packages/typescript-config/node.json",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",

@@ -1,6 +1,6 @@
 import { NextFunction, Response } from 'express';
-import supabase from '../config/supabase.js';
 import type { AuthRequest } from '../types.js';
+import supabase from '../config/supabase.js';
 
 const authMiddleware = async (
   req: AuthRequest,

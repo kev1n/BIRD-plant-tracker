@@ -2,7 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "env": ["SUPABASE_URL", "SUPABASE_ANON_KEY", "FRONTEND_URL", "NODE_ENV"],
       "outputs": ["dist/**", "build/**", ".next/**", ".env", "$TURBO_DEFAULT$"]
     },
     "dev": {
