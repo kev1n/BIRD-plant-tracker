@@ -1,7 +1,11 @@
 {
-  "name": "express-backend",
   "version": 2,
-  "public": true,
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "dist/server.js"
+    }
+  ],
   "builds": [
     {
       "src": "dist/server.js",
