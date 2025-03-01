@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "node dist/api/index.js",
     "dev": "nodemon --exec \"node --loader ts-node/esm api/index.ts\"",
     "build": "tsc --module NodeNext",
     "lint": "eslint .",
