@@ -1,12 +1,14 @@
 {
-  "extends": "@full-stack-template-typescript/typescript-config/react.json",
+  "extends": "../../packages/typescript-config/react.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
-    "moduleResolution": "bundler"
-    
+    "moduleResolution": "bundler",
+    "module": "ES2022",
+    "jsx": "react-jsx",
+    "target": "ES2022"
   },
   
   "include": ["src", "vite.config.ts", "src/lib"]
