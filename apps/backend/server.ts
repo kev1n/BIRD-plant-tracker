@@ -58,6 +58,10 @@ app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
 
+app.get('/', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 interface AppError extends Error {
   status?: number;
 }
