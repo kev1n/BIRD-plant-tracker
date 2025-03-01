@@ -1,8 +1,8 @@
 import { ChangeEvent } from 'react';
-import TitledInput from './titled-input';
 import TextField from './text-field';
+import TitledInput from './titled-input';
 
-interface InputTextProps {
+export interface InputTextProps {
   title: string;
   name: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
