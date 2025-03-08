@@ -121,14 +121,14 @@ export default function ResetPassword() {
     weak: 'bg-red-500',
     medium: 'bg-yellow-400',
     strong: 'bg-green-500',
-    none: 'bg-gray-200'
+    none: 'bg-gray-200',
   };
 
   const strengthWidths = {
     weak: 'w-1/3',
     medium: 'w-2/3',
     strong: 'w-full',
-    none: 'w-0'
+    none: 'w-0',
   };
 
   return (
@@ -145,7 +145,13 @@ export default function ResetPassword() {
             className="mb-1"
           />
           <div className="h-1 mb-2">
-            <div className={cn("h-full transition-all", strengthColors[passwordStrength], strengthWidths[passwordStrength])} />
+            <div
+              className={cn(
+                'h-full transition-all',
+                strengthColors[passwordStrength],
+                strengthWidths[passwordStrength]
+              )}
+            />
           </div>
           {password && (
             <ul className="text-xs text-muted-foreground pl-5 list-disc">

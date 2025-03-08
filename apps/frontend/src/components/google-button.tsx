@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface GoogleButtonProps {
   isLoading?: boolean;
@@ -18,14 +18,16 @@ export default function GoogleButton({
     <>
       <div className="relative my-6 text-center">
         <div className="absolute top-1/2 left-0 right-0 h-px bg-border"></div>
-        <span className="relative bg-white px-3 text-sm text-muted-foreground">Or continue with</span>
+        <span className="relative bg-white px-3 text-sm text-muted-foreground">
+          Or continue with
+        </span>
       </div>
       <Button
         variant="outline"
         type="button"
         onClick={onClick}
         disabled={isLoading}
-        className={cn("w-full border-muted-foreground/20 text-muted-foreground", className)}
+        className={cn('w-full border-muted-foreground/20 text-muted-foreground', className)}
       >
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path

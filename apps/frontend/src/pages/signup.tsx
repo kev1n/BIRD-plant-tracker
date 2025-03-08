@@ -118,7 +118,10 @@ export default function Signup() {
         />
 
         <div className="mt-4 text-center">
-          Already have an account? <Link to="/login" className="text-primary hover:underline">Log in</Link>
+          Already have an account?{' '}
+          <Link to="/login" className="text-primary hover:underline">
+            Log in
+          </Link>
         </div>
       </Form>
     </div>

@@ -30,7 +30,7 @@ export default function RequestPasswordReset() {
     <div className="max-w-md mx-auto my-10 p-5">
       <h2 className="text-xl font-semibold text-center text-gray-800 mb-5">Reset Password</h2>
       {!success ? (
-        <FormUI 
+        <FormUI
           onSubmit={handleSubmit}
           submitText={isLoading ? 'Sending...' : 'Reset Password'}
           isSubmitting={isLoading}
@@ -46,13 +46,11 @@ export default function RequestPasswordReset() {
               className="w-full"
             />
           </div>
-          
+
           {error && (
-            <div className="text-destructive bg-destructive/10 p-3 rounded-md mb-4">
-              {error}
-            </div>
+            <div className="text-destructive bg-destructive/10 p-3 rounded-md mb-4">{error}</div>
           )}
-          
+
           <div className="text-center mt-4">
             <Link to="/login" className="text-primary hover:underline">
               Back to Login
