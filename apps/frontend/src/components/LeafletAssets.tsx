@@ -18,4 +18,4 @@ export const LeafletAssets: React.FC = () => {
   );
 };
 
-export default LeafletAssets; 
+export default LeafletAssets;
