@@ -49,7 +49,9 @@ function Sidebar({ patchInfo }: SidebarProps) {
 
   return (
     <div className="w-72 p-5 bg-gray-50 h-[500px] overflow-y-auto shadow-md">
-      <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">Grid patch: {patchInfo.label}</h2>
+      <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
+        Grid patch: {patchInfo.label}
+      </h2>
       <div className="mt-4">
         <p className="mb-2">Row: {patchInfo.row}</p>
         <p className="mb-2">Column: {String.fromCharCode(65 + patchInfo.col)}</p>
@@ -90,7 +92,7 @@ function GridOverlay() {
         const label = `${String.fromCharCode(65 + col)}${row + 1}`;
 
         const isSelected = patch === label;
-        
+
         // Create rectangle for grid patch
         // TODO: Match with color variables from project
         const rect = new Rectangle([topLeft, bottomRight], {
@@ -99,7 +101,7 @@ function GridOverlay() {
           fillColor: isSelected ? '#4a90e2' : '#000000',
           fillOpacity: isSelected ? 0.9 : 0,
         });
-        
+
         // Make patchs clickable
         rect.on('click', () => {
           navigate(`/map/${label}`, { replace: true });
@@ -113,7 +115,7 @@ function GridOverlay() {
     for (let col = 0; col < numCols; col++) {
       const labelPos: LatLngTuple = [
         TOP_LEFT[0] + LABEL_OFFSET_LAT,
-        TOP_LEFT[1] + (col * patchSizeLng) + (patchSizeLng / 2),
+        TOP_LEFT[1] + col * patchSizeLng + patchSizeLng / 2,
       ];
       const marker = new Marker(labelPos, {
         icon: divIcon({
@@ -127,7 +129,7 @@ function GridOverlay() {
     // Add row labels (1-1000)
     for (let row = 0; row < numRows; row++) {
       const labelPos: LatLngTuple = [
-        TOP_LEFT[0] - (row * patchSizeLat) - (patchSizeLat / 2),
+        TOP_LEFT[0] - row * patchSizeLat - patchSizeLat / 2,
         TOP_LEFT[1] - LABEL_OFFSET_LNG,
       ];
       const marker = new Marker(labelPos, {
@@ -152,7 +154,7 @@ function GridOverlay() {
 
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
-  
+
   // Parse patch into row and column if patch is defined
   let patchInfo = null;
   if (patch) {
@@ -165,7 +167,7 @@ export default function MapView() {
   return (
     <div className="flex h-full w-full">
       <LeafletAssets />
-      
+
       <div className="flex-1 h-[500px]">
         <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
           <TileLayer
@@ -176,7 +178,7 @@ export default function MapView() {
           <GridOverlay />
         </MapContainer>
       </div>
-      
+
       {patchInfo && <Sidebar patchInfo={patchInfo} />}
     </div>
   );
