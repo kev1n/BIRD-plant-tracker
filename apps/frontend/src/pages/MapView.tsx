@@ -1,6 +1,8 @@
 import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import LeafletAssets from '../components/LeafletAssets';
 
 // Constants for the grid
 const GRID_SIZE_FEET = 15;
@@ -14,7 +16,7 @@ const FEET_TO_DEGREES_LNG =
 
 // Grid boundaries
 const TOP_LEFT: LatLngTuple = [42.0500576, -87.6739709];
-const BOTTOM_RIGHT: LatLngTuple = [42.0485898, -87.6727095];
+const BOTTOM_RIGHT: LatLngTuple = [42.0485898, -87.6729095];
 const CENTER: LatLngTuple = [42.04937, -87.673388];
 
 // Calculate grid dimensions
@@ -28,12 +30,42 @@ const numCols = Math.ceil(lngDiff / cellSizeLng);
 const numRows = Math.ceil(latDiff / cellSizeLat);
 
 // Label offset from grid (in degrees)
-const LABEL_OFFSET_LAT = cellSizeLat * 0.5; // Half a cell above the grid
-const LABEL_OFFSET_LNG = cellSizeLng * 0.5; // Half a cell to the left of the grid
+const GRID_LABEL_OFFSET = 0.8;
+const LABEL_OFFSET_LAT = cellSizeLat * GRID_LABEL_OFFSET;
+const LABEL_OFFSET_LNG = cellSizeLng * GRID_LABEL_OFFSET;
+
+// Sidebar component to display grid cell information
+interface SidebarProps {
+  cellInfo: {
+    row: number;
+    col: number;
+    label: string;
+  } | null;
+}
+
+// TODO: Move into seperate component, call it inspection details
+function Sidebar({ cellInfo }: SidebarProps) {
+  if (!cellInfo) return null;
+
+  return (
+    <div className="w-72 p-5 bg-gray-50 h-[500px] overflow-y-auto shadow-md">
+      <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">Grid Cell: {cellInfo.label}</h2>
+      <div className="mt-4">
+        <p className="mb-2">Row: {cellInfo.row}</p>
+        <p className="mb-2">Column: {String.fromCharCode(65 + cellInfo.col)}</p>
+      </div>
+    </div>
+  );
+}
 
 function GridOverlay() {
   const map = useMap();
+  const navigate = useNavigate();
+  const location = useLocation();
   const gridRef = useRef<LayerGroup | null>(null);
+
+  // Extract grid cell from URL params
+  const { cell } = useParams<{ cell?: string }>();
 
   useEffect(() => {
     if (!map) return;
@@ -54,12 +86,23 @@ function GridOverlay() {
           TOP_LEFT[1] + (col + 1) * cellSizeLng,
         ];
 
+        // Create cell label
+        const label = `${String.fromCharCode(65 + col)}${row + 1}`;
+
+        const isSelected = cell === label;
+        
         // Create rectangle for grid cell
+        // TODO: Match with color variables from project
         const rect = new Rectangle([topLeft, bottomRight], {
-          color: '#666',
+          color: '#000000',
           weight: 1,
-          fillColor: '#666',
-          fillOpacity: 0.1,
+          fillColor: isSelected ? '#4a90e2' : '#000000',
+          fillOpacity: isSelected ? 0.9 : 0,
+        });
+        
+        // Make cells clickable
+        rect.on('click', () => {
+          navigate(`/map/${label}`, { replace: true });
         });
 
         rect.addTo(gridRef.current);
@@ -70,11 +113,11 @@ function GridOverlay() {
     for (let col = 0; col < numCols; col++) {
       const labelPos: LatLngTuple = [
         TOP_LEFT[0] + LABEL_OFFSET_LAT,
-        TOP_LEFT[1] + col * cellSizeLng + cellSizeLng / 2,
+        TOP_LEFT[1] + (col * cellSizeLng) + (cellSizeLng / 2),
       ];
       const marker = new Marker(labelPos, {
         icon: divIcon({
-          className: 'grid-label',
+          className: 'text-xs font-bold text-center',
           html: String.fromCharCode(65 + col),
         }),
       });
@@ -84,12 +127,12 @@ function GridOverlay() {
     // Add row labels (1-1000)
     for (let row = 0; row < numRows; row++) {
       const labelPos: LatLngTuple = [
-        TOP_LEFT[0] - row * cellSizeLat - cellSizeLat / 2,
+        TOP_LEFT[0] - (row * cellSizeLat) - (cellSizeLat / 2),
         TOP_LEFT[1] - LABEL_OFFSET_LNG,
       ];
       const marker = new Marker(labelPos, {
         icon: divIcon({
-          className: 'grid-label',
+          className: 'text-xs font-bold text-center',
           html: (row + 1).toString(),
         }),
       });
@@ -102,50 +145,39 @@ function GridOverlay() {
         map.removeLayer(gridRef.current);
       }
     };
-  }, [map]);
+  }, [map, navigate, cell, location]);
 
   return null;
 }
 
 export default function MapView() {
-  return (
-    <>
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossOrigin=""
-        />
-        <script
-          src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-          crossOrigin=""
-        />
-        <style>
-          {`
-            .grid-label {
-              background: none;
-              border: none;
-              box-shadow: none;
-              font-size: 12px;
-              font-weight: bold;
-              color: #333;
-              text-align: center;
-              line-height: 1;
-              white-space: nowrap;
-            }
-          `}
-        </style>
-      </head>
+  const { cell } = useParams<{ cell?: string }>();
+  
+  // Parse cell into row and column if cell is defined
+  let cellInfo = null;
+  if (cell) {
+    const colChar = cell.charAt(0);
+    const row = parseInt(cell.substring(1)) - 1;
+    const col = colChar.charCodeAt(0) - 65; // A=0, B=1, etc.
+    cellInfo = { row: row + 1, col, label: cell };
+  }
 
-      <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-[500px]">
-        <TileLayer
-          attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
-          url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
-        />
-        <GridOverlay />
-      </MapContainer>
-    </>
+  return (
+    <div className="flex h-full w-full">
+      <LeafletAssets />
+      
+      <div className="flex-1 h-[500px]">
+        <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
+          <TileLayer
+            maxNativeZoom={30}
+            attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
+            url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+          />
+          <GridOverlay />
+        </MapContainer>
+      </div>
+      
+      {cellInfo && <Sidebar cellInfo={cellInfo} />}
+    </div>
   );
 }

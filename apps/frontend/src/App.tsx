@@ -33,6 +33,7 @@ function App() {
 
             {/* TODO: MOVE THE NECESSARY PRIVATE ROUTES INTO PRIVATE ROUTE */}
             <Route path="map" element={<MapView />} />
+            <Route path="map/:cell" element={<MapView />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
