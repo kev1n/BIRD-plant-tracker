@@ -11,7 +11,7 @@ interface TitledInputProps {
 
 const TitledInput = ({ title, required, children, className }: TitledInputProps) => {
   return (
-    <div className={cn("grid w-full items-center gap-1.5", className)}>
+    <div className={cn('grid w-full items-center gap-1.5', className)}>
       <Label className="mb-1">
         {title}
         {required && <span className="text-destructive ml-0.5">*</span>}

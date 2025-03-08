@@ -19,12 +19,12 @@ const PasswordField = (props: PasswordFieldProps) => {
 
   return (
     <div className="relative w-full">
-      <Input 
-        type={showPassword ? 'text' : 'password'} 
-        placeholder={props.placeholder || 'Password'} 
-        {...props} 
+      <Input
+        type={showPassword ? 'text' : 'password'}
+        placeholder={props.placeholder || 'Password'}
+        {...props}
       />
-      <div 
+      <div
         className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
         onClick={toggleShowPassword}
       >

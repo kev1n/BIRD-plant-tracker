@@ -57,16 +57,14 @@ export default function Login() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh]">
-      <Form 
+      <Form
         onSubmit={handleSubmit}
         title="Log In"
         isSubmitting={isLoading}
         submitText={isLoading ? 'Logging in...' : 'Log In'}
       >
         {locationState?.message && (
-          <div className="text-green-600 mb-4 text-center">
-            {locationState.message}
-          </div>
+          <div className="text-green-600 mb-4 text-center">{locationState.message}</div>
         )}
 
         {error && <p className="text-destructive text-center mb-2">{error}</p>}
@@ -95,7 +93,10 @@ export default function Login() {
         </div>
 
         <div className="mt-4 text-center">
-          Don't have an account? <Link to="/signup" className="text-primary hover:underline">Sign up</Link>
+          Don't have an account?{' '}
+          <Link to="/signup" className="text-primary hover:underline">
+            Sign up
+          </Link>
         </div>
       </Form>
     </div>

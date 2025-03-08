@@ -6,8 +6,7 @@
       "@/*": ["./src/*"]
     },
     "moduleResolution": "bundler"
-    
   },
-  
+
   "include": ["src", "vite.config.ts", "src/lib"]
 }

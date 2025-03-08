@@ -38,23 +38,13 @@ export default function NavBar() {
         </button>
       </div>
       {user ? (
-        <Button
-          variant="outline"
-          onClick={handleLogoutClick}
-        >
+        <Button variant="outline" onClick={handleLogoutClick}>
           Log Out
         </Button>
       ) : (
         <>
-          <Button
-            onClick={() => navigate('/signup')}
-          >
-            Sign Up
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/login')}
-          >
+          <Button onClick={() => navigate('/signup')}>Sign Up</Button>
+          <Button variant="outline" onClick={() => navigate('/login')}>
             Login
           </Button>
         </>

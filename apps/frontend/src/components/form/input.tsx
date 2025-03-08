@@ -6,4 +6,4 @@ export type { InputPasswordProps, InputTextProps };
 export const Input = {
   Text: InputText,
   Password: InputPassword,
-}; 
+};
