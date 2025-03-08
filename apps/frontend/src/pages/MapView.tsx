@@ -22,21 +22,21 @@ const CENTER: LatLngTuple = [42.04937, -87.673388];
 // Calculate grid dimensions
 const latDiff = TOP_LEFT[0] - BOTTOM_RIGHT[0];
 const lngDiff = BOTTOM_RIGHT[1] - TOP_LEFT[1];
-const cellSizeLat = GRID_SIZE_FEET * FEET_TO_DEGREES_LAT;
-const cellSizeLng = GRID_SIZE_FEET * FEET_TO_DEGREES_LNG;
+const patchSizeLat = GRID_SIZE_FEET * FEET_TO_DEGREES_LAT;
+const patchSizeLng = GRID_SIZE_FEET * FEET_TO_DEGREES_LNG;
 
-// Calculate number of cells
-const numCols = Math.ceil(lngDiff / cellSizeLng);
-const numRows = Math.ceil(latDiff / cellSizeLat);
+// Calculate number of patchs
+const numCols = Math.ceil(lngDiff / patchSizeLng);
+const numRows = Math.ceil(latDiff / patchSizeLat);
 
 // Label offset from grid (in degrees)
 const GRID_LABEL_OFFSET = 0.8;
-const LABEL_OFFSET_LAT = cellSizeLat * GRID_LABEL_OFFSET;
-const LABEL_OFFSET_LNG = cellSizeLng * GRID_LABEL_OFFSET;
+const LABEL_OFFSET_LAT = patchSizeLat * GRID_LABEL_OFFSET;
+const LABEL_OFFSET_LNG = patchSizeLng * GRID_LABEL_OFFSET;
 
-// Sidebar component to display grid cell information
+// Sidebar component to display grid patch information
 interface SidebarProps {
-  cellInfo: {
+  patchInfo: {
     row: number;
     col: number;
     label: string;
@@ -44,15 +44,15 @@ interface SidebarProps {
 }
 
 // TODO: Move into seperate component, call it inspection details
-function Sidebar({ cellInfo }: SidebarProps) {
-  if (!cellInfo) return null;
+function Sidebar({ patchInfo }: SidebarProps) {
+  if (!patchInfo) return null;
 
   return (
     <div className="w-72 p-5 bg-gray-50 h-[500px] overflow-y-auto shadow-md">
-      <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">Grid Cell: {cellInfo.label}</h2>
+      <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">Grid patch: {patchInfo.label}</h2>
       <div className="mt-4">
-        <p className="mb-2">Row: {cellInfo.row}</p>
-        <p className="mb-2">Column: {String.fromCharCode(65 + cellInfo.col)}</p>
+        <p className="mb-2">Row: {patchInfo.row}</p>
+        <p className="mb-2">Column: {String.fromCharCode(65 + patchInfo.col)}</p>
       </div>
     </div>
   );
@@ -64,8 +64,8 @@ function GridOverlay() {
   const location = useLocation();
   const gridRef = useRef<LayerGroup | null>(null);
 
-  // Extract grid cell from URL params
-  const { cell } = useParams<{ cell?: string }>();
+  // Extract grid patch from URL params
+  const { patch } = useParams<{ patch?: string }>();
 
   useEffect(() => {
     if (!map) return;
@@ -74,24 +74,24 @@ function GridOverlay() {
     gridRef.current = new LayerGroup();
     map.addLayer(gridRef.current);
 
-    // Create grid cells
+    // Create grid patchs
     for (let row = 0; row < numRows; row++) {
       for (let col = 0; col < numCols; col++) {
         const topLeft: LatLngTuple = [
-          TOP_LEFT[0] - row * cellSizeLat,
-          TOP_LEFT[1] + col * cellSizeLng,
+          TOP_LEFT[0] - row * patchSizeLat,
+          TOP_LEFT[1] + col * patchSizeLng,
         ];
         const bottomRight: LatLngTuple = [
-          TOP_LEFT[0] - (row + 1) * cellSizeLat,
-          TOP_LEFT[1] + (col + 1) * cellSizeLng,
+          TOP_LEFT[0] - (row + 1) * patchSizeLat,
+          TOP_LEFT[1] + (col + 1) * patchSizeLng,
         ];
 
-        // Create cell label
+        // Create patch label
         const label = `${String.fromCharCode(65 + col)}${row + 1}`;
 
-        const isSelected = cell === label;
+        const isSelected = patch === label;
         
-        // Create rectangle for grid cell
+        // Create rectangle for grid patch
         // TODO: Match with color variables from project
         const rect = new Rectangle([topLeft, bottomRight], {
           color: '#000000',
@@ -100,7 +100,7 @@ function GridOverlay() {
           fillOpacity: isSelected ? 0.9 : 0,
         });
         
-        // Make cells clickable
+        // Make patchs clickable
         rect.on('click', () => {
           navigate(`/map/${label}`, { replace: true });
         });
@@ -113,7 +113,7 @@ function GridOverlay() {
     for (let col = 0; col < numCols; col++) {
       const labelPos: LatLngTuple = [
         TOP_LEFT[0] + LABEL_OFFSET_LAT,
-        TOP_LEFT[1] + (col * cellSizeLng) + (cellSizeLng / 2),
+        TOP_LEFT[1] + (col * patchSizeLng) + (patchSizeLng / 2),
       ];
       const marker = new Marker(labelPos, {
         icon: divIcon({
@@ -127,7 +127,7 @@ function GridOverlay() {
     // Add row labels (1-1000)
     for (let row = 0; row < numRows; row++) {
       const labelPos: LatLngTuple = [
-        TOP_LEFT[0] - (row * cellSizeLat) - (cellSizeLat / 2),
+        TOP_LEFT[0] - (row * patchSizeLat) - (patchSizeLat / 2),
         TOP_LEFT[1] - LABEL_OFFSET_LNG,
       ];
       const marker = new Marker(labelPos, {
@@ -145,21 +145,21 @@ function GridOverlay() {
         map.removeLayer(gridRef.current);
       }
     };
-  }, [map, navigate, cell, location]);
+  }, [map, navigate, patch, location]);
 
   return null;
 }
 
 export default function MapView() {
-  const { cell } = useParams<{ cell?: string }>();
+  const { patch } = useParams<{ patch?: string }>();
   
-  // Parse cell into row and column if cell is defined
-  let cellInfo = null;
-  if (cell) {
-    const colChar = cell.charAt(0);
-    const row = parseInt(cell.substring(1)) - 1;
+  // Parse patch into row and column if patch is defined
+  let patchInfo = null;
+  if (patch) {
+    const colChar = patch.charAt(0);
+    const row = parseInt(patch.substring(1)) - 1;
     const col = colChar.charCodeAt(0) - 65; // A=0, B=1, etc.
-    cellInfo = { row: row + 1, col, label: cell };
+    patchInfo = { row: row + 1, col, label: patch };
   }
 
   return (
@@ -177,7 +177,7 @@ export default function MapView() {
         </MapContainer>
       </div>
       
-      {cellInfo && <Sidebar cellInfo={cellInfo} />}
+      {patchInfo && <Sidebar patchInfo={patchInfo} />}
     </div>
   );
 }
