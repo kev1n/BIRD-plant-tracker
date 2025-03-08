@@ -51,3 +51,32 @@ export interface SupabaseUserMetadata {
   name?: string;
   [key: string]: unknown;
 }
+
+export interface ObservationBody {
+  snapshotID: number;
+  plantQuantity: number;
+  plantID: number;
+  soilType?: string;
+  dateBloomed?: string;
+  datePlanted?: string;
+}
+
+export interface UpdateObservationParams {
+  obsID: string;
+}
+
+export interface UpdateObservationBody {
+  snapshotID?: number;
+  plantQuantity?: number;
+  plantID?: number;
+  soilType?: string;
+  dateBloomed?: string;
+  datePlanted?: string;
+}
+
+export interface Snapshot {
+  userID: number;
+  notes?: string;
+  dateCreated: Date;
+  patchID: number;
+}
