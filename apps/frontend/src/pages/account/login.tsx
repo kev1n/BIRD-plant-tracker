@@ -98,6 +98,7 @@ export default function Login() {
           Don't have an account? <Link to="/signup" className="text-primary hover:underline">Sign up</Link>
         </div>
       </Form>
+      <Link to="/map" className="text-primary hover:underline">Map</Link>
     </div>
   );
 }
