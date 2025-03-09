@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { FormEvent, ReactNode } from 'react';
 
 interface FormProps {
@@ -22,9 +22,9 @@ export function Form({
   className,
 }: FormProps) {
   return (
-    <form 
+    <form
       className={cn(
-        "flex flex-col gap-4 p-8 rounded-lg bg-white shadow-md w-full max-w-[450px]",
+        'flex flex-col gap-4 p-8 rounded-lg bg-white shadow-md w-full max-w-[450px]',
         className
       )}
       onSubmit={onSubmit}
@@ -38,11 +38,7 @@ export function Form({
 
       {children}
 
-      <Button 
-        type="submit" 
-        disabled={isSubmitting}
-        className="w-full mt-4"
-      >
+      <Button type="submit" disabled={isSubmitting} className="w-full mt-4">
         {isSubmitting ? 'Processing...' : submitText}
       </Button>
     </form>

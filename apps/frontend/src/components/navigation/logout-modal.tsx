@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -6,7 +6,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -20,21 +20,13 @@ const LogoutModal = ({ isOpen, onClose, onLogout }: LogoutModalProps) => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirm Logout</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to log out?
-          </DialogDescription>
+          <DialogDescription>Are you sure you want to log out?</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="outline"
-            onClick={onClose}
-          >
+          <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
-            onClick={onLogout}
-          >
+          <Button variant="destructive" onClick={onLogout}>
             Logout
           </Button>
         </DialogFooter>
