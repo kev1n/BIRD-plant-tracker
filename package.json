@@ -23,9 +23,7 @@
   },
   "packageManager": "npm@9.6.7",
   "dependencies": {
-    "leaflet": "^1.9.4",
     "react": "^19.0.0-rc.1",
-    "react-dom": "^19.0.0-rc.1",
-    "react-leaflet": "^5.0.0-rc.2"
+    "react-dom": "^19.0.0-rc.1"
   }
 }
