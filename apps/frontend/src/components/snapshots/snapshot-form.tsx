@@ -33,7 +33,7 @@ const SnapshotForm: React.FC<SnapshotFormProps> = ({
         setOpen(false);
     };
 
-    const [date, setDate] = useState<Date>(latest_date ? latest_date : new Date());
+    const [date, setDate] = useState<Date | null>(latest_date ? latest_date : null);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -51,7 +51,7 @@ const SnapshotForm: React.FC<SnapshotFormProps> = ({
                         </div>
                         <div className="flex-1 text-right">
                             Snapshot Date:
-                            <DatePicker date={date} setDate={setDate} />
+                            <DatePicker date={date} setDate={(date) => setDate(date)} />
                         </div>
                     </div>
                 </DialogHeader>
