@@ -2,7 +2,9 @@ import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { PlantInformation } from '../../types/observations';
 import LeafletAssets from '../components/LeafletAssets';
+import PatchView from '@/components/snapshots/patch-view';
 
 // Constants for the grid
 const GRID_SIZE_FEET = 15;
@@ -56,6 +58,7 @@ function Sidebar({ patchInfo }: SidebarProps) {
         <p className="mb-2">Row: {patchInfo.row}</p>
         <p className="mb-2">Column: {String.fromCharCode(65 + patchInfo.col)}</p>
       </div>
+      <PatchView patchInfo={patchInfo} />
     </div>
   );
 }
@@ -108,6 +111,7 @@ function GridOverlay() {
         });
 
         rect.addTo(gridRef.current);
+        // make the rectangle 
       }
     }
 
@@ -153,6 +157,9 @@ function GridOverlay() {
 }
 
 export default function MapView() {
+
+  
+
   const { patch } = useParams<{ patch?: string }>();
 
   // Parse patch into row and column if patch is defined
@@ -168,7 +175,7 @@ export default function MapView() {
     <div className="flex h-full w-full">
       <LeafletAssets />
 
-      <div className="flex-1 h-[500px]">
+      <div className="flex-1 h-[500px] z-10">
         <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
           <TileLayer
             maxNativeZoom={30}
@@ -179,7 +186,17 @@ export default function MapView() {
         </MapContainer>
       </div>
 
-      {patchInfo && <Sidebar patchInfo={patchInfo} />}
+      {patchInfo && 
+      <div>
+      <Sidebar patchInfo={patchInfo} />      
+      </div>
+      
+      }
+      
+
+
+
+
     </div>
   );
 }
