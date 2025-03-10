@@ -17,13 +17,8 @@
     "check": "turbo run lint build test"
   },
   "devDependencies": {
-    "@types/leaflet": "^1.9.16",
     "prettier": "^3.0.0",
     "turbo": "latest"
   },
-  "packageManager": "npm@9.6.7",
-  "dependencies": {
-    "react": "^19.0.0-rc.1",
-    "react-dom": "^19.0.0-rc.1"
-  }
+  "packageManager": "npm@9.6.7"
 }
