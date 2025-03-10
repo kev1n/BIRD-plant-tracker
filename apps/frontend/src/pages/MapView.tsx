@@ -1,10 +1,9 @@
+import PatchView from '@/components/snapshots/patch-view';
 import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { PlantInformation } from '../../types/observations';
 import LeafletAssets from '../components/LeafletAssets';
-import PatchView from '@/components/snapshots/patch-view';
 
 // Constants for the grid
 const GRID_SIZE_FEET = 15;

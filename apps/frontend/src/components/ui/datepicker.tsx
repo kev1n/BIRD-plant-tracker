@@ -1,21 +1,22 @@
-import { Calendar } from "lucide-react"
-import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { format } from "date-fns"
 
-export default function DatePicker({ date, setDate }: { date: Date, setDate: (date: Date) => void }) {
-
+export default function DatePicker({ 
+  date, 
+  setDate 
+}: { 
+  date: Date | null | undefined, 
+  setDate: (date: Date | null) => void 
+}) {
   const updateDate = (selectedDate: Date | undefined) => {
-    if (selectedDate) {
-      setDate(selectedDate);  // Update with the selected date
-    }
+    setDate(selectedDate || null);
   }
 
   return (
@@ -31,11 +32,11 @@ export default function DatePicker({ date, setDate }: { date: Date, setDate: (da
           {date ? format(date, "PPP") : <span>Check your date of record</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
+      <PopoverContent className="w-auto p-0" align="start">
         <CalendarComponent
           mode="single"
-          selected={date}
-          onSelect={(date) => updateDate(date)}  // Ensure date is passed correctly
+          selected={date || undefined}
+          onSelect={updateDate}
           initialFocus
         />
       </PopoverContent>

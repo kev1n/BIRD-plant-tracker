@@ -1,9 +1,9 @@
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import SnapshotRecord from "./snapshot-record";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 export default function PatchSnapshotHistory( {patchLabel}: {patchLabel: string}) {
-  const [dates, setDates] = useState<Date[]>([
+  const [dates] = useState<Date[]>([
     new Date("2024-04-15"),
     new Date("2024-04-10"),
     new Date("2024-05-01"),

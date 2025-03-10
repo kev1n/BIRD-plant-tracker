@@ -1,8 +1,7 @@
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import {PlantInformation} from "../../../types/observations";
 import PlantObservation from "@/components/observations/plant-observation";
-import { Button } from "../ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { PlantInformation } from "../../../types/observations";
 import PlantObservationForm from "../observations/plant-observation-form";
 
 export default function SnapshotPlantInformation( 

@@ -1,29 +1,40 @@
-import { PlantInformation } from 'types/observations';
 import { Button } from "@/components/ui/button";
+import DatePicker from "@/components/ui/datepicker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
+  Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
-  Form,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select"; // Assuming you have a Select component
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import DatePicker from "@/components/ui/datepicker";
-import { set } from 'date-fns';
+import { useForm } from "react-hook-form";
+import { PlantInformation } from "types/observations";
 
 export default function PlantObservationForm(
-  { newPlant, plantData }: { newPlant: boolean, plantData?: PlantInformation[] },
+  { newPlant }: { newPlant: boolean },
 ) {
   const [open, setopen] = useState(false);
 
-  const form = useForm();
-  const onSubmit = (data: any) => {
+  const form = useForm<PlantInformation>({
+    defaultValues: {
+      commonName: '',
+      scientificName: null,
+      plantType: null,
+      native: false,
+      quantity: null,
+      soilType: null,
+      dateBloomed: null,
+      datePlanted: null
+    }
+  });
+  
+  const onSubmit = (data: PlantInformation) => {
     console.log("Submitted", data);
     setopen(false);
   };
@@ -49,7 +60,7 @@ export default function PlantObservationForm(
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="Common Name"
+              name="commonName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Common Name</FormLabel>
@@ -65,12 +76,16 @@ export default function PlantObservationForm(
             />
             <FormField
               control={form.control}
-              name="Scientific Name"
+              name="scientificName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Scientific Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="enter plant's scientific name here" {...field} />
+                    <Input 
+                      placeholder="enter plant's scientific name here" 
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value || null)}
+                    />
                   </FormControl>
                   <FormDescription>
                     This is the scientific name of the plant.
@@ -81,11 +96,14 @@ export default function PlantObservationForm(
             />
             <FormField
               control={form.control}
-              name="Plant Type"
+              name="plantType"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Plant Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue="Please Select a Plant Type" value={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value || undefined}
+                  >
                     <SelectTrigger>
                       <SelectContent>
                         <SelectItem value="tree">Tree</SelectItem>
@@ -104,11 +122,11 @@ export default function PlantObservationForm(
             />
             <FormField
               control={form.control}
-              name="Date Planted"
+              name="datePlanted"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date Planted</FormLabel>
-                  <DatePicker date={field.value} setDate={field.onChange} />
+                  <DatePicker date={field.value || null} setDate={field.onChange} />
                   <FormDescription>
                     Select the date the plant was planted.
                   </FormDescription>
@@ -117,12 +135,12 @@ export default function PlantObservationForm(
               )}
             />
             <FormField
-             control={form.control}
+              control={form.control}
               name="dateBloomed"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date Bloomed</FormLabel>
-                  <DatePicker date={field.value} setDate={field.onChange} />
+                  <DatePicker date={field.value || null} setDate={field.onChange} />
                   <FormDescription>
                     Select the date the plant bloomed.
                   </FormDescription>
@@ -132,12 +150,17 @@ export default function PlantObservationForm(
             />
             <FormField
               control={form.control}
-              name="Quantity"
+              name="quantity"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Quantity</FormLabel>
                   <FormControl>
-                    <Input placeholder="enter quantity here" {...field} />
+                    <Input 
+                      type="number" 
+                      placeholder="enter quantity here"
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                    />
                   </FormControl>
                   <FormDescription>
                     This is the quantity of the plant.
@@ -148,11 +171,14 @@ export default function PlantObservationForm(
             />
             <FormField
               control={form.control}
-              name="Soil Type"
+              name="soilType"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Soil Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value || undefined}
+                  >
                     <SelectTrigger>
                       <SelectContent>
                         <SelectItem value="sand">Sand</SelectItem>
@@ -170,11 +196,14 @@ export default function PlantObservationForm(
             />
             <FormField
               control={form.control}
-              name="Native"
+              name="native"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Native</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => field.onChange(value === 'true')} 
+                    value={field.value?.toString() || 'false'}
+                  >
                     <SelectTrigger>
                       <SelectContent>
                         <SelectItem value="true">True</SelectItem>
@@ -192,7 +221,6 @@ export default function PlantObservationForm(
             <Button type="submit">Submit</Button>
           </form>
         </Form>
-
       </DialogContent>
     </Dialog>
   );

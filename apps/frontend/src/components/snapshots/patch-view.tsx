@@ -2,17 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { PlantInformation } from "../../../types/observations";
+import PatchSnapshotHistory from "./patch-snapshot-history";
 import SnapshotForm from "./snapshot-form";
 import SnapshotPlantInformation from "./snapshot-plant-information";
-import PatchSnapshotHistory from "./patch-snapshot-history";
 // patch is a string
 export default function PatchView(
     { patchInfo }: { patchInfo: { row: number, col: number, label: string } },
 ) {
 
-    const [latest_date, setLatestDate] = useState(new Date());
-    const [latest_author, setLatestAuthor] = useState("Joe");
-    const [latest_notes, setLatestNotes] = useState("These are the latest notes");
+    const [latest_date] = useState(new Date());
+    const [latest_author] = useState("Joe");
+    const [latest_notes] = useState("These are the latest notes");
 
     // TODO: FILL WITH API DATA
     const treeData: PlantInformation[] = [
