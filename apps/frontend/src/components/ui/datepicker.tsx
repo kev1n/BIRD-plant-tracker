@@ -12,13 +12,9 @@ export default function DatePicker({
   date, 
   setDate 
 }: { 
-  date: Date | null | undefined, 
+  date: Date | null, 
   setDate: (date: Date | null) => void 
 }) {
-  const updateDate = (selectedDate: Date | undefined) => {
-    setDate(selectedDate || null);
-  }
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -36,7 +32,7 @@ export default function DatePicker({
         <CalendarComponent
           mode="single"
           selected={date || undefined}
-          onSelect={updateDate}
+          onSelect={(date) => setDate(date || null)}
           initialFocus
         />
       </PopoverContent>
