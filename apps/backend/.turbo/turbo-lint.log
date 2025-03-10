@@ -3,3 +3,17 @@
 > @full-stack-template-typescript-turbo-repo/backend@1.0.0 lint
 > eslint .
 
+[1G[0K[0m[0m
+[0m[4m/Users/sharon/Desktop/BIRD-plant-tracker/apps/backend/dist/api/index.js[24m[0m
+[0m  [2m43:26[22m  [31merror[39m  '_next' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[31m[1m✖ 1 problem (1 error, 0 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[0m
+[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m Lifecycle script `lint` failed with error:
+[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mcode[39m [33m1[39m
+[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mpath[39m /Users/sharon/Desktop/BIRD-plant-tracker/apps/backend
+[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mworkspace[39m @full-stack-template-typescript-turbo-repo/backend@1.0.0
+[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mlocation[39m /Users/sharon/Desktop/BIRD-plant-tracker/apps/backend
+[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m command failed
+[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mcommand[39m sh -c eslint .
+[1G[0K⠙[1G[0K
