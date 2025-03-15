@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=David+Libre:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
@@ -35,6 +36,10 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+    
+    /* Font families */
+    --font-primary: 'Lora', serif;
+    --font-secondary: 'David Libre', serif;
   }
 
   .dark {
@@ -73,8 +78,52 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-primary;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Apply fonts to typography elements */
+  h1, h2, h3, h4, h5, h6, button {
+    @apply font-primary;
+  }
+  
+  p, li, span, div, a {
+    @apply font-secondary;
+  }
+  
+  /* Typography scale */
+  .text-display-1 {
+    @apply text-[72px] font-primary;
+  }
+  .text-display-2 {
+    @apply text-[36px] font-primary;
+  }
+  .text-button-1 {
+    @apply text-[32px] font-primary;
+  }
+  .text-button-2 {
+    @apply text-[24px] font-primary;
+  }
+  .text-heading-1 {
+    @apply text-[36px] font-primary;
+  }
+  .text-heading-2 {
+    @apply text-[24px] font-primary;
+  }
+  .text-subheading-1 {
+    @apply text-[24px] font-secondary;
+  }
+  .text-subheading-2 {
+    @apply text-[16px] font-secondary;
+  }
+  .text-body-1 {
+    @apply text-[24px] font-secondary;
+  }
+  .text-body-2 {
+    @apply text-[18px] font-secondary;
+  }
+  .text-body-3 {
+    @apply text-[34px] font-secondary;
   }
 }
 
@@ -186,6 +235,8 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --font-primary: var(--font-primary);
+  --font-secondary: var(--font-secondary);
 }
 
 @layer base {

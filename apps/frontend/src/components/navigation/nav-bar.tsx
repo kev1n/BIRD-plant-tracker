@@ -10,13 +10,13 @@ export default function NavBar() {
       <div className="flex-1 flex gap-2.5">
         <img src={BirdLogo} alt="Sanctuary Logo"/>
         <button
-          className="p-0 text-3xl font-bold font-serif bg-transparent border-none cursor-pointer text-lime-600"
+          className="p-0 text-3xl font-bold bg-transparent border-none cursor-pointer text-lime-600"
           onClick={() => navigate('/')}
         >
           CSBBS Plant Tracker
         </button>
       </div>
-      <ul className="p-0 m-0 list-none flex gap-10 items-center font-bold font-serif text-1xl text-violet-950">
+      <ul className="p-0 m-0 list-none flex gap-10 items-center font-bold text-1xl text-violet-950">
         <li>
           <Link to='/about'>About</Link>
         </li>
