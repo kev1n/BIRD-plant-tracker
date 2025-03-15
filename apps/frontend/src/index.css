@@ -17,6 +17,7 @@
     --color-neutral-white: 255 255 255;
     --color-neutral-heading: 93 90 136;
 
+    /* Original theme variables */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -81,11 +82,73 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50 font-secondary;
   }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Apply primary font (Lora) only to h1, h2, h3 */
+  h1, h2, h3 {
+    @apply font-primary;
+  }
+  
+  /* Display text classes */
+  .display-1, .display-2 {
+    @apply font-primary;
+  }
+  
+  .display-1 {
+    font-size: var(--font-display-1);
+  }
+  
+  .display-2 {
+    font-size: var(--font-display-2);
+  }
+  
+  /* Button text classes */
+  .button-1 {
+    font-size: var(--font-button-1);
+  }
+  
+  .button-2 {
+    font-size: var(--font-button-2);
+  }
+  
+  /* Heading classes */
+  .heading-1, .heading-2 {
+    @apply font-primary;
+  }
+  
+  .heading-1 {
+    font-size: var(--font-heading-1);
+  }
+  
+  .heading-2 {
+    font-size: var(--font-heading-2);
+  }
+  
+  /* Subheading classes */
+  .subheading-1 {
+    font-size: var(--font-subheading-1);
+  }
+  
+  .subheading-2 {
+    font-size: var(--font-subheading-2);
+  }
+  
+  /* Body text classes */
+  .body-1 {
+    font-size: var(--font-body-1);
+  }
+  
+  .body-2 {
+    font-size: var(--font-body-2);
+  }
+  
+  .body-3 {
+    font-size: var(--font-body-3);
   }
 }
 
@@ -228,83 +291,4 @@
   --font-body-1: 24px;
   --font-body-2: 18px;
   --font-body-3: 34px;
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  
-  /* Apply primary font (Lora) to display, headings, and buttons */
-  h1, h2, h3, button {
-    font-family: var(--font-primary);
-  }
-  
-  /* Apply secondary font (David Libre) to subheadings and body text */
-  h4, h5, h6, p {
-    font-family: var(--font-secondary);
-  }
-  
-  /* Display styles */
-  .display-1 {
-    font-family: var(--font-primary);
-    font-size: var(--font-display-1);
-  }
-  
-  .display-2 {
-    font-family: var(--font-primary);
-    font-size: var(--font-display-2);
-  }
-  
-  /* Button styles */
-  .button-1 {
-    font-family: var(--font-primary);
-    font-size: var(--font-button-1);
-  }
-  
-  .button-2 {
-    font-family: var(--font-primary);
-    font-size: var(--font-button-2);
-  }
-  
-  /* Heading styles */
-  .heading-1 {
-    font-family: var(--font-primary);
-    font-size: var(--font-heading-1);
-  }
-  
-  .heading-2 {
-    font-family: var(--font-primary);
-    font-size: var(--font-heading-2);
-  }
-  
-  /* Subheading styles */
-  .subheading-1 {
-    font-family: var(--font-secondary);
-    font-size: var(--font-subheading-1);
-  }
-  
-  .subheading-2 {
-    font-family: var(--font-secondary);
-    font-size: var(--font-subheading-2);
-  }
-  
-  /* Body styles */
-  .body-1 {
-    font-family: var(--font-secondary);
-    font-size: var(--font-body-1);
-  }
-  
-  .body-2 {
-    font-family: var(--font-secondary);
-    font-size: var(--font-body-2);
-  }
-  
-  .body-3 {
-    font-family: var(--font-secondary);
-    font-size: var(--font-body-3);
-  }
 }
