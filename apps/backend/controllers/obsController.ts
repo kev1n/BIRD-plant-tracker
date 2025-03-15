@@ -4,6 +4,7 @@ import {
   AuthRequest,
   UpdateObservationBody,
 } from '../types.js';
+import { isValidParam } from '../utils.js';
 
 export async function newObservation( req: AuthRequest, res: Response ){
   try {
@@ -59,36 +60,26 @@ export async function delObservation( req: AuthRequest, res: Response ){
       return;
     }
 
-    if (!/^\d+$/.test(obsID)){ // if obsID not an integer
+    if (!isValidParam(obsID)){ // if obsID not an integer
       res.status(400).json({ error: 'Observation ID must be an integer'});
-      return;
-    }
-
-    const { data: observation, error: obsError1 } = await supabase // find observation to make sure it exists
-      .from('Observations')
-      .select()
-      .eq('observationID', obsID)
-      .single();
-
-    if (obsError1) {
-      res.status(400).json({ error: obsError1.message });
-      return;
-    }
-    
-    if (!observation) { // observation does not exist
-      res.status(400).json({ error: `Observation ID: ${obsID} is not valid`})
       return;
     }
 
     const currentTimestampz = new Date().toISOString(); // current time
 
-    const { error: obsError2 } = await supabase
+    const { data, error } = await supabase // find observation to make sure it exists
       .from('Observations')
       .update({ deletedOn: currentTimestampz })
-      .eq('observationID', obsID);
+      .eq('observationID', obsID)
+      .select();
 
-    if (obsError2) {
-      res.status(400).json({ error: obsError2.message });
+    if (error) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+
+    if (data.length == 0) { // observation does not exist
+      res.status(400).json({ error: `Observation ID: ${obsID} is not valid`})
       return;
     }
 
@@ -117,7 +108,7 @@ export async function updateObservation( req: AuthRequest, res: Response ){
       return;
     }
 
-    if (!/^\d+$/.test(obsID)){ // if obsID not an integer
+    if (!isValidParam(obsID)){ // if obsID not an integer
       res.status(400).json({ error: 'Observation ID must be an integer'});
       return;
     }
@@ -164,7 +155,7 @@ export async function getObservation(req: Request, res: Response){
       return;
     }
 
-    if (!/^\d+$/.test(obsID)){ // if obsID not an integer
+    if (!isValidParam(obsID)){ // if obsID not an integer
       res.status(400).json({ error: 'Observation ID must be an integer'});
       return;
     }
@@ -195,12 +186,12 @@ export async function getAllObservation(req: Request, res: Response){
   try{
     // TODO: authentication and authorization
 
-    const { data: observations, error: obsError1 } = await supabase // find observation to make sure it exists
+    const { data: observations, error: obsError } = await supabase // find observation to make sure it exists
       .from('Observations')
       .select()
 
-    if (obsError1) {
-      res.status(400).json({ error: obsError1.message });
+    if (obsError) {
+      res.status(400).json({ error: obsError.message });
       return;
     }
     

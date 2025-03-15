@@ -4,6 +4,7 @@ import {
   AuthRequest,
   UpdateSnapshotBody
 } from '../types.js';
+import { isValidParam } from '../utils.js';
 
 export async function newSnapshot ( req: AuthRequest, res: Response){
   try {
@@ -12,17 +13,6 @@ export async function newSnapshot ( req: AuthRequest, res: Response){
     const { dateCreated, patchID, notes } = req.body;
 
     const userID = req.user?.id;
-
-    // const { data: tempID, error: userError } = await supabase   // DELETE
-    //   .from('users')                                            // DELETE
-    //   .select('userID')                                         // DELETE
-    //   .eq('email', 'danielkramer2027@u.northwestern.edu')       // DELETE
-    //   .single();                                                // DELETE
-
-    // if (!tempID) {                                              // TEMPORARY
-    //   res.status(400).json({ error: userError});
-    //   return;
-    // }
 
     if (!userID || !dateCreated || !patchID) {
       res.status(400).json({ error: "Required fields missing"});
@@ -33,7 +23,7 @@ export async function newSnapshot ( req: AuthRequest, res: Response){
       .from('Snapshots')
       .insert([
         {
-          userID: userID, // switch to tempID.userID to test
+          userID: userID,
           dateCreated,
           patchID,
           notes: notes || null,
@@ -77,36 +67,26 @@ export async function delSnapshot ( req: AuthRequest, res: Response){
       return;
     }
 
-    if (!/^\d+$/.test(snapshotID)){ // if snapshotID not an integer
+    if (!isValidParam(snapshotID)){ // if snapshotID not an integer
       res.status(400).json({ error: 'Snapshot ID must be an integer'});
       return;
-    }
-
-    const { data: snapshot, error: Error1 } = await supabase // find snapshot to make sure it exists
-      .from('Snapshots')
-      .select()
-      .eq('snapshotID', snapshotID)
-      .single();
-
-    if (Error1) {
-      res.status(400).json({ error: Error1.message });
-      return;
-    }
-    
-    if (!snapshot) { // snapshot does not exist
-      res.status(400).json({ error: `Snapshot ID: ${snapshotID} is not valid`})
-      return;
-    }
+    }  
 
     const currentTimestampz = new Date().toISOString(); // current time
 
-    const { error: Error2 } = await supabase
+    const { data, error } = await supabase
       .from('Snapshots')
       .update({ deletedOn: currentTimestampz })
-      .eq('snapshotID', snapshotID);
+      .eq('snapshotID', snapshotID)
+      .select();
 
-    if (Error2) {
-      res.status(400).json({ error: Error2.message });
+    if (error) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+
+    if (data.length == 0) { // snapshot does not exist
+      res.status(400).json({ error: `Snapshot ID: ${snapshotID} is not valid`})
       return;
     }
 
@@ -140,7 +120,7 @@ export async function updateSnapshot( req: AuthRequest, res: Response ){
       return;
     }
 
-    if (!/^\d+$/.test(snapshotID)){ // if snpashotID not an integer
+    if (!isValidParam(snapshotID)){ // if snpashotID not an integer
       res.status(400).json({ error: 'Snapshot ID must be an integer'});
       return;
     }
@@ -185,28 +165,28 @@ export async function getSnapshot(req: Request, res: Response){
       return;
     }
 
-    if (!/^\d+$/.test(snapshotID)){ // if snapshotID not an integer
+    if (!isValidParam(snapshotID)){ // if snapshotID not an integer
       res.status(400).json({ error: 'Snapshot ID must be an integer'});
       return;
     }
 
-    const { data: snapshot, error: Error1 } = await supabase // find snapshot to make sure it exists
+    const { data , error } = await supabase // find snapshot to make sure it exists
       .from('Snapshots')
       .select()
       .eq('snapshotID', snapshotID)
       .single();
 
-    if (Error1) {
-      res.status(400).json({ error: Error1.message });
+    if (error) {
+      res.status(400).json({ error: error.message });
       return;
     }
     
-    if (!snapshot) { // snapshot does not exist
+    if (data.length == 0) { // snapshot does not exist
       res.status(400).json({ error: `Snapshot ID: ${snapshotID} is not valid`})
       return;
     }
 
-    res.status(200).json({ snapshot })
+    res.status(200).json({ data })
   } catch (error) {
     res.status(500).json({ error: `Internal server error: ${error}` })
   }
