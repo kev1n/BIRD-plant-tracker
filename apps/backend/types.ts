@@ -1,4 +1,5 @@
 import { User } from '@supabase/supabase-js';
+import { UUID } from 'crypto';
 import { Request } from 'express';
 
 export interface AuthRequest extends Request {
@@ -61,6 +62,10 @@ export interface ObservationBody {
   datePlanted?: string;
 }
 
+export interface AuthObservationBody extends AuthRequest{
+  body: ObservationBody;
+}
+
 export interface UpdateObservationParams {
   obsID: string;
 }
@@ -79,4 +84,11 @@ export interface Snapshot {
   notes?: string;
   dateCreated: Date;
   patchID: number;
+}
+
+export interface UpdateSnapshotBody {
+  dateCreated?: Date;
+  notes?: Text;
+  patchID?: string;
+  userID?: UUID;
 }

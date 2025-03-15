@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import supabase from '../config/supabase.js';
 import {
-  ObservationBody,
+  AuthRequest,
   UpdateObservationBody,
-  UpdateObservationParams
 } from '../types.js';
 
-export async function newObservation( req: Request<object, object, ObservationBody>, res: Response ){
+export async function newObservation( req: AuthRequest, res: Response ){
   try {
 
     // TODO: authentication and authorization
@@ -24,7 +23,7 @@ export async function newObservation( req: Request<object, object, ObservationBo
         {
           snapshotID,
           plantQuantity,
-          plantID,
+          plantID: plantID,
           soilType: soilType || null,
           dateBloomed: dateBloomed || null,
           datePlanted: datePlanted || null,
@@ -48,7 +47,7 @@ export async function newObservation( req: Request<object, object, ObservationBo
   }
 }
 
-export async function delObservation( req: Request, res: Response ){
+export async function delObservation( req: AuthRequest, res: Response ){
   try {
 
     // TODO: authentication and authorization
@@ -66,7 +65,7 @@ export async function delObservation( req: Request, res: Response ){
     }
 
     const { data: observation, error: obsError1 } = await supabase // find observation to make sure it exists
-      .from('observations')
+      .from('Observations')
       .select()
       .eq('observationID', obsID)
       .single();
@@ -84,7 +83,7 @@ export async function delObservation( req: Request, res: Response ){
     const currentTimestampz = new Date().toISOString(); // current time
 
     const { error: obsError2 } = await supabase
-      .from('observations')
+      .from('Observations')
       .update({ deletedOn: currentTimestampz })
       .eq('observationID', obsID);
 
@@ -103,13 +102,15 @@ export async function delObservation( req: Request, res: Response ){
   }
 }
 
-export async function updateObservation( req: Request<UpdateObservationParams, object, UpdateObservationBody>, res: Response ){
+export async function updateObservation( req: AuthRequest, res: Response ){
   try {
     // TODO: authentication and authorization
 
     const { snapshotID, plantQuantity, plantID, soilType, dateBloomed, datePlanted } = req.body;
 
     const { obsID } = req.params;
+
+    
 
     if (!obsID) { // if obsID not passed
       res.status(400).json({ error: 'Missing observation ID'});
@@ -136,7 +137,7 @@ export async function updateObservation( req: Request<UpdateObservationParams, o
     }
 
     const { error } = await supabase
-      .from('observations')
+      .from('Observations')
       .update(updates)
       .eq('observationID', obsID);
 
@@ -169,7 +170,7 @@ export async function getObservation(req: Request, res: Response){
     }
 
     const { data: observation, error: obsError1 } = await supabase // find observation to make sure it exists
-      .from('observations')
+      .from('Observations')
       .select()
       .eq('observationID', obsID)
       .single();
@@ -195,7 +196,7 @@ export async function getAllObservation(req: Request, res: Response){
     // TODO: authentication and authorization
 
     const { data: observations, error: obsError1 } = await supabase // find observation to make sure it exists
-      .from('observations')
+      .from('Observations')
       .select()
 
     if (obsError1) {
@@ -209,6 +210,43 @@ export async function getAllObservation(req: Request, res: Response){
     }
 
     res.status(200).json({ data: observations })
+  } catch (error) {
+    res.status(500).json({ error: `Internal server error: ${error}` })
+  }
+}
+
+export async function getAllFromSnapshot(req: Request, res: Response){
+  try{
+    // TODO: authentication and authorization
+
+    const { snapshotID } = req.params;
+
+    if (!snapshotID) { // if obsID not passed
+      res.status(400).json({ error: 'Missing snapshot ID'});
+      return;
+    }
+
+    if (!/^\d+$/.test(snapshotID)){ // if snapshotID not an integer
+      res.status(400).json({ error: 'Snapshot ID must be an integer'});
+      return;
+    }
+
+    const { data: observations, error: obsError1 } = await supabase // find snapshot to make sure it exists
+      .from('Observations')
+      .select()
+      .eq('snapshotID', snapshotID)
+
+    if (obsError1) {
+      res.status(400).json({ error: obsError1.message });
+      return;
+    }
+    
+    if (!observations) { // observation does not exist
+      res.status(400).json({ error: `No observations for snapshot ID: ${snapshotID}`})
+      return;
+    }
+
+    res.status(200).json({ observations })
   } catch (error) {
     res.status(500).json({ error: `Internal server error: ${error}` })
   }
