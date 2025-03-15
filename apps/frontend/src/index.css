@@ -1,11 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=David+Libre:wght@400;500;700&display=swap');
 @import "tailwindcss";
-
-@plugin "tailwindcss-animate";
-
-@custom-variant dark (&:is(.dark *));
+@layer theme, base, components, utilities;
 
 @layer base {
   :root {
+    /* Brand colors */
+    --color-primary-yellow: 250 242 5;
+    --color-primary-dark-grey: 44 44 44;
+    --color-primary-green: 121 154 24;
+    --color-primary-light-grey: 129 130 134;
+    
+    --color-secondary-light-grey: 193 194 197;
+    --color-secondary-green: 121 154 24;
+    
+    --color-neutral-black: 0 0 0;
+    --color-neutral-white: 255 255 255;
+    --color-neutral-heading: 93 90 136;
+
+    /* Original theme variables */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -70,11 +82,73 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50 font-secondary;
   }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Apply primary font (Lora) only to h1, h2, h3 */
+  h1, h2, h3 {
+    @apply font-primary;
+  }
+  
+  /* Display text classes */
+  .display-1, .display-2 {
+    @apply font-primary;
+  }
+  
+  .display-1 {
+    font-size: var(--font-display-1);
+  }
+  
+  .display-2 {
+    font-size: var(--font-display-2);
+  }
+  
+  /* Button text classes */
+  .button-1 {
+    font-size: var(--font-button-1);
+  }
+  
+  .button-2 {
+    font-size: var(--font-button-2);
+  }
+  
+  /* Heading classes */
+  .heading-1, .heading-2 {
+    @apply font-primary;
+  }
+  
+  .heading-1 {
+    font-size: var(--font-heading-1);
+  }
+  
+  .heading-2 {
+    font-size: var(--font-heading-2);
+  }
+  
+  /* Subheading classes */
+  .subheading-1 {
+    font-size: var(--font-subheading-1);
+  }
+  
+  .subheading-2 {
+    font-size: var(--font-subheading-2);
+  }
+  
+  /* Body text classes */
+  .body-1 {
+    font-size: var(--font-body-1);
+  }
+  
+  .body-2 {
+    font-size: var(--font-body-2);
+  }
+  
+  .body-3 {
+    font-size: var(--font-body-3);
   }
 }
 
@@ -150,6 +224,20 @@
 }
 
 @theme inline {
+  /* Brand colors */
+  --color-primary-yellow: rgb(var(--color-primary-yellow));
+  --color-primary-dark-grey: rgb(var(--color-primary-dark-grey));
+  --color-primary-green: rgb(var(--color-primary-green));
+  --color-primary-light-grey: rgb(var(--color-primary-light-grey));
+  
+  --color-secondary-light-grey: rgb(var(--color-secondary-light-grey));
+  --color-secondary-green: rgb(var(--color-secondary-green));
+  
+  --color-neutral-black: rgb(var(--color-neutral-black));
+  --color-neutral-white: rgb(var(--color-neutral-white));
+  --color-neutral-heading: rgb(var(--color-neutral-heading));
+
+  /* Original theme variables */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -186,13 +274,21 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+  
+  /* Font families */
+  --font-primary: 'Lora', serif;
+  --font-secondary: 'David Libre', serif;
+  
+  /* Font sizes */
+  --font-display-1: 72px;
+  --font-display-2: 36px;
+  --font-button-1: 32px;
+  --font-button-2: 24px;
+  --font-heading-1: 36px;
+  --font-heading-2: 24px;
+  --font-subheading-1: 24px;
+  --font-subheading-2: 16px;
+  --font-body-1: 24px;
+  --font-body-2: 18px;
+  --font-body-3: 34px;
 }
