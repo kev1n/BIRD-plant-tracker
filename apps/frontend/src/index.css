@@ -1,12 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=David+Libre:wght@400;500;700&display=swap');
 @import "tailwindcss";
-
-@plugin "tailwindcss-animate";
-
-@custom-variant dark (&:is(.dark *));
+@layer theme, base, components, utilities;
 
 @layer base {
   :root {
+    /* Brand colors */
+    --color-primary-yellow: 250 242 5;
+    --color-primary-dark-grey: 44 44 44;
+    --color-primary-green: 121 154 24;
+    --color-primary-light-grey: 129 130 134;
+    
+    --color-secondary-light-grey: 193 194 197;
+    --color-secondary-green: 121 154 24;
+    
+    --color-neutral-black: 0 0 0;
+    --color-neutral-white: 255 255 255;
+    --color-neutral-heading: 93 90 136;
+
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -36,10 +46,6 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
-    
-    /* Font families */
-    --font-primary: 'Lora', serif;
-    --font-secondary: 'David Libre', serif;
   }
 
   .dark {
@@ -78,52 +84,8 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-primary;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-  }
-  
-  /* Apply fonts to typography elements */
-  h1, h2, h3, h4, h5, h6, button {
-    @apply font-primary;
-  }
-  
-  p, li, span, div, a {
-    @apply font-secondary;
-  }
-  
-  /* Typography scale */
-  .text-display-1 {
-    @apply text-[72px] font-primary;
-  }
-  .text-display-2 {
-    @apply text-[36px] font-primary;
-  }
-  .text-button-1 {
-    @apply text-[32px] font-primary;
-  }
-  .text-button-2 {
-    @apply text-[24px] font-primary;
-  }
-  .text-heading-1 {
-    @apply text-[36px] font-primary;
-  }
-  .text-heading-2 {
-    @apply text-[24px] font-primary;
-  }
-  .text-subheading-1 {
-    @apply text-[24px] font-secondary;
-  }
-  .text-subheading-2 {
-    @apply text-[16px] font-secondary;
-  }
-  .text-body-1 {
-    @apply text-[24px] font-secondary;
-  }
-  .text-body-2 {
-    @apply text-[18px] font-secondary;
-  }
-  .text-body-3 {
-    @apply text-[34px] font-secondary;
   }
 }
 
@@ -199,6 +161,20 @@
 }
 
 @theme inline {
+  /* Brand colors */
+  --color-primary-yellow: rgb(var(--color-primary-yellow));
+  --color-primary-dark-grey: rgb(var(--color-primary-dark-grey));
+  --color-primary-green: rgb(var(--color-primary-green));
+  --color-primary-light-grey: rgb(var(--color-primary-light-grey));
+  
+  --color-secondary-light-grey: rgb(var(--color-secondary-light-grey));
+  --color-secondary-green: rgb(var(--color-secondary-green));
+  
+  --color-neutral-black: rgb(var(--color-neutral-black));
+  --color-neutral-white: rgb(var(--color-neutral-white));
+  --color-neutral-heading: rgb(var(--color-neutral-heading));
+
+  /* Original theme variables */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -235,8 +211,23 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-primary: var(--font-primary);
-  --font-secondary: var(--font-secondary);
+  
+  /* Font families */
+  --font-primary: 'Lora', serif;
+  --font-secondary: 'David Libre', serif;
+  
+  /* Font sizes */
+  --font-display-1: 72px;
+  --font-display-2: 36px;
+  --font-button-1: 32px;
+  --font-button-2: 24px;
+  --font-heading-1: 36px;
+  --font-heading-2: 24px;
+  --font-subheading-1: 24px;
+  --font-subheading-2: 16px;
+  --font-body-1: 24px;
+  --font-body-2: 18px;
+  --font-body-3: 34px;
 }
 
 @layer base {
@@ -245,5 +236,75 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Apply primary font (Lora) to display, headings, and buttons */
+  h1, h2, h3, button {
+    font-family: var(--font-primary);
+  }
+  
+  /* Apply secondary font (David Libre) to subheadings and body text */
+  h4, h5, h6, p {
+    font-family: var(--font-secondary);
+  }
+  
+  /* Display styles */
+  .display-1 {
+    font-family: var(--font-primary);
+    font-size: var(--font-display-1);
+  }
+  
+  .display-2 {
+    font-family: var(--font-primary);
+    font-size: var(--font-display-2);
+  }
+  
+  /* Button styles */
+  .button-1 {
+    font-family: var(--font-primary);
+    font-size: var(--font-button-1);
+  }
+  
+  .button-2 {
+    font-family: var(--font-primary);
+    font-size: var(--font-button-2);
+  }
+  
+  /* Heading styles */
+  .heading-1 {
+    font-family: var(--font-primary);
+    font-size: var(--font-heading-1);
+  }
+  
+  .heading-2 {
+    font-family: var(--font-primary);
+    font-size: var(--font-heading-2);
+  }
+  
+  /* Subheading styles */
+  .subheading-1 {
+    font-family: var(--font-secondary);
+    font-size: var(--font-subheading-1);
+  }
+  
+  .subheading-2 {
+    font-family: var(--font-secondary);
+    font-size: var(--font-subheading-2);
+  }
+  
+  /* Body styles */
+  .body-1 {
+    font-family: var(--font-secondary);
+    font-size: var(--font-body-1);
+  }
+  
+  .body-2 {
+    font-family: var(--font-secondary);
+    font-size: var(--font-body-2);
+  }
+  
+  .body-3 {
+    font-family: var(--font-secondary);
+    font-size: var(--font-body-3);
   }
 }
