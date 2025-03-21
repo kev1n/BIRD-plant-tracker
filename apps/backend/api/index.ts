@@ -3,6 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import authRoutes from '../routes/authRoutes.js';
+import getObsRoutes from '../routes/getObsRoutes.js';
+import obsRoutes from '../routes/obsRoutes.js';
+import snapshotRoutes from '../routes/snapshotRoutes.js';
 
 dotenv.config();
 
@@ -53,6 +56,9 @@ app.use((req, res, next) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/observation', obsRoutes);
+app.use('/get-observation', getObsRoutes);
+app.use('/snapshot', snapshotRoutes);
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });

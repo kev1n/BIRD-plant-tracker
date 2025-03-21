@@ -1,4 +1,5 @@
 import { User } from '@supabase/supabase-js';
+import { UUID } from 'crypto';
 import { Request } from 'express';
 
 export interface AuthRequest extends Request {
@@ -50,4 +51,44 @@ export interface SupabaseUserMetadata {
   family_name?: string;
   name?: string;
   [key: string]: unknown;
+}
+
+export interface ObservationBody {
+  snapshotID: number;
+  plantQuantity: number;
+  plantID: number;
+  soilType?: string;
+  dateBloomed?: string;
+  datePlanted?: string;
+}
+
+export interface AuthObservationBody extends AuthRequest{
+  body: ObservationBody;
+}
+
+export interface UpdateObservationParams {
+  obsID: string;
+}
+
+export interface UpdateObservationBody {
+  snapshotID?: number;
+  plantQuantity?: number;
+  plantID?: number;
+  soilType?: string;
+  dateBloomed?: string;
+  datePlanted?: string;
+}
+
+export interface Snapshot {
+  userID: number;
+  notes?: string;
+  dateCreated: Date;
+  patchID: number;
+}
+
+export interface UpdateSnapshotBody {
+  dateCreated?: Date;
+  notes?: Text;
+  patchID?: string;
+  userID?: UUID;
 }
