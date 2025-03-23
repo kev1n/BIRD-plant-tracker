@@ -23,10 +23,11 @@ export async function signup(
       return;
     }
 
-    const { error: authError } = await supabase.auth.signUp({
+    const { error: authError, data: data } = await supabase.auth.signUp({
       email,
       password,
     });
+    const userID = data.user?.id;
 
     if (authError) {
       res.status(400).json({ error: authError.message });
@@ -37,6 +38,7 @@ export async function signup(
       .from('users')
       .insert([
         {
+          userID,
           username,
           email,
           firstname: firstname || null,
