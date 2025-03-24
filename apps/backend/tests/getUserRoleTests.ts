@@ -31,4 +31,19 @@ import getUserRole from '../utilities/getUserRole.js';
     } catch (error) {
       console.error('Error occurred:', error);
     }
-  })();
+})();
+
+(async () => {
+    try {
+      console.log('GET USER ROLE TEST: Invalid user ID');
+      const role = await getUserRole('id-does-not-exist');
+      console.log(role);
+      if (role === '') {
+        console.log(`Test Passed, got "${role}" as expected`);
+      } else {
+        console.log('Test Failed');
+      }
+    } catch (error) {
+      console.error('Error occurred:', error);
+    }
+})();
