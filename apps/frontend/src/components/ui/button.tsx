@@ -20,7 +20,7 @@ const buttonVariants = cva(
         // Custom colors
         white: 'bg-neutral-white text-primary-dark-grey border border-primary-dark-grey',
         gray: 'bg-secondary-light-grey text-primary-dark-grey border border-primary-dark-grey',
-        lightGreen: 'bg-[#BAC797] text-primary-dark-grey border border-primary-dark-grey',
+        lightGreen: 'bg-secondary-green text-primary-dark-grey border border-primary-dark-grey',
         darkGreen: 'bg-primary-green text-neutral-white border border-primary-dark-grey',
       },
       size: {
