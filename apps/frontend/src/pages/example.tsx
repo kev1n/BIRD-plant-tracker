@@ -1,6 +1,7 @@
 import { AlertExample } from "../components/ui/examples/AlertExample";
 import { ButtonExample } from "../components/ui/examples/ButtonExample";
 import { CardExample } from "../components/ui/examples/CardExample";
+import { FormExample } from "../components/ui/examples/FormExample";
 
 export default function ExamplePage() {
   return (
@@ -8,6 +9,7 @@ export default function ExamplePage() {
       <ButtonExample />
       <CardExample />
       <AlertExample />
+      <FormExample />
     </div>
   );
 } 
