@@ -117,7 +117,6 @@ export function FormExample() {
                             mode="single"
                             selected={field.value}
                             onSelect={field.onChange}
-                            initialFocus
                           />
                         </PopoverContent>
                       </Popover>
@@ -172,7 +171,6 @@ export function FormExample() {
                             }}
                             onSelect={field.onChange}
                             numberOfMonths={2}
-                            initialFocus
                           />
                         </PopoverContent>
                       </Popover>
