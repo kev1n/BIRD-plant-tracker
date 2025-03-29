@@ -6,6 +6,7 @@ import authRoutes from '../routes/authRoutes.js';
 import getObsRoutes from '../routes/getObsRoutes.js';
 import obsRoutes from '../routes/obsRoutes.js';
 import snapshotRoutes from '../routes/snapshotRoutes.js';
+import plantRoutes from '../routes/plantRoutes.js';
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ app.use('/auth', authRoutes);
 app.use('/observation', obsRoutes);
 app.use('/get-observation', getObsRoutes);
 app.use('/snapshot', snapshotRoutes);
+app.use('/plants', plantRoutes);
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
