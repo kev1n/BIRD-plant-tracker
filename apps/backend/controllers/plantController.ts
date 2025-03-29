@@ -128,13 +128,6 @@ export async function updatePlant(req: Request, res: Response) {
             .eq('plantID', plantID)
             .select()
             .maybeSingle();
-        
-        console.log(plantID);
-        console.log(data);
-        const user = await supabase.auth.getUser();
-        console.log('Current user:');
-        console.log(user);
-
 
         if (error) {
             res.status(400).json({ error: error.message });
