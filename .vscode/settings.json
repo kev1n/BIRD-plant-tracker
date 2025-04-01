@@ -8,5 +8,8 @@
   },
   "editor.formatOnSaveMode": "file",
   "vs-code-prettier-eslint.prettierLast": false,
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

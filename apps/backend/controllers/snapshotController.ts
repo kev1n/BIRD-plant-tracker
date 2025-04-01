@@ -4,7 +4,7 @@ import {
   AuthRequest,
   UpdateSnapshotBody
 } from '../types.js';
-import { isValidParam } from '../utils.js';
+import { isValidParam, isValidPatch } from '../utils.js';
 
 export async function newSnapshot ( req: AuthRequest, res: Response){
   try {
@@ -187,6 +187,45 @@ export async function getSnapshot(req: Request, res: Response){
     }
 
     res.status(200).json({ data })
+  } catch (error) {
+    res.status(500).json({ error: `Internal server error: ${error}` })
+  }
+}
+
+export async function getLatestPatchSnapshot(req: Request, res: Response){
+  try{
+    // TODO: authentication and authorization
+    const { patchID } = req.params;
+
+    if (!patchID) { // if snapshotID not passed
+      res.status(400).json({ error: 'Missing snapshot ID'});
+      return;
+    }
+
+    if (!isValidPatch(patchID)){ // if patchID not proper
+      res.status(400).json({ error: 'Patch ID is invalid'});
+      return;
+    }
+
+    const { data:latest_snapshot , error } = await supabase // find snapshot to make sure it exists
+      .from('Snapshots')
+      .select('*, users(username)') // join with users to get username
+      .eq('patchID', patchID)
+      .order('dateCreated', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    
+    if (!latest_snapshot) { // no snapshots for patchid
+      res.status(404).json({ error: `Patch ID: ${patchID} does not have any snapshots`})
+      return;
+    }
+
+    res.status(200).json({ latest_snapshot})
   } catch (error) {
     res.status(500).json({ error: `Internal server error: ${error}` })
   }

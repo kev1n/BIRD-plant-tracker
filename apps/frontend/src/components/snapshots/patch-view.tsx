@@ -1,153 +1,129 @@
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
-import { PlantInformation } from "../../../types/observations";
-import PatchSnapshotHistory from "./patch-snapshot-history";
-import SnapshotForm from "./snapshot-form";
-import SnapshotPlantInformation from "./snapshot-plant-information";
-// patch is a string
-export default function PatchView(
-    { patchInfo }: { patchInfo: { row: number, col: number, label: string } },
-) {
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { useEffect, useState } from 'react';
+import { Snapshot } from '../../../types/database_types';
+import PatchSnapshotHistory from './patch-snapshot-history';
+import SnapshotFormDialog from './snapshot-form-dialog';
+import SnapshotObservation from './snapshot-plant-information';
 
-    const [latest_date] = useState(new Date());
-    const [latest_author] = useState("Joe");
-    const [latest_notes] = useState("These are the latest notes");
+export default function PatchView({ patch }: { patch: string }) {
+  const [patch_found, setPatchFound] = useState(false);
+  const [latest_snapshot, setLatestSnapshot] = useState<Snapshot>({
+    snapshotID: '',
+    dateCreated: new Date(),
+    patchID: patch,
+    notes: 'No notes available for this patch.',
+    userID: '',
+  });
+  const [latest_author, setAuthor] = useState<string>('Not available');
 
-    // TODO: FILL WITH API DATA
-    const treeData: PlantInformation[] = [
-        {
-            commonName: "Oak",
-            scientificName: "Quercus robur",
-            native: true,
-            dateBloomed: new Date("2024-04-15"),
-            datePlanted: new Date("2010-05-20"),
-            quantity: 5,
-            soilType: "Loamy",
-        },
-        {
-            commonName: "Maple",
-            scientificName: "Acer saccharum",
-            native: true,
-            dateBloomed: new Date("2024-04-10"),
-            datePlanted: new Date("2015-08-05"),
-            quantity: 10,
-            soilType: "Silty",
-        },
-    ];
+  useEffect(() => {
+    const fetchLatestSnapshot = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+        const response = await fetch(`${baseUrl}/snapshot/patch/` + patch, {
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-    const shrubData: PlantInformation[] = [
-        {
-            commonName: "Rose",
-            scientificName: "Rosa rubiginosa",
-            native: false,
-            dateBloomed: new Date("2024-05-01"),
-            datePlanted: new Date("2018-03-15"),
-            quantity: 15,
-            soilType: "Sandy",
-        },
-        {
-            commonName: "Holly",
-            scientificName: "Ilex aquifolium",
-            native: true,
-            dateBloomed: new Date("2024-04-20"),
-            datePlanted: new Date("2012-06-10"),
-            quantity: 8,
-            soilType: "Clay",
-        },
-    ];
+        if (response.status === 404) {
+          setPatchFound(false);
+          setAuthor('Not available');
+          setLatestSnapshot({
+            snapshotID: '',
+            dateCreated: new Date(),
+            patchID: patch,
+            notes: 'No notes available for this patch.',
+            userID: '',
+          });
+          return;
+        } else if (!response.ok) {
+          throw new Error('Failed to fetch latest snapshot for patch');
+        }
+        const data = await response.json();
+        setLatestSnapshot({
+          snapshotID: data.latest_snapshot.snapshotID,
+          dateCreated: new Date(data.latest_snapshot.dateCreated),
+          patchID: data.latest_snapshot.patchID,
+          notes: data.latest_snapshot.notes || 'No notes available for this patch.',
+          userID: data.latest_snapshot.userID,
+        });
+        setAuthor(data.latest_snapshot.users.username || 'Not available');
+        setPatchFound(true);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      }
+    };
+    fetchLatestSnapshot();
+  }, [patch]);
 
-    const grassData: PlantInformation[] = [
-        {
-            commonName: "Bermudagrass",
-            scientificName: "Cynodon dactylon",
-            native: false,
-            dateBloomed: new Date("2024-05-10"),
-            datePlanted: new Date("2019-07-25"),
-            quantity: 20,
-            soilType: "Sandy",
-        },
-        {
-            commonName: "Fescue",
-            scientificName: "Festuca arundinacea",
-            native: true,
-            dateBloomed: new Date("2024-04-30"),
-            datePlanted: new Date("2017-09-05"),
-            quantity: 12,
-            soilType: "Loamy",
-        },
-    ];
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Click here for more information</Button>
+      </DialogTrigger>
 
-    const otherData: PlantInformation[] = [
-        {
-            commonName: "Cactus",
-            scientificName: "Cactaceae",
-            native: false,
-            dateBloomed: new Date("2024-06-01"),
-            datePlanted: new Date("2021-10-10"),
-            quantity: 3,
-            soilType: "Sandy",
-        },
-        {
-            commonName: "Succulent",
-            scientificName: "Crassulaceae",
-            native: true,
-            dateBloomed: new Date("2024-05-15"),
-            datePlanted: new Date("2020-11-20"),
-            quantity: 6,
-            soilType: "Loamy",
-        },
-    ];
+      <DialogContent className="sm:max-w-[425px]">
+        {!patch_found && (
+          <div className="text-red-500">
+            <h1>There are no snapshots for Patch {patch}. Create one by clicking New Snapshot </h1>
+          </div>
+        )}
 
-    return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button>Click here for more information</Button>
-            </DialogTrigger>
+        <DialogHeader>
+          <div className="flex flex-row justify-between">
+            <div className="flex-1 text-left">
+              <DialogTitle>Patch {patch}</DialogTitle>
+            </div>
+            <div className="flex-1 text-right">
+              <div className="mr-5">
+                <h1>
+                  Accurate as of:
+                  {latest_snapshot.dateCreated.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                </h1>
+                <h1>By: {latest_author}</h1>
+              </div>
+            </div>
+          </div>
+        </DialogHeader>
 
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <div className="flex flex-row justify-between">
-                        <div className="flex-1 text-left">
-                            <DialogTitle>Patch {patchInfo.label}</DialogTitle>
-                        </div>
-                        <div className="flex-1 text-right">
-                            <div className="mr-5">
-                                <h1>
-                                    Accurate as of {latest_date.toLocaleDateString()}
-                                </h1>
-                                <h1>
-                                    By: {latest_author}
-                                </h1>
-                            </div>
-                        </div>
-                    </div>
+        <SnapshotObservation
+          snapshotID={patch_found ? latest_snapshot.snapshotID : null}
+          editing={false}
+        />
 
-                </DialogHeader>
+        <div>
+          <h1>Notes</h1>
+          <div className="border border-gray-300 rounded-lg p-4">
+            <p>{latest_snapshot.notes || 'No notes available for this patch.'}</p>
+          </div>
+        </div>
 
-
-                <SnapshotPlantInformation treeData={treeData} shrubData={shrubData} grassData={grassData} otherData={otherData} editingButtons={false} />
-                <div>
-                    <h1>
-                        Notes
-                    </h1>
-
-                    <div className="border border-gray-300 rounded-lg p-4">
-                        <p>
-                            {latest_notes}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex flex-row justify-between">
-                    <div className="flex-1 text-left">
-                        <SnapshotForm newSnapshot={true} patchLabel={patchInfo.label} />
-                    </div>
-                    <div>
-                        <PatchSnapshotHistory patchLabel={patchInfo.label} />
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
+        <div className="flex flex-row justify-between">
+          <div className="flex-1 text-left">
+            <SnapshotFormDialog newSnapshot={true} patchLabel={patch} />
+          </div>
+          <div>
+            <PatchSnapshotHistory patchLabel={patch} />
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }

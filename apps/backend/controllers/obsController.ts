@@ -242,3 +242,41 @@ export async function getAllFromSnapshot(req: Request, res: Response){
     res.status(500).json({ error: `Internal server error: ${error}` })
   }
 }
+
+
+export async function getAllFromSnapshotDetailed(req: Request, res: Response){
+  try{
+    // TODO: authentication and authorization
+
+    const { snapshotID } = req.params;
+
+    if (!snapshotID) { // if obsID not passed
+      res.status(400).json({ error: 'Missing snapshot ID'});
+      return;
+    }
+
+    if (!/^\d+$/.test(snapshotID)){ // if snapshotID not an integer
+      res.status(400).json({ error: 'Snapshot ID must be an integer'});
+      return;
+    }
+
+    const { data: observations, error: obsError1 } = await supabase // find snapshot to make sure it exists
+      .from('Observations')
+      .select('*, PlantInfo(*)')
+      .eq('snapshotID', snapshotID);
+
+    if (obsError1) {
+      res.status(400).json({ error: obsError1.message });
+      return;
+    }
+    
+    if (!observations) { // observation does not exist
+      res.status(400).json({ error: `No observations for snapshot ID: ${snapshotID}`})
+      return;
+    }
+
+    res.status(200).json({ observations })
+  } catch (error) {
+    res.status(500).json({ error: `Internal server error: ${error}` })
+  }
+}

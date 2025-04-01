@@ -1,68 +1,79 @@
+import { useEffect, useState } from 'react';
+import { Observation } from 'types/database_types';
+import PlantObservationFormDialog from '../observations/observation-form-dialog';
+import ObservationsList from '../observations/observations-list';
 
-import PlantObservation from "@/components/observations/plant-observation";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { PlantInformation } from "../../../types/observations";
-import PlantObservationForm from "../observations/plant-observation-form";
+export default function SnapshotObservation({
+  snapshotID,
+  editing,
+}: {
+  snapshotID: string | null;
+  editing: boolean;
+}) {
+  const [trees, setTrees] = useState<Observation[]>([]);
+  const [shrubs, setShrubs] = useState<Observation[]>([]);
+  const [grasses, setGrasses] = useState<Observation[]>([]);
+  const [others, setOthers] = useState<Observation[]>([]);
 
-export default function SnapshotPlantInformation( 
-    {treeData, shrubData, grassData, otherData, editingButtons}: {treeData?: PlantInformation[], shrubData?: PlantInformation[], grassData?: PlantInformation[], otherData?: PlantInformation[], editingButtons: boolean},
-) {
-  return(
-    <div>
-    <h1>
-        Plants
-    </h1>
-    <div className="border border-gray-300 rounded-lg p-4 max-h-[200px] overflow-y-auto">
-      {editingButtons && 
-      <PlantObservationForm newPlant={true} />
+  useEffect(() => {
+    if (!snapshotID) {
+      setTrees([]);
+      setShrubs([]);
+      setGrasses([]);
+      setOthers([]);
+      return;
+    }
+
+    const filterObservations = (data: Observation[]) => {
+      console.log('Filtering observations for snapshot ID:', snapshotID);
+      const trees = data.filter(obs => obs.PlantInfo.subcategory?.toLowerCase() === 'tree');
+      const shrubs = data.filter(obs => obs.PlantInfo.subcategory?.toLowerCase() === 'shrub');
+      const grasses = data.filter(obs => obs.PlantInfo.subcategory?.toLowerCase() === 'grass');
+      const others = data.filter(obs => obs.PlantInfo.subcategory?.toLowerCase() === 'other');
+      setTrees(trees);
+      setShrubs(shrubs);
+      setGrasses(grasses);
+      setOthers(others);
+    };
+
+    const fetchObservations = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+        const response = await fetch(`${baseUrl}/observation/detailed-all/${snapshotID}`, {
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch observations for snapshot');
+        }
+        const data = await response.json();
+        const observations = data.observations as Observation[];
+        filterObservations(observations);
+      } catch (error) {
+        console.error('Error fetching observations:', error);
+        setTrees([]);
+        setShrubs([]);
+        setGrasses([]);
+        setOthers([]);
       }
-        <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-                <AccordionTrigger>Trees</AccordionTrigger>
-                <AccordionContent>
-                
-                  {treeData &&treeData.map((tree, index) => (
-                    <PlantObservation key={index} plantInfo={tree}  editingButtons={editingButtons} />
-                  ))}
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
+    };
 
-        <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-2">
-                <AccordionTrigger>Shrubs</AccordionTrigger>
-                <AccordionContent>
+    fetchObservations();
+  }, [snapshotID]);
 
-                  {shrubData &&shrubData.map((shrub, index) => (
-                    <PlantObservation key={index} plantInfo={shrub} editingButtons={editingButtons} />
-                  ))}
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-        
-        <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-3">
-                <AccordionTrigger>Grass</AccordionTrigger>
-                <AccordionContent>
-                  {grassData &&grassData.map((grass, index) => (
-                    <PlantObservation key={index} plantInfo={grass}  editingButtons={editingButtons} />
-                  ))}
-                  
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-
-        <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-4">
-                <AccordionTrigger>Other</AccordionTrigger>
-                <AccordionContent>
-                  {otherData && otherData.map((other, index) => (
-                    <PlantObservation key={index} plantInfo={other} editingButtons={editingButtons} />
-                  ))}
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
+  return (
+    <div>
+      <h1>Plants</h1>
+      <div className="border border-gray-300 rounded-lg p-4 max-h-[200px] overflow-y-auto">
+        {editing && <PlantObservationFormDialog newPlant={true} />}
+        <ObservationsList observations={trees} listName={'Trees'} editing={editing} />
+        <ObservationsList observations={shrubs} listName={'Shrubs'} editing={editing} />
+        <ObservationsList observations={grasses} listName={'Grasses'} editing={editing} />
+        <ObservationsList observations={others} listName={'Others'} editing={editing} />
+      </div>
     </div>
-</div>
   );
 }
