@@ -1,4 +1,4 @@
-import PatchView from '@/components/snapshots/patch-view';
+import SnapshotView from '@/components/snapshots/snapshot-view';
 import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
@@ -57,7 +57,7 @@ function Sidebar({ patchInfo }: SidebarProps) {
         <p className="mb-2">Row: {patchInfo.row}</p>
         <p className="mb-2">Column: {String.fromCharCode(65 + patchInfo.col)}</p>
       </div>
-      <PatchView patch={patchInfo.label} />
+      <SnapshotView patch={patchInfo.label} />
     </div>
   );
 }

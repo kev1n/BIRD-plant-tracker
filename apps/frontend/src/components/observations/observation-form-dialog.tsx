@@ -22,20 +22,27 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Observation } from 'types/database_types';
 
-export default function PlantObservationFormDialog({ newPlant }: { newPlant: boolean }) {
+export default function PlantObservationFormDialog({ newPlant,
+  addObservationCallback
+}: {
+  newPlant: boolean;
+  addObservationCallback: (observation: Observation) => void;
+}) {
   const [open, setopen] = useState(false);
 
   const form = useForm<Observation>({
     defaultValues: {
       commonName: '',
-      scientificName: null,
-      plantType: null,
-      native: false,
-      quantity: null,
-      soilType: null,
-      dateBloomed: null,
+      scientificName: '',
+      plantType: 'tree',
       datePlanted: null,
+      dateBloomed: null,
+      quantity: null,
+      soilType: 'soil',
+      native: false,
     },
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
   });
 
   const onSubmit = (data: Observation) => {

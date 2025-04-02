@@ -1,15 +1,55 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SnapshotRecord from "./snapshot-record";
-export default function PatchSnapshotHistory( {patchLabel}: {patchLabel: string}) {
-  const [dates] = useState<Date[]>([
-    new Date("2024-04-15"),
-    new Date("2024-04-10"),
-    new Date("2024-05-01"),
-    new Date("2024-04-20"),
-  ]);
+import HistoricalSnapshotContext from "./historical-snapshot-context";
+
+interface DateIDPair{
+  snapshotID: string; // This is the snapshot ID, if needed for fetching
+  dateCreated: Date;
+}
+
+export default function PatchSnapshotHistory( {patch}: {patch: string}) {
+  
+  const [historicalSnapshots, setHistoricalSnapshots] = useState<DateIDPair[]>([]);
+
+  const fetchHistoricalSnapshotMetadata = async (patch: string) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const api_path = `${baseUrl}/snapshot/patch/${patch}/dates`;
+      const response = await fetch(api_path, {
+        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setHistoricalSnapshots(data);
+      } else if (response.status === 404) {
+        console.error('No historical snapshots found for this patch.');
+        setHistoricalSnapshots([]);
+      }
+      else {
+        console.error('Failed to fetch historical snapshots:', response.statusText);
+        setHistoricalSnapshots([]);
+      }
+    } catch (error) {
+      console.error('Error fetching historical snapshots:', error);
+    }
+  };
+  useEffect(() => {
+    fetchHistoricalSnapshotMetadata(patch);
+  }, [patch]);
+  
   return(
+    <HistoricalSnapshotContext.Provider
+      value={{
+        fetchHistoricalSnapshotMetadata
+      }}
+    >
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline">
@@ -18,14 +58,24 @@ export default function PatchSnapshotHistory( {patchLabel}: {patchLabel: string}
       </DialogTrigger>
       <DialogContent className="overflow-y-scroll max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Patch Snapshot History for {patchLabel}</DialogTitle>
+          <DialogTitle>Patch Snapshot History for {patch}</DialogTitle>
         </DialogHeader>
-        {dates.map((date) => (
-          <SnapshotRecord snapshotDate={date} key={date.toString()} />
-        ))}
+        
+        {historicalSnapshots.length > 0 ? (
+          historicalSnapshots.map((snapshot, index) => (
+            <SnapshotRecord 
+              key={index} 
+              snapshotID={snapshot.snapshotID} 
+              snapshotDate={snapshot.dateCreated} // Pass the date for display
+              patchID={patch}
+            />
+          ))
+        ) : (
+          <p>No historical snapshots available for this patch.</p>
+        )}
       </DialogContent>
     </Dialog>
-
+    </HistoricalSnapshotContext.Provider>
   )
 }
   

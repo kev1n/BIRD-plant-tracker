@@ -172,7 +172,7 @@ export async function getSnapshot(req: Request, res: Response){
 
     const { data , error } = await supabase // find snapshot to make sure it exists
       .from('Snapshots')
-      .select()
+      .select( '*, users(username)')
       .eq('snapshotID', snapshotID)
       .single();
 
@@ -207,7 +207,7 @@ export async function getLatestPatchSnapshot(req: Request, res: Response){
       return;
     }
 
-    const { data:latest_snapshot , error } = await supabase // find snapshot to make sure it exists
+    const { data , error } = await supabase // find snapshot to make sure it exists
       .from('Snapshots')
       .select('*, users(username)') // join with users to get username
       .eq('patchID', patchID)
@@ -220,12 +220,12 @@ export async function getLatestPatchSnapshot(req: Request, res: Response){
       return;
     }
     
-    if (!latest_snapshot) { // no snapshots for patchid
+    if (!data) { // no snapshots for patchid
       res.status(404).json({ error: `Patch ID: ${patchID} does not have any snapshots`})
       return;
     }
 
-    res.status(200).json({ latest_snapshot})
+    res.status(200).json({ data})
   } catch (error) {
     res.status(500).json({ error: `Internal server error: ${error}` })
   }
@@ -250,6 +250,42 @@ export async function getAllSnapshots(req: Request, res: Response){
     }
 
     res.status(200).json({ data: snapshots })
+  } catch (error) {
+    res.status(500).json({ error: `Internal server error: ${error}` })
+  }
+}
+
+export async function getAllSnapshotsDatesForPatch(req: Request, res: Response){
+  try{
+    const { patchID } = req.params;
+    if (!patchID) { // if patchID not passed
+      res.status(400).json({ error: 'Missing patch ID'});
+      return;
+    }
+    if (!isValidPatch(patchID)){ // if patchID not proper
+      res.status(400).json({ error: 'Patch ID is invalid'});
+      return;
+    }
+
+    const { data: snapshots, error: error } = await supabase
+      .from('Snapshots')
+      .select('snapshotID, dateCreated') // only select necessary fields
+      .eq('patchID', patchID) 
+      .order('dateCreated', { ascending: false }); 
+
+    if (error) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+
+    if (!snapshots || snapshots.length === 0) {
+      res.status(404).json({ error: `No snapshots found for Patch ID: ${patchID}`});
+      return; 
+    }
+
+    res.status(200).json({ 
+      data: snapshots 
+    });
   } catch (error) {
     res.status(500).json({ error: `Internal server error: ${error}` })
   }
