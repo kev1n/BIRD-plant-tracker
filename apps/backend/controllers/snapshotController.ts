@@ -58,6 +58,7 @@ export async function delSnapshot ( req: AuthRequest, res: Response){
     const { snapshotID } = req.params;
 
     if (!userID) {
+      console.error('fuck');
       res.status(400).json({ error: userID});
       return;
     }
@@ -67,7 +68,7 @@ export async function delSnapshot ( req: AuthRequest, res: Response){
       return;
     }
 
-    if (!isValidParam(snapshotID)){ // if snapshotID not an integer
+    if (isValidParam(snapshotID)){ // if snapshotID not an integer
       res.status(400).json({ error: 'Snapshot ID must be an integer'});
       return;
     }  
@@ -81,6 +82,7 @@ export async function delSnapshot ( req: AuthRequest, res: Response){
       .select();
 
     if (error) {
+      console.error('fook');
       res.status(400).json({ error: error.message });
       return;
     }
@@ -120,7 +122,7 @@ export async function updateSnapshot( req: AuthRequest, res: Response ){
       return;
     }
 
-    if (!isValidParam(snapshotID)){ // if snpashotID not an integer
+    if (isValidParam(snapshotID)){ // if snpashotID not an integer
       res.status(400).json({ error: 'Snapshot ID must be an integer'});
       return;
     }
@@ -165,7 +167,7 @@ export async function getSnapshot(req: Request, res: Response){
       return;
     }
 
-    if (!isValidParam(snapshotID)){ // if snapshotID not an integer
+    if (isValidParam(snapshotID)){ // if snapshotID not an integer
       res.status(400).json({ error: 'Snapshot ID must be an integer'});
       return;
     }

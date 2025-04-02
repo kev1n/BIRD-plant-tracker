@@ -1,5 +1,5 @@
 export interface PlantInfo{
-  plantID: string;
+  plantID: number;
   plantCommonName: string;
   plantScientificName: string| null;
   isNative: boolean| null;
@@ -7,8 +7,11 @@ export interface PlantInfo{
 }
 
 export interface Observation {
-  observationID: string;
-  snapshotID: string;
+  tempKey: number;
+  isNew: boolean;
+  modified: boolean;
+  observationID: number;
+  snapshotID: number;
   PlantInfo: PlantInfo;
   plantQuantity: number;
   soilType: string;
@@ -19,7 +22,7 @@ export interface Observation {
 }
 
 export interface Snapshot {
-  snapshotID: string;
+  snapshotID?: number;
   dateCreated: Date;
   patchID: string;
   notes: string | null;

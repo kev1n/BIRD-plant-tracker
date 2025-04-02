@@ -57,7 +57,7 @@ function Sidebar({ patchInfo }: SidebarProps) {
         <p className="mb-2">Row: {patchInfo.row}</p>
         <p className="mb-2">Column: {String.fromCharCode(65 + patchInfo.col)}</p>
       </div>
-      <SnapshotView patch={patchInfo.label} />
+      <SnapshotView patch={patchInfo.label} triggerTitle='Click Here to View Latest Snapshot' />
     </div>
   );
 }

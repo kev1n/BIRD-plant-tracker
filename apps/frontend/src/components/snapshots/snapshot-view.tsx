@@ -11,7 +11,7 @@ import { Observation, Snapshot } from 'types/database_types';
 import LatestSnapshotContext from './latest-snapshot-context';
 import PatchSnapshotHistory from './patch-snapshot-history';
 import SnapshotFormDialog from './snapshot-form-dialog';
-import SnapshotObservation from './snapshot-plant-information';
+import ObservationsSection from '../observations/observations-section';
 
 const ConditionalWrapper = ({
   condition,
@@ -26,13 +26,15 @@ const ConditionalWrapper = ({
 export default function SnapshotView({
   patch,
   historicalSnapshotID,
+  triggerTitle,
 }: {
   patch: string;
-  historicalSnapshotID?: string;
+  historicalSnapshotID?: number;
+  triggerTitle: string;
 }) {
   const [patch_found, setPatchFound] = useState(false);
   const [current_snapshot, setCurrentSnapshot] = useState<Snapshot>({
-    snapshotID: '',
+    snapshotID: -1,
     dateCreated: new Date(),
     patchID: patch,
     notes: 'No notes available for this patch.',
@@ -41,7 +43,7 @@ export default function SnapshotView({
   const [observations, setObservations] = useState<Observation[]>([]);
   const [author, setAuthor] = useState<string>('Not available');
 
-  const fetchCompleteSnapshot = async (patch: string, snapshotID: string | null) => {
+  const fetchCompleteSnapshot = async (patch: string, snapshotID: number | null) => {
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
@@ -58,7 +60,7 @@ export default function SnapshotView({
         setPatchFound(false);
         setAuthor('Not available');
         setCurrentSnapshot({
-          snapshotID: '',
+          snapshotID: -1,
           dateCreated: new Date(),
           patchID: patch,
           notes: 'No notes available for this patch.',
@@ -95,12 +97,20 @@ export default function SnapshotView({
         throw new Error('Failed to fetch observations for snapshot');
       }
       const observations_data = await observations_response.json();
-      setObservations((observations_data.observations as Observation[]) || []);
+      const observations_with_tempKey = observations_data.observations.map(
+        (obs: Observation, index: number) => ({
+          ...obs,
+          tempKey: index,
+          isNew: false,
+          modified: false,
+        })
+      );
+      setObservations(observations_with_tempKey);
     } catch (err) {
       console.error('Error fetching complete snapshot:', err);
       setPatchFound(false);
       setCurrentSnapshot({
-        snapshotID: '',
+        snapshotID: -1,
         dateCreated: new Date(),
         patchID: patch,
         notes: 'No notes available for this patch.',
@@ -126,9 +136,8 @@ export default function SnapshotView({
     >
       <Dialog>
         <DialogTrigger asChild>
-          <Button>Click here for more information</Button>
+          <Button>{triggerTitle}</Button>
         </DialogTrigger>
-
         <DialogContent className="sm:max-w-[425px]">
           {!patch_found && (
             <div className="text-red-500">
@@ -161,9 +170,7 @@ export default function SnapshotView({
               </div>
             </div>
           </DialogHeader>
-
-          <SnapshotObservation observations={observations} editing={false} />
-
+          <ObservationsSection observations={observations} editing={false} />
           <div>
             <h1>Notes</h1>
             <div className="border border-gray-300 rounded-lg p-4">
@@ -171,14 +178,16 @@ export default function SnapshotView({
             </div>
           </div>
 
-          <div className="flex flex-row justify-between">
-            <div className="flex-1 text-left">
-              <SnapshotFormDialog newSnapshot={true} patchID={patch} />
+          {historicalSnapshotID === undefined && (
+            <div className="flex flex-row justify-between">
+              <div className="flex-1 text-left">
+                <SnapshotFormDialog newSnapshot={true} patchID={patch} />
+              </div>
+              <div>
+                <PatchSnapshotHistory patch={patch} />
+              </div>
             </div>
-            <div>
-              <PatchSnapshotHistory patch={patch} />
-            </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
     </ConditionalWrapper>

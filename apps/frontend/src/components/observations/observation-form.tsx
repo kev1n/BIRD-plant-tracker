@@ -13,183 +13,64 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Observation } from 'types/observations';
+import { Observation } from 'types/database_types';
 import * as z from 'zod';
 
-// Define the validation schema with Zod
 const ObservationSchema = z.object({
-  commonName: z.string().min(1, 'Common name is required'),
-  scientificName: z.string().min(1, 'Scientific name is required'),
-  plantType: z.enum(['tree', 'shrub', 'grass', 'other']),
-  native: z.boolean().nullable(),
-  dateBloomed: z.date().nullable(),
+  tempKey: z.number().optional(),
+  isNew: z.boolean().optional(),
+  modified: z.boolean().optional(),
+  observationID: z.number().optional(),
+  snapshotID: z.number().optional(),
+  PlantInfo: z.object({
+    plantID: z.number().optional(),
+    plantCommonName: z.string().min(1, { message: 'Common name is required' }),
+    plantScientificName: z.string().nullable(),
+    isNative: z.boolean().nullable(),
+    subcategory: z.string().min(1, { message: 'Subcategory is required' }),
+  }),
+  plantQuantity: z.number().min(1, { message: 'Quantity must be at least 1' }),
+  soilType: z.string().min(1, { message: 'Soil type is required' }),
   datePlanted: z.date().nullable(),
-  quantity: z.number().nullable(),
-  soilType: z.enum(['sand', 'soil', 'other']),
+  dateBloomed: z.date().nullable(),
+  hasBloomed: z.boolean().nullable(),
+  deletedOn: z.date().nullable(),
 });
 
-export default function PlantObservationForm({ onSubmitSuccess }: { onSubmitSuccess: () => void }) {
+export default function ObservationForm({observation, submissionCallBack}: {observation?:Observation, submissionCallBack: (observation:Observation) => void }) {
   const form = useForm({
     resolver: zodResolver(ObservationSchema),
+    defaultValues: {
+      tempKey: observation?.tempKey || -1,
+      isNew: observation?.isNew || true,
+      modified: observation?.modified || false,
+      observationID: observation?.observationID || -1,
+      snapshotID: observation?.snapshotID || -1,
+      PlantInfo: {
+        plantID: observation?.PlantInfo?.plantID || -1,
+        plantCommonName: observation?.PlantInfo?.plantCommonName || '',
+        plantScientificName: observation?.PlantInfo?.plantScientificName || null,
+        isNative: observation?.PlantInfo?.isNative || null,
+        subcategory: observation?.PlantInfo?.subcategory || '',
+      },
+      plantQuantity: observation?.plantQuantity || 1,
+      soilType: observation?.soilType || '',
+      datePlanted: observation?.datePlanted || null,
+      dateBloomed: observation?.dateBloomed || null,
+      hasBloomed: observation?.hasBloomed || null,
+      deletedOn: observation?.deletedOn || null,
+    },
   });
 
   const onSubmit = (data: Observation) => {
     console.log('Submitted', data);
-
-    onSubmitSuccess();
+    submissionCallBack(data);
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="commonName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Common Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter plant's common name here" {...field} />
-              </FormControl>
-              <FormDescription>This is the common name of the plant.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Scientific Name Field */}
-        <FormField
-          control={form.control}
-          name="scientificName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Scientific Name</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter plant's scientific name here"
-                  value={field.value || ''}
-                  onChange={e => field.onChange(e.target.value || null)}
-                />
-              </FormControl>
-              <FormDescription>This is the scientific name of the plant.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="plantType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Plant Type</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || undefined}>
-                <SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="tree">Tree</SelectItem>
-                    <SelectItem value="shrub">Shrub</SelectItem>
-                    <SelectItem value="grass">Grass</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </SelectTrigger>
-              </Select>
-              <FormDescription>Select the type of plant.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="datePlanted"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date Planted</FormLabel>
-              <DatePicker date={field.value || null} setDate={field.onChange} />
-              <FormDescription>Select the date the plant was planted.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="dateBloomed"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date Bloomed</FormLabel>
-              <DatePicker date={field.value || null} setDate={field.onChange} />
-              <FormDescription>Select the date the plant bloomed.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="quantity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Quantity</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Enter quantity here"
-                  value={field.value || ''}
-                  onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
-                />
-              </FormControl>
-              <FormDescription>This is the quantity of the plant.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="soilType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Soil Type</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || undefined}>
-                <SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sand">Sand</SelectItem>
-                    <SelectItem value="soil">Soil</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </SelectTrigger>
-              </Select>
-              <FormDescription>Select the soil type of the plant.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="native"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Native</FormLabel>
-              <Select
-                onValueChange={value => field.onChange(value === 'true')}
-                value={field.value?.toString() || 'false'}
-              >
-                <SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="true">True</SelectItem>
-                    <SelectItem value="false">False</SelectItem>
-                  </SelectContent>
-                </SelectTrigger>
-              </Select>
-              <FormDescription>Select if the plant is native.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit">Submit</Button>
+       
       </form>
     </Form>
   );

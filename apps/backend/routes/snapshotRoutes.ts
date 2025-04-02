@@ -10,6 +10,6 @@ snapshotRoutes.put('/:snapshotID', authMiddleware, snapshotController.updateSnap
 snapshotRoutes.get('/:snapshotID', snapshotController.getSnapshot);
 snapshotRoutes.get('/patch/:patchID/latest',snapshotController.getLatestPatchSnapshot)
 snapshotRoutes.get('/', snapshotController.getAllSnapshots)
-snapshotRoutes.get('/patch/:patchID/dates', snapshotController.getAllSnapshotsForPatch);
+snapshotRoutes.get('/patch/:patchID/dates', snapshotController.getAllSnapshotsDatesForPatch);
 
 export default snapshotRoutes;
