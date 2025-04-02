@@ -7,9 +7,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useEffect, useState } from 'react';
+import { useEffect, useState , useContext} from 'react';
+import { useUser } from '../../hooks/useUser';
 import { Observation, Snapshot } from 'types/database_types';
 import ObservationsSection from '../observations/observations-section';
+import { z } from 'zod';
+import LatestSnapshotContext from './latest-snapshot-context';
+
+const snapshotSchema = z.object({
+  snapshotID: z.number().optional(),
+  dateCreated: z.date(),
+  patchID: z.string(),
+  notes: z.string(),
+  userID: z.string().optional(),
+});
+
+const observationSchema = z.object({
+  observationID: z.number().optional(),
+  snapshotID: z.number(),
+  PlantID: z.number(),
+  plantQuantity: z.number().int().min(1, 'Plant quantity must be at least 1'),
+  soilType: z.string().optional(),
+  datePlanted: z.date().optional(),
+  dateBloomed: z.date().optional(),
+  hasBloomed: z.boolean().optional(),
+  deletedOn: z.date().optional(),
+});
 
 export default function SnapshotFormDialog({
   newSnapshot,
@@ -26,48 +49,63 @@ export default function SnapshotFormDialog({
   const [notes, setNotes] = useState<string>('');
   const [date, setDate] = useState<Date | null>(null);
   const [observations, setObservations] = useState<Observation[]>([]);
+  const { user } = useUser();
+  const {fetchLatestSnapshot} = useContext(LatestSnapshotContext);
 
   useEffect(() => {
-    if (snapshotTemplate) {
+    if (snapshotTemplate && newSnapshot === false) {
       setNotes(snapshotTemplate.notes || '');
       setDate(new Date(snapshotTemplate.dateCreated));
     } else {
       setNotes('');
       setDate(null);
     }
-  }, [snapshotTemplate]);
+  }, [snapshotTemplate, newSnapshot]);
 
   useEffect(() => {
-    if (observationsTemplate) {
+    if (observationsTemplate && newSnapshot === false) {
       setObservations(observationsTemplate);
     } else {
       setObservations([]);
     }
-  }, [observationsTemplate]);
+  }, [observationsTemplate, newSnapshot]);
 
   async function onSubmit() {
     if (!date) {
       alert('Please select a date for the snapshot.');
       return;
     }
-
     if (notes.trim() === '') {
       alert('Please enter notes for the snapshot.');
       return;
     }
-
+    if (!user || !user.id) {
+      console.error('User is not authenticated or missing user ID.');
+      alert('You must be logged in to submit a snapshot. Please log in and try again.');
+      return;
+    }
     const newSnapshotData: Snapshot = {
       snapshotID: snapshotTemplate ? snapshotTemplate.snapshotID : undefined,
       dateCreated: date,
       patchID: patchID,
       notes: notes.trim(),
-      userID: localStorage.getItem('userID') || '',
+      userID: user.id,
     };
+
+    const validation = snapshotSchema.safeParse(newSnapshotData);
+    if (!validation.success) {
+      console.error('Snapshot validation failed:', validation.error);
+      alert(
+        'Failed to submit snapshot data due to validation errors. Please check the input and try again.'
+      );
+      return;
+    }
+
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
       const api_path =
-        baseUrl + (newSnapshot ? '/snapshot/new' : `/snapshot/${snapshotTemplate?.snapshotID}`);
+        baseUrl + (newSnapshotData ? '/snapshot/' : `/snapshot/${snapshotTemplate?.snapshotID}`);
       const response = await fetch(api_path, {
         method: newSnapshot ? 'POST' : 'PUT',
         credentials: 'include',
@@ -81,7 +119,7 @@ export default function SnapshotFormDialog({
       if (!response.ok) {
         throw new Error('Failed to submit snapshot data');
       }
-      console.log('Snapshot data submitted successfully.');
+
       if (newSnapshot) {
         const obsPromises = observations.map(obs => {
           return fetch(`${baseUrl}/observation/new`, {
@@ -103,13 +141,18 @@ export default function SnapshotFormDialog({
         });
 
         return Promise.all(obsPromises)
-          .then(() => console.log('All observations submitted successfully.'))
+          .then(() =>{
+            fetchLatestSnapshot(patchID, null);
+            setNotes(''); 
+            setDate(null);
+            setObservations([]);
+            setOpen(false)
+          })
           .catch(err => {
             console.error('Error submitting observations:', err);
             alert('Failed to submit some observations. Please try again.');
           });
       }
-      console.log('All snapshot and observation data submitted successfully.');
     } catch (error) {
       console.error('Error submitting snapshot data:', error);
       alert('Failed to submit snapshot data. Please try again.');
@@ -121,7 +164,7 @@ export default function SnapshotFormDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{newSnapshot ? 'New Snapshot' : 'Editing Snapshot'}</Button>
+        <Button variant="outline">{newSnapshot ? 'New Snapshot' : 'Edit'}</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[425px]">
@@ -129,6 +172,7 @@ export default function SnapshotFormDialog({
           <div className="flex flex-row justify-between">
             <div className="flex-1 text-left">
               <DialogTitle>Patch {patchID}</DialogTitle>
+              <span>New Snapshot!</span>
             </div>
             <div className="flex-1 text-right">
               Snapshot Date:
@@ -136,7 +180,7 @@ export default function SnapshotFormDialog({
             </div>
           </div>
         </DialogHeader>
-        
+
         <ObservationsSection observations={observations} editing={false} />
 
         <div className="border border-gray-300 rounded-lg p-4">

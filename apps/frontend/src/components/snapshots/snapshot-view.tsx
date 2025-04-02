@@ -129,7 +129,7 @@ export default function SnapshotView({
     <ConditionalWrapper
       condition={historicalSnapshotID === undefined}
       wrapper={(children: JSX.Element) => (
-        <LatestSnapshotContext.Provider value={{ fetchCompleteSnapshot }}>
+        <LatestSnapshotContext.Provider value={{ fetchLatestSnapshot:fetchCompleteSnapshot }}>
           {children}
         </LatestSnapshotContext.Provider>
       )}
@@ -181,7 +181,7 @@ export default function SnapshotView({
           {historicalSnapshotID === undefined && (
             <div className="flex flex-row justify-between">
               <div className="flex-1 text-left">
-                <SnapshotFormDialog newSnapshot={true} patchID={patch} />
+                <SnapshotFormDialog newSnapshot={true} patchID={patch} snapshotTemplate={current_snapshot} observationsTemplate={observations} />
               </div>
               <div>
                 <PatchSnapshotHistory patch={patch} />

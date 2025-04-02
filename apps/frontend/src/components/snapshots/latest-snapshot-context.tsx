@@ -1,10 +1,10 @@
 import { createContext } from 'react';
 interface LatestSnapshotContextType {
-  fetchCompleteSnapshot: (patch: string, snapshotID: number | null) => Promise<void>;
+  fetchLatestSnapshot: (patch: string, snapshotID: number | null) => Promise<void>;
 }
 const LatestSnapshotContext = createContext<LatestSnapshotContextType>(
   {
-    fetchCompleteSnapshot: async () => {},
+    fetchLatestSnapshot: async () => {},
   },
 );
 export default LatestSnapshotContext;
