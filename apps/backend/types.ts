@@ -82,7 +82,6 @@ export interface Snapshot {
   notes?: string;
   dateCreated: Date;
   patchID: number;
-  soilType?: string;
 }
 
 export interface UpdateSnapshotBody {
@@ -90,7 +89,6 @@ export interface UpdateSnapshotBody {
   notes?: Text;
   patchID?: string;
   userID?: UUID;
-  soilType?: string;
 }
 
 

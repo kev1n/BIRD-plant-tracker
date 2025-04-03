@@ -8,18 +8,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useEffect, useState, useContext } from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useUser } from '../../hooks/useUser';
 import { Observation, Snapshot } from 'types/database_types';
 import ObservationsSection from '../observations/observations-section';
 import { z } from 'zod';
 import LatestSnapshotContext from './latest-snapshot-context';
+import HistoricalSnapshotContext from './historical-snapshot-context';
 
 const snapshotSchema = z.object({
   snapshotID: z.number().optional(),
@@ -27,7 +21,6 @@ const snapshotSchema = z.object({
   patchID: z.string(),
   notes: z.string(),
   userID: z.string().optional(),
-  soilType: z.string().optional(),
 });
 
 const observationSchema = z.object({
@@ -55,15 +48,15 @@ export default function SnapshotFormDialog({
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState<string>('');
   const [date, setDate] = useState<Date | null>(null);
-  const [soilType, setSoilType] = useState<string | null>(null);
   const [observations, setObservations] = useState<Observation[]>([]);
   const { user } = useUser();
   const { fetchLatestSnapshot } = useContext(LatestSnapshotContext);
+  const {fetchHistoricalSnapshotMetadata} = useContext(HistoricalSnapshotContext);
 
   useEffect(() => {
     if (snapshotTemplate && newSnapshot === false) {
       setNotes(snapshotTemplate.notes || '');
-      setDate(new Date(snapshotTemplate.dateCreated));
+      setDate(new Date(snapshotTemplate.dateCreated)); // Ensure the date is in the correct format, fallback to empty string if null
     } else {
       setNotes('');
       setDate(null);
@@ -98,9 +91,8 @@ export default function SnapshotFormDialog({
       patchID: patchID,
       notes: notes.trim(),
       userID: user.id,
-      soilType: soilType || soilType != 'unknown' ? soilType : null,
     };
-
+    console.log('Submitting snapshot data:', newSnapshotData);
     const validation = snapshotSchema.safeParse(newSnapshotData);
     if (!validation.success) {
       console.error('Snapshot validation failed:', validation.error);
@@ -113,8 +105,10 @@ export default function SnapshotFormDialog({
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+      console.log(
+        `Submitting snapshot data to: ${baseUrl}/snapshot/${newSnapshot ? 'oop' : snapshotTemplate?.snapshotID}`);
       const api_path =
-        baseUrl + (newSnapshotData ? '/snapshot/' : `/snapshot/${snapshotTemplate?.snapshotID}`);
+        baseUrl + (newSnapshot ? '/snapshot/' : `/snapshot/${snapshotTemplate?.snapshotID}`); // Use POST for new, PUT for existing
       const response = await fetch(api_path, {
         method: newSnapshot ? 'POST' : 'PUT',
         credentials: 'include',
@@ -160,6 +154,9 @@ export default function SnapshotFormDialog({
             console.error('Error submitting observations:', err);
             alert('Failed to submit some observations. Please try again.');
           });
+      }else{
+        fetchHistoricalSnapshotMetadata(patchID); // Refresh historical metadata
+        setOpen(false); // Close the dialog after submission
       }
     } catch (error) {
       console.error('Error submitting snapshot data:', error);
@@ -174,13 +171,20 @@ export default function SnapshotFormDialog({
       <DialogTrigger asChild>
         <Button variant="outline">{newSnapshot ? 'New Snapshot' : 'Edit'}</Button>
       </DialogTrigger>
-
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <div className="flex flex-row justify-between">
             <div className="flex-1 text-left">
               <DialogTitle>Patch {patchID}</DialogTitle>
-              <span>New Snapshot!</span>
+
+              <div>
+                {date?.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                }) || 'No date selected'}
+              </div>
+              <span>{newSnapshot ? 'New Snapshot' : 'Editing Snapshot'}</span>
             </div>
             <div className="flex-1 text-right">
               Snapshot Date:
@@ -189,23 +193,7 @@ export default function SnapshotFormDialog({
           </div>
         </DialogHeader>
 
-        <ObservationsSection observations={observations} editing={false} />
-
-        <div className="flex flex-col justify-center">
-          <div className="text-gray-700 mb-2 mr-2">Soil Type (optional):</div>
-          <Select onValueChange={value => setSoilType(value)} value={soilType || ''}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select A Soil Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="sand">Sand</SelectItem>
-              <SelectItem value="soil">Soil</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-              <SelectItem value="unknown">Unknown</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
+        <ObservationsSection observations={observations} editing={true} />
         <div className="border border-gray-300 rounded-lg p-4">
           <textarea
             className="w-full h-24"

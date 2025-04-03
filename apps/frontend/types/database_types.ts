@@ -26,5 +26,4 @@ export interface Snapshot {
   patchID: string;
   notes: string | null;
   userID: string;
-  soilType: string|null;
 }

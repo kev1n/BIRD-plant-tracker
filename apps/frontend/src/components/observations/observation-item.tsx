@@ -35,12 +35,12 @@ export default function ObservationItem({
           <p className="text-sm">Quantity: {observation.plantQuantity}</p>
           {observation.datePlanted && (
             <p className="text-sm">
-              Date Planted: {new Date(observation.datePlanted).toLocaleDateString()}
+              Date Planted: {new Date(observation.datePlanted+"T:00:00:00").toLocaleDateString()}
             </p>
           )}
           {observation.dateBloomed && (
             <p className="text-sm">
-              Date Bloomed: {new Date(observation.dateBloomed).toLocaleDateString()}
+              Date Bloomed: {new Date(observation.dateBloomed+"T:00:00:00").toLocaleDateString()}
             </p>
           )}
           {observation.hasBloomed !== null && (

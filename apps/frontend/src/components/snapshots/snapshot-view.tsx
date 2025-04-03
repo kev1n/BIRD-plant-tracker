@@ -39,12 +39,14 @@ export default function SnapshotView({
     patchID: patch,
     notes: 'No notes available for this patch.',
     userID: '',
-    soilType: null,
   });
   const [observations, setObservations] = useState<Observation[]>([]);
   const [author, setAuthor] = useState<string>('Not available');
 
   const fetchCompleteSnapshot = async (patch: string, snapshotID: number | null) => {
+    console.log(
+      `Fetching complete snapshot for patch: ${patch}, snapshotID: ${snapshotID}`
+    ); // For debugging purposes
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
@@ -66,7 +68,6 @@ export default function SnapshotView({
           patchID: patch,
           notes: 'No notes available for this patch.',
           userID: '',
-          soilType: null, 
         });
         setObservations([]);
         return;
@@ -77,12 +78,12 @@ export default function SnapshotView({
       const snapshot_data = await snapshot_response.json();
       setCurrentSnapshot({
         snapshotID: snapshot_data.data.snapshotID,
-        dateCreated: new Date(snapshot_data.data.dateCreated),
+        dateCreated: new Date(snapshot_data.data.dateCreated+"T00:00:00"),
         patchID: snapshot_data.data.patchID,
         notes: snapshot_data.data.notes || 'No notes available for this patch.',
         userID: snapshot_data.data.userID,
-        soilType: snapshot_data.data.soilType || null, 
       });
+      console.log('Snapshot data:', snapshot_data); // For debugging purposes
       setAuthor(snapshot_data.data.users.username || 'Not available');
       setPatchFound(snapshot_data);
 
@@ -118,7 +119,6 @@ export default function SnapshotView({
         patchID: patch,
         notes: 'No notes available for this patch.',
         userID: '',
-        soilType: null, 
       });
       setObservations([]);
       setAuthor('Not available');
@@ -138,6 +138,7 @@ export default function SnapshotView({
         </LatestSnapshotContext.Provider>
       )}
     >
+      <>
       <Dialog>
         <DialogTrigger asChild>
           <Button>{triggerTitle}</Button>
@@ -176,18 +177,7 @@ export default function SnapshotView({
           </DialogHeader>
           <ObservationsSection observations={observations} editing={false} />
 
-        <div>
-          <h1 className="inline-block">Soil Type: </h1>
-          {current_snapshot.soilType ? (
-            <span className="ml-2 inline-block rounded-full bg-gray-200 px-2 py-1 text-sm text-gray-700">
-              {current_snapshot.soilType}
-            </span>
-          ) : (
-            <span className="ml-2 inline-block rounded-full bg-red-200 px-2 py-1 text-sm text-red-700">
-              Unknown
-            </span>
-          )}
-          
+        <div>      
         </div>
           <div>
             <h1>Notes</h1>
@@ -208,6 +198,16 @@ export default function SnapshotView({
           )}
         </DialogContent>
       </Dialog>
+
+      {historicalSnapshotID !== undefined && (
+        <SnapshotFormDialog
+          newSnapshot={false}
+          patchID={patch}
+          snapshotTemplate={current_snapshot}
+          observationsTemplate={observations}
+        />
+      )}
+      </>
     </ConditionalWrapper>
   );
 }

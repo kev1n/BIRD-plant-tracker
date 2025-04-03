@@ -10,7 +10,7 @@ export async function newSnapshot ( req: AuthRequest, res: Response){
   try {
 
     // TODO: authentication and authorization
-    const { dateCreated, patchID, notes , soilType} = req.body;
+    const { dateCreated, patchID, notes } = req.body;
 
     const userID = req.user?.id;
 
@@ -27,7 +27,6 @@ export async function newSnapshot ( req: AuthRequest, res: Response){
           dateCreated,
           patchID,
           notes: notes || null,
-          soilType: soilType || null,
         },
       ])
       .select('snapshotID')
@@ -111,7 +110,7 @@ export async function updateSnapshot( req: AuthRequest, res: Response ){
       return;
     }
 
-    const { dateCreated, notes, patchID, userID, soilType } = req.body;
+    const { dateCreated, notes, patchID, userID } = req.body;
 
     const { snapshotID } = req.params;
 
@@ -131,7 +130,6 @@ export async function updateSnapshot( req: AuthRequest, res: Response ){
     if (notes !== undefined) updates.notes = notes;
     if (patchID !== undefined) updates.patchID = patchID;
     if (userID !== undefined) updates.userID = userID;
-    if (soilType !== undefined) updates.soilType = soilType;
 
     if (Object.keys(updates).length === 0) {
       res.status(400).json({ error: 'No fields provided to update' });

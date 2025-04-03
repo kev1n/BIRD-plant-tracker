@@ -11,12 +11,12 @@ import { Observation } from 'types/database_types';
 import ObservationForm from './observation-form';
 
 export default function ObservationFormDialog({
-  newPlant,
+  newObservation,
   observation,
   submitCallback,
 }: {
   observation?: Observation;
-  newPlant: boolean;
+  newObservation: boolean;
   submitCallback: (observation: Observation) => void;
 }) {
   const [open, setopen] = useState(false);
@@ -24,19 +24,27 @@ export default function ObservationFormDialog({
   return (
     <Dialog open={open} onOpenChange={setopen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{newPlant ? 'New Plant' : 'Editing Plant'}</Button>
+        <Button variant="outline">{newObservation ? 'New Plant' : 'Editing Plant'}</Button>
       </DialogTrigger>
 
       <DialogContent className="overflow-y-scroll max-h-[80vh]">
         <DialogHeader>
-          {newPlant ? (
+          {newObservation ? (
             <DialogTitle>New Plant</DialogTitle>
           ) : (
             <DialogTitle>Editing Plant</DialogTitle>
           )}
         </DialogHeader>
 
-        <ObservationForm />
+        <ObservationForm 
+          observation={observation} // Pass the existing observation if editing
+          submissionCallback={
+            (obs: Observation) => {
+              submitCallback(obs); // Call the parent callback with the new/updated observation
+              setopen(false); // Close the dialog after submission
+            }
+          }
+        />
       </DialogContent>
     </Dialog>
   );

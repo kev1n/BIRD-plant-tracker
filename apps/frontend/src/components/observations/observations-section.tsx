@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Observation } from 'types/database_types';
-import ObservationsList from './observations-list';
+import ObservationFormDialog from './observation-form-dialog';
 import ObservationEditorContext from './observations-editor-context';
+import ObservationsList from './observations-list';
 
 export default function ObservationsSection({
   observations,
@@ -54,6 +55,7 @@ export default function ObservationsSection({
     >
       <h1>Plants</h1>
       <div className="border border-gray-300 rounded-lg p-4 max-h-[200px] overflow-y-auto">
+        {editing && <ObservationFormDialog newObservation={true} submitCallback={addObservation} />}
         <ObservationsList observations={trees} listName={'Trees'} editing={editing} />
         <ObservationsList observations={shrubs} listName={'Shrubs'} editing={editing} />
         <ObservationsList observations={grasses} listName={'Grasses'} editing={editing} />

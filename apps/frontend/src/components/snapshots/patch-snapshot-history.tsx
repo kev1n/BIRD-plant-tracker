@@ -34,11 +34,10 @@ export default function PatchSnapshotHistory({ patch }: { patch: string }) {
         const data = await response.json();
         const convertedData: DateIDPair[] = data.data.map(
           (entry: { snapshotID: number; dateCreated: string }) => ({
-            snapshotID: entry.snapshotID, // Convert to string for consistency
-            dateCreated: new Date(entry.dateCreated), // Convert to Date object
+            snapshotID: entry.snapshotID,
+            dateCreated: new Date(entry.dateCreated+"T00:00:00"), 
           })
         );
-        // Set the historical snapshots state with the converted data
         setHistoricalSnapshots(convertedData);
       } else if (response.status === 404) {
         setHistoricalSnapshots([]);
@@ -69,8 +68,8 @@ export default function PatchSnapshotHistory({ patch }: { patch: string }) {
           <DialogHeader>
             <DialogTitle>Patch Snapshot History for {patch}</DialogTitle>
           </DialogHeader>
-
-          {historicalSnapshots.length > 0 ? (
+          <div className="overflow-y-scroll max-h-[80vh]">
+            {historicalSnapshots.length > 0 ? (
             historicalSnapshots.map((snapshot, index) => (
               <SnapshotRecord
                 key={index}
@@ -82,6 +81,8 @@ export default function PatchSnapshotHistory({ patch }: { patch: string }) {
           ) : (
             <p>No historical snapshots available for this patch.</p>
           )}
+          </div>
+          
         </DialogContent>
       </Dialog>
     </HistoricalSnapshotContext.Provider>

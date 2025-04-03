@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import SnapshotView from './snapshot-view';
 import { useContext } from 'react';
 import HistoricalSnapshotContext from './historical-snapshot-context';
-// import SnapshotFormDialog from './snapshot-form-dialog';
 export default function SnapshotRecord({
   snapshotID,
   snapshotDate,
@@ -38,7 +37,7 @@ export default function SnapshotRecord({
   };
 
   return (
-    <div className="flex flex-row justify-between">
+    <div className="flex flex-row justify-between my-1">
       <div className="flex-1 text-left">
         {snapshotDate.toLocaleDateString('en-US', {
           year: 'numeric',
@@ -49,8 +48,6 @@ export default function SnapshotRecord({
       <div className="flex-1 text-right">
         <div className="flex flex-row justify-end space-x-2">
           <SnapshotView patch={patchID} historicalSnapshotID={snapshotID} triggerTitle={'View'} />
-          <Button>Edit</Button>
-          <Button>Duplicate</Button>
           <Button variant="outline" onClick={() => deleteSnapshot(snapshotID)}>
             Delete
           </Button>
