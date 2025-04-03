@@ -9,6 +9,7 @@ obsRoutes.delete('/:obsID', authMiddleware, obsController.delObservation);
 obsRoutes.put('/:obsID', authMiddleware, obsController.updateObservation);
 obsRoutes.get('/:obsID', obsController.getObservation);
 obsRoutes.get('/all/:snapshotID', obsController.getAllFromSnapshot);
+obsRoutes.get('/detailed-all/:snapshotID', obsController.getAllFromSnapshotDetailed);
 obsRoutes.get('/', obsController.getAllObservation)
 
 export default obsRoutes;
