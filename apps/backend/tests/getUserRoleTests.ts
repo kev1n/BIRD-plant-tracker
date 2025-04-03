@@ -1,6 +1,6 @@
 import getUserRole from '../utilities/getUserRole.js';
 
-// Run these test functions by typing the folloing command in the terminal:
+// Run these test functions by typing the following command in the terminal:
 // (Make sure you are in the backend directory)
 
 // node --loader ts-node/esm tests/getUserRoleTests.ts
@@ -8,7 +8,8 @@ import getUserRole from '../utilities/getUserRole.js';
 (async () => {
   try {
     console.log('GET USER ROLE TEST: User');
-    const role = await getUserRole('76b5e01c-2b76-472a-b580-c2aafffb65a2');
+    const SAMPLE_USER_ID = '76b5e01c-2b76-472a-b580-c2aafffb65a2';
+    const role = await getUserRole(SAMPLE_USER_ID);
     if (role === 'user') {
       console.log('Test Passed');
     } else {
@@ -22,7 +23,8 @@ import getUserRole from '../utilities/getUserRole.js';
 (async () => {
     try {
       console.log('GET USER ROLE TEST: Editor');
-      const role = await getUserRole('f5cd495e-2f15-4951-a45b-5687564e38b8');
+      const SAMPLE_USER_ID = 'f5cd495e-2f15-4951-a45b-5687564e38b8';
+      const role = await getUserRole(SAMPLE_USER_ID);
       if (role === 'editor') {
         console.log('Test Passed');
       } else {
@@ -36,7 +38,8 @@ import getUserRole from '../utilities/getUserRole.js';
 (async () => {
     try {
       console.log('GET USER ROLE TEST: Invalid user ID');
-      const role = await getUserRole('id-does-not-exist');
+      const INVALID_USER_ID = 'id-does-not-exist';
+      const role = await getUserRole(INVALID_USER_ID);
       console.log(role);
       if (role === '') {
         console.log(`Test Passed, got "${role}" as expected`);

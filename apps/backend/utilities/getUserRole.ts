@@ -6,14 +6,14 @@ export default async function getUserRole(userID: string): Promise<string> {
         const { data, error } = await supabase.from('users').select('role').eq('userID', userID).single();
 
         if (error) {
-            console.log(`Error fetching role for user ${userID}:`, error.message);
+            // error querying DB, return empty string to indicate no role found
             return '';
         }
-    
+        
         return data?.role || '';
     } 
-    catch (error: any) {
-        console.log('Unexpected error in getUserRole:', error.message);
+    catch {
+        // unexpected error, return empty string to indicate no role found
         return '';
     }
 }
