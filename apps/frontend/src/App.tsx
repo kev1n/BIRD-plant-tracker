@@ -8,6 +8,7 @@ import EmailVerification from './pages/account/email-verifcation';
 import Login from './pages/account/login';
 import RequestPasswordReset from './pages/account/request-password-reset';
 import ResetPassword from './pages/account/reset-password';
+import ExamplePage from './pages/example';
 import Home from './pages/home';
 import MapView from './pages/MapView';
 import NotFound from './pages/not-found';
@@ -34,6 +35,7 @@ function App() {
             {/* TODO: MOVE THE NECESSARY PRIVATE ROUTES INTO PRIVATE ROUTE */}
             <Route path="map" element={<MapView />} />
             <Route path="map/:patch" element={<MapView />} />
+            <Route path="example" element={<ExamplePage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

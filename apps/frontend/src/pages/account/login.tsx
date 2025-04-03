@@ -101,6 +101,6 @@ export default function Login() {
       <Link to="/map" className="text-primary hover:underline">
         Map
       </Link>
-\    </div>
+    </div>
   );
 }
