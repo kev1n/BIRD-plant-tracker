@@ -159,6 +159,7 @@ export async function getObservation(req: Request, res: Response) {
       .from('Observations')
       .select()
       .eq('observationID', obsID)
+      .eq('deletedOn', null) 
       .single();
 
     if (obsError1) {
@@ -184,7 +185,8 @@ export async function getAllObservation(req: Request, res: Response) {
 
     const { data: observations, error: obsError } = await supabase // find observation to make sure it exists
       .from('Observations')
-      .select();
+      .select()
+      .eq('deletedOn', null);
 
     if (obsError) {
       res.status(400).json({ error: obsError.message });
@@ -215,8 +217,7 @@ export async function getAllFromSnapshot(req: Request, res: Response) {
       return;
     }
 
-    if (!/^\d+$/.test(snapshotID)) {
-      // if snapshotID not an integer
+    if (!isValidParam(snapshotID)) {
       res.status(400).json({ error: 'Snapshot ID must be an integer' });
       return;
     }
@@ -224,7 +225,8 @@ export async function getAllFromSnapshot(req: Request, res: Response) {
     const { data: observations, error: obsError1 } = await supabase // find snapshot to make sure it exists
       .from('Observations')
       .select()
-      .eq('snapshotID', snapshotID);
+      .eq('snapshotID', snapshotID)
+      .eq('deletedOn', null);
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });
@@ -255,7 +257,7 @@ export async function getAllFromSnapshotDetailed(req: Request, res: Response) {
       return;
     }
 
-    if (!/^\d+$/.test(snapshotID)) {
+    if (!isValidParam(snapshotID)) {
       // if snapshotID not an integer
       res.status(400).json({ error: 'Snapshot ID must be an integer' });
       return;
@@ -264,7 +266,8 @@ export async function getAllFromSnapshotDetailed(req: Request, res: Response) {
     const { data: observations, error: obsError1 } = await supabase // find snapshot to make sure it exists
       .from('Observations')
       .select('*, PlantInfo(*)')
-      .eq('snapshotID', snapshotID);
+      .eq('snapshotID', snapshotID)
+      .eq('deletedOn', null); 
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });

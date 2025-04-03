@@ -166,6 +166,7 @@ export async function getSnapshot(req: Request, res: Response) {
       .from('Snapshots')
       .select('*, users(username)')
       .eq('snapshotID', snapshotID)
+      .eq('deletedOn', null)
       .single();
 
     if (error) {
@@ -206,6 +207,7 @@ export async function getLatestPatchSnapshot(req: Request, res: Response) {
       .from('Snapshots')
       .select('*, users(username)') // join with users to get username
       .eq('patchID', patchID)
+      .eq('deletedOn', null)
       .order('dateCreated', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -230,8 +232,7 @@ export async function getLatestPatchSnapshot(req: Request, res: Response) {
 export async function getAllSnapshots(req: Request, res: Response) {
   try {
     // TODO: authentication and authorization
-
-    const { data: snapshots, error: error } = await supabase.from('Snapshots').select();
+    const { data: snapshots, error: error } = await supabase.from('Snapshots').select().eq('deletedOn', null);
 
     if (error) {
       res.status(400).json({ error: error.message });
@@ -268,6 +269,7 @@ export async function getAllSnapshotsDatesForPatch(req: Request, res: Response) 
       .from('Snapshots')
       .select('snapshotID, dateCreated') // only select necessary fields
       .eq('patchID', patchID)
+      .eq('deletedOn', null)
       .order('dateCreated', { ascending: false });
 
     if (error) {
