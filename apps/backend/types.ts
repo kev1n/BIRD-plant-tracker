@@ -61,7 +61,7 @@ export interface ObservationBody {
   datePlanted?: string;
 }
 
-export interface AuthObservationBody extends AuthRequest{
+export interface AuthObservationBody extends AuthRequest {
   body: ObservationBody;
 }
 
@@ -92,3 +92,19 @@ export interface UpdateSnapshotBody {
   userID?: UUID;
   soilType?: string;
 }
+
+
+export interface Plant {
+  plantCommonName: string;
+  plantScientificName?: string;
+  isNative?: boolean;
+  subcategory?: string;
+}
+
+export interface UpdatePlantBody {
+  plantCommonName?: string;
+  plantScientificName?: string;
+  isNative?: boolean;
+  subcategory?: string;
+}
+
