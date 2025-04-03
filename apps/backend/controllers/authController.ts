@@ -207,21 +207,18 @@ export async function verifyEmail(req: Request, res: Response): Promise<void> {
 
 export async function getAllUsers(_req: AuthRequest, res: Response): Promise<void> {
   try {
-    //console.log('Getting all users...');
     const { data: users, error } = await supabase
       .from('users')
       .select('username, email, firstname, lastname')
       .order('username', { ascending: true });
 
     if (error) {
-      //console.error('Error fetching users:', error);
       res.status(400).json({ error: error.message });
       return;
     }
 
     res.status(200).json(users);
   } catch (error) {
-    //console.error('Get all users error:', error);
     res.status(500).json({ error: `Internal server error: ${error}'` });
   }
 }

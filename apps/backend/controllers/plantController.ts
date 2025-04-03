@@ -4,8 +4,6 @@ import { UpdatePlantBody } from '../types.js';
 
 export async function postPlant(req: Request, res: Response) {
     try {
-        // TODO: authentication and authorization
-
         // plant info
         const { plantCommonName, plantScientificName, isNative, subcategory } = req.body;
             
@@ -15,6 +13,27 @@ export async function postPlant(req: Request, res: Response) {
             return;
         }
 
+        if (subcategory != null) {
+            // ensure we have a valid subcategory
+            const {data, error} = await supabase
+                .from('ValidSubcategories')
+                .select('subcategory')
+                .eq('subcategory', subcategory);
+            
+            if (error) {
+                res.status(500).json({ message: 'Server error validating subcategory:', error });
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                // We didn't find a valid subcategory
+                res.status(400).json({ 
+                    message: 'Bad request: Invalid subcategory'
+                });
+                return;
+            }
+        }
+
         // insert plant
         const { data: plantID, error: plantError } = await supabase
             .from('PlantInfo')
@@ -22,7 +41,7 @@ export async function postPlant(req: Request, res: Response) {
                 {
                     plantCommonName: plantCommonName,
                     plantScientificName: plantScientificName || null,
-                    isNative: isNative || null,
+                    isNative: typeof isNative === 'boolean' ? isNative : null,
                     subcategory: subcategory || null,
                 },
             ])
@@ -56,8 +75,6 @@ export async function postPlant(req: Request, res: Response) {
 
 export async function deletePlant(req: Request, res: Response) {
     try {
-        // TODO : authentication and authorization 
-
         const { plantID } = req.params;
 
         if (!plantID) {
@@ -98,8 +115,6 @@ export async function deletePlant(req: Request, res: Response) {
 
 export async function updatePlant(req: Request, res: Response) {
     try {
-        // TODO: authentication and authorization
-
         const { plantID } = req.params;
         const { plantCommonName, plantScientificName, isNative, subcategory } = req.body;
 
@@ -109,13 +124,32 @@ export async function updatePlant(req: Request, res: Response) {
             return;
         }
 
-        const updates: UpdatePlantBody = {};
+        if (subcategory != null) {
+            // ensure we have a valid subcategory
+            const {data, error} = await supabase
+                .from('ValidSubcategories')
+                .select('subcategory')
+                .eq('subcategory', subcategory);
+            
+            if (error) {
+                res.status(500).json({ message: 'Server error validating subcategory:', error });
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                // We didn't find a valid subcategory
+                res.status(400).json({ 
+                    message: 'Bad request: Invalid subcategory'
+                });
+                return;
+            }
+        }
 
         // only update provided values
-        if (plantCommonName !== undefined) updates.plantCommonName = plantCommonName;
-        if (plantScientificName !== undefined) updates.plantScientificName = plantScientificName;
-        if (isNative !== undefined) updates.isNative = isNative;
-        if (subcategory !== undefined) updates.subcategory = subcategory;
+        const updates: UpdatePlantBody = Object.fromEntries(
+            Object.entries({ plantCommonName, plantScientificName, isNative, subcategory })
+                .filter(([_, value]) => value !== undefined)
+        );
 
         if (Object.keys(updates).length === 0) {
             res.status(400).json({ error: 'No fields provided to update' });
@@ -127,14 +161,14 @@ export async function updatePlant(req: Request, res: Response) {
             .update(updates)
             .eq('plantID', plantID)
             .select()
-            .maybeSingle();
+            .single();
 
         if (error) {
             res.status(400).json({ error: error.message });
             return;
         }
 
-        if (!data) {
+        if (!data || data.length === 0) {
             // data is null if no row is updated or found
             res.status(404).json({ error: 'No matching row updated' });
             return;
@@ -146,11 +180,8 @@ export async function updatePlant(req: Request, res: Response) {
     }
 }
 
-export async function getPlant(req: Request, res: Response)
-{
+export async function getPlant(req: Request, res: Response) {
     try {
-        // TODO: authentication and authorization 
-
         const {plantID} = req.params;
 
         if (!plantID) {
@@ -190,8 +221,6 @@ export async function getPlant(req: Request, res: Response)
 // return all plants. Searches based on the common name, NOT the scientific name. 
 export async function getPlants(req: Request, res: Response) {
     try {
-        // TODO: authentication and authorization
-
         const { name } = req.query;
 
         const { data: plants, error: plantsError } = await supabase
