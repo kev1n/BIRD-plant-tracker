@@ -8,10 +8,10 @@ import {
 } from '@/components/ui/dialog';
 import { JSX, useEffect, useState } from 'react';
 import { Observation, Snapshot } from 'types/database_types';
+import ObservationsSection from '../observations/observations-section';
 import LatestSnapshotContext from './latest-snapshot-context';
 import PatchSnapshotHistory from './patch-snapshot-history';
-import SnapshotFormDialog from './snapshot-form-dialog';
-import ObservationsSection from '../observations/observations-section';
+import SnapshotForm from './snapshot-form-dialog';
 
 const ConditionalWrapper = ({
   condition,
@@ -175,7 +175,7 @@ export default function SnapshotView({
               </div>
             </div>
           </DialogHeader>
-          <ObservationsSection observations={observations} editing={false} />
+          <ObservationsSection observations={observations} editing={false}/>
 
         <div>      
         </div>
@@ -189,7 +189,7 @@ export default function SnapshotView({
           {historicalSnapshotID === undefined && (
             <div className="flex flex-row justify-between">
               <div className="flex-1 text-left">
-                <SnapshotFormDialog newSnapshot={true} patchID={patch} snapshotTemplate={current_snapshot} observationsTemplate={observations} />
+                <SnapshotForm newSnapshot={true} patchID={patch} snapshotTemplate={current_snapshot} observationsTemplate={observations} />
               </div>
               <div>
                 <PatchSnapshotHistory patch={patch} />
@@ -200,7 +200,7 @@ export default function SnapshotView({
       </Dialog>
 
       {historicalSnapshotID !== undefined && (
-        <SnapshotFormDialog
+        <SnapshotForm
           newSnapshot={false}
           patchID={patch}
           snapshotTemplate={current_snapshot}

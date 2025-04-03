@@ -16,7 +16,6 @@ export interface Observation {
   plantQuantity: number;
   datePlanted: Date | null;
   dateBloomed: Date | null;
-  hasBloomed: boolean| null;
   deletedOn: Date | null;
 }
 

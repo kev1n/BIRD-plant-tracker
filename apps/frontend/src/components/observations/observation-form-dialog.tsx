@@ -38,12 +38,10 @@ export default function ObservationFormDialog({
 
         <ObservationForm 
           observation={observation} // Pass the existing observation if editing
-          submissionCallback={
-            (obs: Observation) => {
-              submitCallback(obs); // Call the parent callback with the new/updated observation
-              setopen(false); // Close the dialog after submission
-            }
-          }
+          submitCallback={(values) => {
+            submitCallback(values); // Call the provided submit callback
+            setopen(false); // Close the dialog after submission
+          }}
         />
       </DialogContent>
     </Dialog>

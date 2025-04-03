@@ -2,6 +2,7 @@ import { Observation } from 'types/database_types';
 import {useContext} from 'react';
 import { Button } from '@/components/ui/button';
 import ObservationEditorContext from './observations-editor-context';
+import ObservationFormDialog from './observation-form-dialog';
 
 export default function ObservationItem({
   observation,
@@ -10,14 +11,22 @@ export default function ObservationItem({
   observation: Observation;
   editing?: boolean;
 }) {
-  const  { deleteObservation } = useContext(ObservationEditorContext);
+  const  { deleteObservation, updateObservation } = useContext(ObservationEditorContext);
   return (
     <div className="flex flex-row">
       <div>
         {editing && (
           <div className="flex flex-col gap-2">
             <Button onClick={() => deleteObservation(observation.tempKey)}>Delete</Button>
-            <Button>Edit</Button>
+            <ObservationFormDialog 
+              newObservation={false}
+              observation={observation}
+              submitCallback={(updatedObservation) => {
+                updateObservation(
+                  updatedObservation,
+                );
+              }}
+            />
           </div>
         )}
       </div>

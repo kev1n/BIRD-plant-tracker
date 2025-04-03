@@ -7,13 +7,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useEffect, useState, useContext } from 'react';
-import { useUser } from '../../hooks/useUser';
+import { useContext, useEffect, useState } from 'react';
 import { Observation, Snapshot } from 'types/database_types';
-import ObservationsSection from '../observations/observations-section';
 import { z } from 'zod';
-import LatestSnapshotContext from './latest-snapshot-context';
+import { useUser } from '../../hooks/useUser';
+import ObservationsSection from '../observations/observations-section';
 import HistoricalSnapshotContext from './historical-snapshot-context';
+import LatestSnapshotContext from './latest-snapshot-context';
 
 const snapshotSchema = z.object({
   snapshotID: z.number().optional(),
@@ -34,7 +34,7 @@ const observationSchema = z.object({
   deletedOn: z.date().optional(),
 });
 
-export default function SnapshotFormDialog({
+export default function SnapshotForm({
   newSnapshot,
   patchID,
   snapshotTemplate,
@@ -51,7 +51,7 @@ export default function SnapshotFormDialog({
   const [observations, setObservations] = useState<Observation[]>([]);
   const { user } = useUser();
   const { fetchLatestSnapshot } = useContext(LatestSnapshotContext);
-  const {fetchHistoricalSnapshotMetadata} = useContext(HistoricalSnapshotContext);
+  const { fetchHistoricalSnapshotMetadata } = useContext(HistoricalSnapshotContext);
 
   useEffect(() => {
     if (snapshotTemplate && newSnapshot === false) {
@@ -106,7 +106,8 @@ export default function SnapshotFormDialog({
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
       console.log(
-        `Submitting snapshot data to: ${baseUrl}/snapshot/${newSnapshot ? 'oop' : snapshotTemplate?.snapshotID}`);
+        `Submitting snapshot data to: ${baseUrl}/snapshot/${newSnapshot ? 'oop' : snapshotTemplate?.snapshotID}`
+      );
       const api_path =
         baseUrl + (newSnapshot ? '/snapshot/' : `/snapshot/${snapshotTemplate?.snapshotID}`); // Use POST for new, PUT for existing
       const response = await fetch(api_path, {
@@ -123,8 +124,22 @@ export default function SnapshotFormDialog({
         throw new Error('Failed to submit snapshot data');
       }
 
+      let newSnapshotID: number | undefined = undefined;
       if (newSnapshot) {
-        const obsPromises = observations.map(obs => {
+        const responseData = await response.json();
+        if (responseData && responseData.data && responseData.data.snapshotID) {
+          newSnapshotID = responseData.data.snapshotID;
+          console.log('New snapshot created with ID:', newSnapshotID);
+        } else {
+          console.error('Failed to retrieve new snapshot ID from response:', responseData);
+          alert(
+            'Failed to create a new snapshot. Please try again later or contact support.'
+          );
+          return;
+        }
+      } 
+      const obsPromises = observations.map(obs => {
+        if (obs.isNew) {
           return fetch(`${baseUrl}/observation/new`, {
             method: 'POST',
             credentials: 'include',
@@ -133,30 +148,66 @@ export default function SnapshotFormDialog({
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              snapshotID: newSnapshotData.snapshotID,
+              snapshotID: snapshotTemplate?.snapshotID || newSnapshotID,
               plantQuantity: obs.plantQuantity,
               plantID: obs.PlantInfo.plantID,
               datePlanted: obs.datePlanted || null,
               dateBloomed: obs.dateBloomed || null,
             }),
           });
-        });
-
-        return Promise.all(obsPromises)
-          .then(() => {
-            fetchLatestSnapshot(patchID, null);
-            setNotes('');
-            setDate(null);
-            setObservations([]);
-            setOpen(false);
-          })
-          .catch(err => {
-            console.error('Error submitting observations:', err);
-            alert('Failed to submit some observations. Please try again.');
+        } else if (obs.modified) {
+          return fetch(`${baseUrl}/observation/${obs.observationID}`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              plantQuantity: obs.plantQuantity,
+              plantID: obs.PlantInfo.plantID,
+              datePlanted: obs.datePlanted || null,
+              dateBloomed: obs.dateBloomed || null,
+            }),
           });
-      }else{
-        fetchHistoricalSnapshotMetadata(patchID); // Refresh historical metadata
-        setOpen(false); // Close the dialog after submission
+        } else if (obs.deletedOn) {
+          return fetch(`${baseUrl}/observation/${obs.observationID}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        }
+      });
+
+      await Promise.all(obsPromises)
+        .then(responses => {
+          responses.forEach(response => {
+            if (!response) {
+              console.error('One of the observation requests failed to return a response');
+              return;
+            }
+            if (!response.ok) {
+              throw new Error('Failed to submit one or more observations');
+            }
+          });
+        }
+      ).catch(err => {
+        console.error('Error submitting observations:', err);
+        alert(
+          'Failed to submit one or more observations. Please check your input and try again.'
+        );
+        return;
+      });
+
+      if (newSnapshot) {
+        fetchLatestSnapshot(patchID, null);
+        setNotes('');
+        setDate(null);
+        setObservations([]);
+      } else {
+        fetchHistoricalSnapshotMetadata(patchID);
       }
     } catch (error) {
       console.error('Error submitting snapshot data:', error);
@@ -193,7 +244,11 @@ export default function SnapshotFormDialog({
           </div>
         </DialogHeader>
 
-        <ObservationsSection observations={observations} editing={true} />
+        <ObservationsSection
+          observations={observations}
+          editing={true}
+          setObservations={setObservations}
+        />
         <div className="border border-gray-300 rounded-lg p-4">
           <textarea
             className="w-full h-24"

@@ -19,24 +19,45 @@ export default function ObservationsSection({
   const [others, setOthers] = useState<Observation[]>([]);
 
   const deleteObservation = (tempKey: number) => {
-    const updatedObservations = observations.filter(obs => obs.tempKey !== tempKey);
+    const updatedObservations = observations
+      .map(obs => {
+        if (obs.tempKey === tempKey) {
+          if (!obs.isNew) {
+            return { ...obs, deletedOn: new Date() };
+          } else {
+            console.log('Removing new observation with tempKey:', tempKey);
+            return null;
+          }
+        }
+        return obs;
+      })
+      .filter(obs => obs !== null) as Observation[];
     setObservations?.(updatedObservations);
   };
 
   const updateObservation = (updatedObservation: Observation) => {
     const updatedObservations = observations.map(obs =>
-      obs.tempKey === updatedObservation.tempKey ? { ...updatedObservation } : obs
+      obs.tempKey === updatedObservation.tempKey ? { ...updatedObservation, modified: true } : obs
     );
     setObservations?.(updatedObservations);
   };
 
   const addObservation = (newObservation: Observation) => {
-    const lastTempKey = observations[observations.length - 1]?.tempKey || -1;
-    const updatedObservations = [...observations, { ...newObservation, tempKey: lastTempKey + 1 }];
+    console.log('Adding new observation:', newObservation, observations);
+    const lastTempKey =
+      observations.length > 0 && observations[observations.length - 1].tempKey !== undefined
+        ? observations[observations.length - 1].tempKey
+        : -1;
+    console.log('Last tempKey found in observations:', lastTempKey);
+    const updatedObservations = [
+      ...observations,
+      { ...newObservation, tempKey: lastTempKey + 1, isNew: true },
+    ];
     setObservations?.(updatedObservations);
   };
 
   useEffect(() => {
+    console.log('ObservationsSection useEffect called with observations:', observations);
     const trees = observations.filter(obs => obs.PlantInfo.subcategory?.toLowerCase() === 'tree');
     const shrubs = observations.filter(obs => obs.PlantInfo.subcategory?.toLowerCase() === 'shrub');
     const grasses = observations.filter(
