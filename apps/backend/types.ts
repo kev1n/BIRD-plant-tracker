@@ -57,7 +57,7 @@ export interface ObservationBody {
   snapshotID: number;
   plantQuantity: number;
   plantID: number;
-  dateBloomed?: string;
+  hasBloomed?: boolean | null;
   datePlanted?: string;
 }
 
@@ -73,7 +73,7 @@ export interface UpdateObservationBody {
   snapshotID?: number;
   plantQuantity?: number;
   plantID?: number;
-  dateBloomed?: string;
+  hasBloomed?: boolean | null;
   datePlanted?: string;
 }
 
@@ -91,7 +91,6 @@ export interface UpdateSnapshotBody {
   userID?: UUID;
 }
 
-
 export interface Plant {
   plantCommonName: string;
   plantScientificName?: string;
@@ -105,4 +104,3 @@ export interface UpdatePlantBody {
   isNative?: boolean;
   subcategory?: string;
 }
-
