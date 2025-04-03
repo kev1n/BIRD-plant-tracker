@@ -57,7 +57,6 @@ export interface ObservationBody {
   snapshotID: number;
   plantQuantity: number;
   plantID: number;
-  soilType?: string;
   dateBloomed?: string;
   datePlanted?: string;
 }
@@ -74,7 +73,6 @@ export interface UpdateObservationBody {
   snapshotID?: number;
   plantQuantity?: number;
   plantID?: number;
-  soilType?: string;
   dateBloomed?: string;
   datePlanted?: string;
 }
@@ -84,6 +82,7 @@ export interface Snapshot {
   notes?: string;
   dateCreated: Date;
   patchID: number;
+  soilType?: string;
 }
 
 export interface UpdateSnapshotBody {
@@ -91,4 +90,5 @@ export interface UpdateSnapshotBody {
   notes?: Text;
   patchID?: string;
   userID?: UUID;
+  soilType?: string;
 }

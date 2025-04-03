@@ -7,7 +7,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useEffect, useState , useContext} from 'react';
+import { useEffect, useState, useContext } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useUser } from '../../hooks/useUser';
 import { Observation, Snapshot } from 'types/database_types';
 import ObservationsSection from '../observations/observations-section';
@@ -20,6 +27,7 @@ const snapshotSchema = z.object({
   patchID: z.string(),
   notes: z.string(),
   userID: z.string().optional(),
+  soilType: z.string().optional(),
 });
 
 const observationSchema = z.object({
@@ -27,7 +35,6 @@ const observationSchema = z.object({
   snapshotID: z.number(),
   PlantID: z.number(),
   plantQuantity: z.number().int().min(1, 'Plant quantity must be at least 1'),
-  soilType: z.string().optional(),
   datePlanted: z.date().optional(),
   dateBloomed: z.date().optional(),
   hasBloomed: z.boolean().optional(),
@@ -48,9 +55,10 @@ export default function SnapshotFormDialog({
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState<string>('');
   const [date, setDate] = useState<Date | null>(null);
+  const [soilType, setSoilType] = useState<string | null>(null);
   const [observations, setObservations] = useState<Observation[]>([]);
   const { user } = useUser();
-  const {fetchLatestSnapshot} = useContext(LatestSnapshotContext);
+  const { fetchLatestSnapshot } = useContext(LatestSnapshotContext);
 
   useEffect(() => {
     if (snapshotTemplate && newSnapshot === false) {
@@ -90,6 +98,7 @@ export default function SnapshotFormDialog({
       patchID: patchID,
       notes: notes.trim(),
       userID: user.id,
+      soilType: soilType || soilType != 'unknown' ? soilType : null,
     };
 
     const validation = snapshotSchema.safeParse(newSnapshotData);
@@ -133,7 +142,6 @@ export default function SnapshotFormDialog({
               snapshotID: newSnapshotData.snapshotID,
               plantQuantity: obs.plantQuantity,
               plantID: obs.PlantInfo.plantID,
-              soilType: obs.soilType || null,
               datePlanted: obs.datePlanted || null,
               dateBloomed: obs.dateBloomed || null,
             }),
@@ -141,12 +149,12 @@ export default function SnapshotFormDialog({
         });
 
         return Promise.all(obsPromises)
-          .then(() =>{
+          .then(() => {
             fetchLatestSnapshot(patchID, null);
-            setNotes(''); 
+            setNotes('');
             setDate(null);
             setObservations([]);
-            setOpen(false)
+            setOpen(false);
           })
           .catch(err => {
             console.error('Error submitting observations:', err);
@@ -182,6 +190,21 @@ export default function SnapshotFormDialog({
         </DialogHeader>
 
         <ObservationsSection observations={observations} editing={false} />
+
+        <div className="flex flex-col justify-center">
+          <div className="text-gray-700 mb-2 mr-2">Soil Type (optional):</div>
+          <Select onValueChange={value => setSoilType(value)} value={soilType || ''}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select A Soil Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="sand">Sand</SelectItem>
+              <SelectItem value="soil">Soil</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="unknown">Unknown</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         <div className="border border-gray-300 rounded-lg p-4">
           <textarea

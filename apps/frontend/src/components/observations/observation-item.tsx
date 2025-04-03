@@ -1,4 +1,3 @@
-import React from 'react';
 import { Observation } from 'types/database_types';
 import {useContext} from 'react';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,6 @@ export default function ObservationItem({
             <span className="text-green-500 text-sm">Native Plant</span>
           )}
           <p className="text-sm">Quantity: {observation.plantQuantity}</p>
-          <p className="text-sm">Soil Type: {observation.soilType}</p>
           {observation.datePlanted && (
             <p className="text-sm">
               Date Planted: {new Date(observation.datePlanted).toLocaleDateString()}

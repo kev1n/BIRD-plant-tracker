@@ -14,7 +14,6 @@ export interface Observation {
   snapshotID: number;
   PlantInfo: PlantInfo;
   plantQuantity: number;
-  soilType: string;
   datePlanted: Date | null;
   dateBloomed: Date | null;
   hasBloomed: boolean| null;
@@ -27,4 +26,5 @@ export interface Snapshot {
   patchID: string;
   notes: string | null;
   userID: string;
+  soilType: string|null;
 }

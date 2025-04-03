@@ -39,6 +39,7 @@ export default function SnapshotView({
     patchID: patch,
     notes: 'No notes available for this patch.',
     userID: '',
+    soilType: null,
   });
   const [observations, setObservations] = useState<Observation[]>([]);
   const [author, setAuthor] = useState<string>('Not available');
@@ -65,6 +66,7 @@ export default function SnapshotView({
           patchID: patch,
           notes: 'No notes available for this patch.',
           userID: '',
+          soilType: null, 
         });
         setObservations([]);
         return;
@@ -79,6 +81,7 @@ export default function SnapshotView({
         patchID: snapshot_data.data.patchID,
         notes: snapshot_data.data.notes || 'No notes available for this patch.',
         userID: snapshot_data.data.userID,
+        soilType: snapshot_data.data.soilType || null, 
       });
       setAuthor(snapshot_data.data.users.username || 'Not available');
       setPatchFound(snapshot_data);
@@ -115,6 +118,7 @@ export default function SnapshotView({
         patchID: patch,
         notes: 'No notes available for this patch.',
         userID: '',
+        soilType: null, 
       });
       setObservations([]);
       setAuthor('Not available');
@@ -171,6 +175,20 @@ export default function SnapshotView({
             </div>
           </DialogHeader>
           <ObservationsSection observations={observations} editing={false} />
+
+        <div>
+          <h1 className="inline-block">Soil Type: </h1>
+          {current_snapshot.soilType ? (
+            <span className="ml-2 inline-block rounded-full bg-gray-200 px-2 py-1 text-sm text-gray-700">
+              {current_snapshot.soilType}
+            </span>
+          ) : (
+            <span className="ml-2 inline-block rounded-full bg-red-200 px-2 py-1 text-sm text-red-700">
+              Unknown
+            </span>
+          )}
+          
+        </div>
           <div>
             <h1>Notes</h1>
             <div className="border border-gray-300 rounded-lg p-4">
