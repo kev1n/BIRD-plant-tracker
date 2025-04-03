@@ -1,5 +1,5 @@
 import { Observation } from 'types/database_types';
-import {useContext} from 'react';
+import { useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import ObservationEditorContext from './observations-editor-context';
 import ObservationFormDialog from './observation-form-dialog';
@@ -11,20 +11,18 @@ export default function ObservationItem({
   observation: Observation;
   editing?: boolean;
 }) {
-  const  { deleteObservation, updateObservation } = useContext(ObservationEditorContext);
+  const { deleteObservation, updateObservation } = useContext(ObservationEditorContext);
   return (
     <div className="flex flex-row">
       <div>
         {editing && (
           <div className="flex flex-col gap-2">
             <Button onClick={() => deleteObservation(observation.tempKey)}>Delete</Button>
-            <ObservationFormDialog 
+            <ObservationFormDialog
               newObservation={false}
               observation={observation}
-              submitCallback={(updatedObservation) => {
-                updateObservation(
-                  updatedObservation,
-                );
+              submitCallback={updatedObservation => {
+                updateObservation(updatedObservation);
               }}
             />
           </div>
@@ -44,12 +42,7 @@ export default function ObservationItem({
           <p className="text-sm">Quantity: {observation.plantQuantity}</p>
           {observation.datePlanted && (
             <p className="text-sm">
-              Date Planted: {new Date(observation.datePlanted+"T:00:00:00").toLocaleDateString()}
-            </p>
-          )}
-          {observation.dateBloomed && (
-            <p className="text-sm">
-              Date Bloomed: {new Date(observation.dateBloomed+"T:00:00:00").toLocaleDateString()}
+              Date Planted: {new Date(observation.datePlanted).toLocaleDateString()}
             </p>
           )}
           {observation.hasBloomed !== null && (

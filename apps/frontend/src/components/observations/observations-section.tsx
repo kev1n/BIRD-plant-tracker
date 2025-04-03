@@ -58,12 +58,18 @@ export default function ObservationsSection({
 
   useEffect(() => {
     console.log('ObservationsSection useEffect called with observations:', observations);
-    const trees = observations.filter(obs => obs.PlantInfo.subcategory?.toLowerCase() === 'tree');
-    const shrubs = observations.filter(obs => obs.PlantInfo.subcategory?.toLowerCase() === 'shrub');
-    const grasses = observations.filter(
-      obs => obs.PlantInfo.subcategory?.toLowerCase() === 'grass'
+    const trees = observations.filter(
+      obs => obs.PlantInfo.subcategory?.toLowerCase() === 'tree' && !obs.deletedOn
     );
-    const others = observations.filter(obs => obs.PlantInfo.subcategory?.toLowerCase() === 'other');
+    const shrubs = observations.filter(
+      obs => obs.PlantInfo.subcategory?.toLowerCase() === 'shrub' && !obs.deletedOn
+    );
+    const grasses = observations.filter(
+      obs => obs.PlantInfo.subcategory?.toLowerCase() === 'grass' && !obs.deletedOn
+    );
+    const others = observations.filter(
+      obs => obs.PlantInfo.subcategory?.toLowerCase() === 'other' && !obs.deletedOn
+    );
     setTrees(trees);
     setShrubs(shrubs);
     setGrasses(grasses);

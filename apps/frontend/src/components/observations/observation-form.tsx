@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button'; // Ensure you have the Button component
 import { Calendar } from '@/components/ui/calendar'; // Ensure you have the Calendar component
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'; // Ensure you have the RadioGroup component
 import {
   Form,
   FormControl,
@@ -38,7 +39,7 @@ const ObservationSchema = z.object({
   PlantInfo: PlantInfoSchema,
   plantQuantity: z.number(),
   datePlanted: z.date().optional(),
-  dateBloomed: z.date().optional(),
+  hasBloomed: z.boolean().optional(), // Allow null for backward compatibility, but can be boolean
   deletedOn: z.date().optional(),
 });
 
@@ -68,7 +69,7 @@ export default function ObservationForm({
       },
       plantQuantity: 1,
       datePlanted: undefined,
-      dateBloomed: undefined,
+      hasBloomed: undefined,
       deletedOn: undefined,
     },
   });
@@ -89,7 +90,7 @@ export default function ObservationForm({
         },
         plantQuantity: observation.plantQuantity,
         datePlanted: observation.datePlanted ? new Date(observation.datePlanted) : undefined,
-        dateBloomed: observation.dateBloomed ? new Date(observation.dateBloomed) : undefined,
+        hasBloomed: observation.hasBloomed !== null ? observation.hasBloomed : undefined,
         deletedOn: observation.deletedOn ? new Date(observation.deletedOn) : undefined,
       });
     }
@@ -110,9 +111,10 @@ export default function ObservationForm({
       },
       plantQuantity: values.plantQuantity,
       datePlanted: values.datePlanted || null,
-      dateBloomed: values.dateBloomed || null,
+      hasBloomed: values.hasBloomed !== undefined ? values.hasBloomed : null,
       deletedOn: null, // or handle as needed
     };
+    console.log('Submitting observation data:', observationData);
     if (submitCallback) {
       submitCallback(observationData);
     }
@@ -132,12 +134,61 @@ export default function ObservationForm({
                 </FormLabel>
                 <FormDescription>Enter the quantity of the plant (numbers only)</FormDescription>
                 <FormControl>
-                  <Input type="number" min={1} {...field} onChange={(e) => field.onChange(Number(e.target.value))}/>
+                  <Input
+                    type="number"
+                    min={1}
+                    {...field}
+                    onChange={e => field.onChange(Number(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="hasBloomed" // Field name in the form
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-bold">
+                  Has Bloomed <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormDescription>Enter whether the flower has bloomed</FormDescription>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={value =>
+                      field.onChange(value === 'Yes' ? true : value === 'No' ? false : null)
+                    }
+                    value={
+                      field.value === true ? 'Yes' : field.value === false ? 'No' : 'Not Applicable'
+                    }
+                    className="flex flex-col space-y-1"
+                  >
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <RadioGroupItem value="Yes" />
+                      </FormControl>
+                      <FormLabel className="font-normal">Yes</FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <RadioGroupItem value="No" />
+                      </FormControl>
+                      <FormLabel className="font-normal">No</FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <RadioGroupItem value="Not Applicable" />
+                      </FormControl>
+                      <FormLabel className="font-normal">Not Applicable</FormLabel>
+                    </FormItem>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="datePlanted"
@@ -170,47 +221,12 @@ export default function ObservationForm({
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="dateBloomed"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base font-bold">
-                  Bloom Date <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormDescription>Select the date the plant bloomed</FormDescription>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          'w-full pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? format(field.value, 'PPP') : <span>Select a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
+          {/* make a radio group*/}
           <div className="mt-10 flex items-center justify-end space-x-2">
-            <Button
-              type="submit"
-            >
-              Submit
-            </Button>
-        </div>
+            <Button type="submit">Submit</Button>
+          </div>
         </form>
-        
       </Form>
     </div>
   );

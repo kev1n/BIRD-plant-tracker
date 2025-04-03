@@ -23,17 +23,6 @@ const snapshotSchema = z.object({
   userID: z.string().optional(),
 });
 
-const observationSchema = z.object({
-  observationID: z.number().optional(),
-  snapshotID: z.number(),
-  PlantID: z.number(),
-  plantQuantity: z.number().int().min(1, 'Plant quantity must be at least 1'),
-  datePlanted: z.date().optional(),
-  dateBloomed: z.date().optional(),
-  hasBloomed: z.boolean().optional(),
-  deletedOn: z.date().optional(),
-});
-
 export default function SnapshotForm({
   newSnapshot,
   patchID,
@@ -70,6 +59,20 @@ export default function SnapshotForm({
       setObservations([]);
     }
   }, [observationsTemplate, newSnapshot]);
+
+  const duplicateLatestData = () => {
+    if (!snapshotTemplate) {
+      console.error('No snapshot template to duplicate from');
+      return;
+    }
+    if (!observationsTemplate) {
+      console.error('No observations template to duplicate from');
+      return;
+    }
+    setNotes(snapshotTemplate.notes || '');
+    setDate(new Date(snapshotTemplate.dateCreated));
+    setObservations(observationsTemplate);
+  };
 
   async function onSubmit() {
     if (!date) {
@@ -127,20 +130,18 @@ export default function SnapshotForm({
       let newSnapshotID: number | undefined = undefined;
       if (newSnapshot) {
         const responseData = await response.json();
-        if (responseData && responseData.data && responseData.data.snapshotID) {
-          newSnapshotID = responseData.data.snapshotID;
+        if (responseData && responseData.snapshotID && responseData.snapshotID.snapshotID) {
+          newSnapshotID = responseData.snapshotID.snapshotID;
           console.log('New snapshot created with ID:', newSnapshotID);
         } else {
           console.error('Failed to retrieve new snapshot ID from response:', responseData);
-          alert(
-            'Failed to create a new snapshot. Please try again later or contact support.'
-          );
+          alert('Failed to create a new snapshot. Please try again later or contact support.');
           return;
         }
-      } 
+      }
       const obsPromises = observations.map(obs => {
         if (obs.isNew) {
-          return fetch(`${baseUrl}/observation/new`, {
+          return fetch(`${baseUrl}/observation`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -148,11 +149,11 @@ export default function SnapshotForm({
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              snapshotID: snapshotTemplate?.snapshotID || newSnapshotID,
+              snapshotID: newSnapshot ? newSnapshotID : snapshotTemplate?.snapshotID, // Use the new snapshot ID if creating a new snapshot
               plantQuantity: obs.plantQuantity,
               plantID: obs.PlantInfo.plantID,
               datePlanted: obs.datePlanted || null,
-              dateBloomed: obs.dateBloomed || null,
+              hasBloomed: obs.hasBloomed !== undefined ? obs.hasBloomed : null, // Ensure this is sent if available
             }),
           });
         } else if (obs.modified) {
@@ -167,7 +168,7 @@ export default function SnapshotForm({
               plantQuantity: obs.plantQuantity,
               plantID: obs.PlantInfo.plantID,
               datePlanted: obs.datePlanted || null,
-              dateBloomed: obs.dateBloomed || null,
+              hasBloomed: obs.hasBloomed !== undefined ? obs.hasBloomed : null,
             }),
           });
         } else if (obs.deletedOn) {
@@ -192,14 +193,14 @@ export default function SnapshotForm({
               throw new Error('Failed to submit one or more observations');
             }
           });
-        }
-      ).catch(err => {
-        console.error('Error submitting observations:', err);
-        alert(
-          'Failed to submit one or more observations. Please check your input and try again.'
-        );
-        return;
-      });
+        })
+        .catch(err => {
+          console.error('Error submitting observations:', err);
+          alert(
+            'Failed to submit one or more observations. Please check your input and try again.'
+          );
+          return;
+        });
 
       if (newSnapshot) {
         fetchLatestSnapshot(patchID, null);
@@ -207,6 +208,7 @@ export default function SnapshotForm({
         setDate(null);
         setObservations([]);
       } else {
+        fetchLatestSnapshot(patchID, null);
         fetchHistoricalSnapshotMetadata(patchID);
       }
     } catch (error) {
@@ -227,15 +229,16 @@ export default function SnapshotForm({
           <div className="flex flex-row justify-between">
             <div className="flex-1 text-left">
               <DialogTitle>Patch {patchID}</DialogTitle>
-
-              <div>
-                {date?.toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                }) || 'No date selected'}
-              </div>
               <span>{newSnapshot ? 'New Snapshot' : 'Editing Snapshot'}</span>
+              {newSnapshot && (
+                <Button
+                  variant="link"
+                  className="px-2 text-sm text-gray-500"
+                  onClick={duplicateLatestData}
+                >
+                  Duplicate Latest Data
+                </Button>
+              )}
             </div>
             <div className="flex-1 text-right">
               Snapshot Date:
