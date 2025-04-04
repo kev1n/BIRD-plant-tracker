@@ -3,7 +3,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Form } from '../../components/form/form';
 import { Input } from '../../components/form/input';
 import { ButtonExample } from '../../components/ui/ButtonExample';
+import { LocationDemo } from '../../components/ui/location';
 import { useUser } from '../../hooks/useUser';
+
 interface LoginState {
   email: string;
   password: string;
@@ -103,6 +105,7 @@ export default function Login() {
         Map
       </Link>
       <ButtonExample />
+      <LocationDemo />
     </div>
   );
 }
