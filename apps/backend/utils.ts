@@ -1,3 +1,3 @@
 export function isValidParam(param: string){
-  return (!/^\d+$/.test(param))
+  return (/^\d+$/.test(param))
 }

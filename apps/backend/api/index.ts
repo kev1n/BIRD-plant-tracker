@@ -7,6 +7,7 @@ import getObsRoutes from '../routes/getObsRoutes.js';
 import obsRoutes from '../routes/obsRoutes.js';
 import snapshotRoutes from '../routes/snapshotRoutes.js';
 import plantRoutes from '../routes/plantRoutes.js';
+import filterRoutes from '../routes/filterRoutes.js';
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 app.use('/observation', obsRoutes);
 app.use('/get-observation', getObsRoutes);
+app.use('/filter', filterRoutes);
 app.use('/snapshot', snapshotRoutes);
 app.use('/plants', plantRoutes);
 

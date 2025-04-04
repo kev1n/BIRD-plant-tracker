@@ -11,7 +11,7 @@ export async function newObservation( req: AuthRequest, res: Response ){
 
     // TODO: authentication and authorization
 
-    const { snapshotID, plantQuantity, plantID, soilType, dateBloomed, datePlanted } = req.body;
+    const { snapshotID, plantQuantity, plantID, hasBloomed, datePlanted } = req.body;
 
     if (!snapshotID || !plantQuantity || !plantID){
       res.status(400).json({ error: 'Required fields are missing'});
@@ -25,8 +25,7 @@ export async function newObservation( req: AuthRequest, res: Response ){
           snapshotID,
           plantQuantity,
           plantID: plantID,
-          soilType: soilType || null,
-          dateBloomed: dateBloomed || null,
+          hasBloomed: hasBloomed || null,
           datePlanted: datePlanted || null,
         },
       ])
@@ -97,7 +96,7 @@ export async function updateObservation( req: AuthRequest, res: Response ){
   try {
     // TODO: authentication and authorization
 
-    const { snapshotID, plantQuantity, plantID, soilType, dateBloomed, datePlanted } = req.body;
+    const { snapshotID, plantQuantity, plantID, hasBloomed, datePlanted } = req.body;
 
     const { obsID } = req.params;
 
@@ -118,8 +117,7 @@ export async function updateObservation( req: AuthRequest, res: Response ){
     if (snapshotID !== undefined) updates.snapshotID = snapshotID;
     if (plantQuantity !== undefined) updates.plantQuantity = plantQuantity;
     if (plantID !== undefined) updates.plantID = plantID;
-    if (soilType !== undefined) updates.soilType = soilType;
-    if (dateBloomed !== undefined) updates.dateBloomed = dateBloomed;
+    if (hasBloomed !== undefined) updates.hasBloomed = hasBloomed;
     if (datePlanted !== undefined) updates.datePlanted = datePlanted;
 
     if (Object.keys(updates).length === 0) {
