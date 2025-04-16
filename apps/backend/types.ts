@@ -73,7 +73,7 @@ export interface UpdateObservationBody {
   snapshotID?: number;
   plantQuantity?: number;
   plantID?: number;
-  hasBloomed?: boolean | null;
+  hasBloomed?: boolean;
   datePlanted?: string;
 }
 

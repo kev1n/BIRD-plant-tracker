@@ -21,7 +21,7 @@ export async function newObservation(req: AuthRequest, res: Response) {
           snapshotID,
           plantQuantity,
           plantID: plantID,
-          hasBloomed: hasBloomed !== undefined ? hasBloomed : null,
+          hasBloomed: hasBloomed || null,
           datePlanted: datePlanted || null,
         },
       ])

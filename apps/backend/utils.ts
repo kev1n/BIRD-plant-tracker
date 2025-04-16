@@ -4,4 +4,3 @@ export function isValidParam(param: string) {
 
 export function isValidPatch(param: string) {
   return /^[A-Z]\d+$/.test(param);
-}
