@@ -74,8 +74,7 @@ export interface UpdateObservationBody {
   snapshotID?: number;
   plantQuantity?: number;
   plantID?: number;
-  soilType?: string;
-  dateBloomed?: string;
+  hasBloomed?: boolean;
   datePlanted?: string;
 }
 
