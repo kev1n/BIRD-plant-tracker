@@ -57,8 +57,7 @@ export interface ObservationBody {
   snapshotID: number;
   plantQuantity: number;
   plantID: number;
-  soilType?: string;
-  dateBloomed?: string;
+  hasBloomed?: boolean | null;
   datePlanted?: string;
 }
 

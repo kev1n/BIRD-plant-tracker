@@ -1,20 +1,16 @@
 import { Request, Response } from 'express';
 import supabase from '../config/supabase.js';
-import {
-  AuthRequest,
-  UpdateObservationBody,
-} from '../types.js';
+import { AuthRequest, UpdateObservationBody } from '../types.js';
 import { isValidParam } from '../utils.js';
 
-export async function newObservation( req: AuthRequest, res: Response ){
+export async function newObservation(req: AuthRequest, res: Response) {
   try {
-
     // TODO: authentication and authorization
 
     const { snapshotID, plantQuantity, plantID, hasBloomed, datePlanted } = req.body;
 
-    if (!snapshotID || !plantQuantity || !plantID){
-      res.status(400).json({ error: 'Required fields are missing'});
+    if (!snapshotID || !plantQuantity || !plantID) {
+      res.status(400).json({ error: 'Required fields are missing' });
       return;
     }
 
@@ -41,26 +37,26 @@ export async function newObservation( req: AuthRequest, res: Response ){
       message: 'Observation created successfully',
       obsID: obsID,
     });
-
   } catch (error) {
-    res.status(500).json({ error: `Internal server error: ${error}` })
+    res.status(500).json({ error: `Internal server error: ${error}` });
   }
 }
 
-export async function delObservation( req: AuthRequest, res: Response ){
+export async function delObservation(req: AuthRequest, res: Response) {
   try {
-
     // TODO: authentication and authorization
 
     const { obsID } = req.params;
 
-    if (!obsID) { // if obsID not passed
-      res.status(400).json({ error: 'Missing observation ID'});
+    if (!obsID) {
+      // if obsID not passed
+      res.status(400).json({ error: 'Missing observation ID' });
       return;
     }
 
-    if (!isValidParam(obsID)){ // if obsID not an integer
-      res.status(400).json({ error: 'Observation ID must be an integer'});
+    if (!isValidParam(obsID)) {
+      // if obsID not an integer
+      res.status(400).json({ error: 'Observation ID must be an integer' });
       return;
     }
 
@@ -77,22 +73,22 @@ export async function delObservation( req: AuthRequest, res: Response ){
       return;
     }
 
-    if (data.length == 0) { // observation does not exist
-      res.status(400).json({ error: `Observation ID: ${obsID} is not valid`})
+    if (data.length == 0) {
+      // observation does not exist
+      res.status(400).json({ error: `Observation ID: ${obsID} is not valid` });
       return;
     }
 
-    res.status(200).json({ 
-      message: "Observation deleted successfully",
+    res.status(200).json({
+      message: 'Observation deleted successfully',
       deletedOn: currentTimestampz,
-    })
-
+    });
   } catch (error) {
-    res.status(500).json({ error: `Internal server error: ${error}` })
+    res.status(500).json({ error: `Internal server error: ${error}` });
   }
 }
 
-export async function updateObservation( req: AuthRequest, res: Response ){
+export async function updateObservation(req: AuthRequest, res: Response) {
   try {
     // TODO: authentication and authorization
 
@@ -100,15 +96,15 @@ export async function updateObservation( req: AuthRequest, res: Response ){
 
     const { obsID } = req.params;
 
-    
-
-    if (!obsID) { // if obsID not passed
-      res.status(400).json({ error: 'Missing observation ID'});
+    if (!obsID) {
+      // if obsID not passed
+      res.status(400).json({ error: 'Missing observation ID' });
       return;
     }
 
-    if (!isValidParam(obsID)){ // if obsID not an integer
-      res.status(400).json({ error: 'Observation ID must be an integer'});
+    if (!isValidParam(obsID)) {
+      // if obsID not an integer
+      res.status(400).json({ error: 'Observation ID must be an integer' });
       return;
     }
 
@@ -135,26 +131,27 @@ export async function updateObservation( req: AuthRequest, res: Response ){
       return;
     }
 
-    res.status(200).json({ message: 'Observation updated successfully'})
-
+    res.status(200).json({ message: 'Observation updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: `Internal server error: ${error}` })
+    res.status(500).json({ error: `Internal server error: ${error}` });
   }
 }
 
-export async function getObservation(req: Request, res: Response){
-  try{
+export async function getObservation(req: Request, res: Response) {
+  try {
     // TODO: authentication and authorization
 
     const { obsID } = req.params;
 
-    if (!obsID) { // if obsID not passed
-      res.status(400).json({ error: 'Missing observation ID'});
+    if (!obsID) {
+      // if obsID not passed
+      res.status(400).json({ error: 'Missing observation ID' });
       return;
     }
 
-    if (!isValidParam(obsID)){ // if obsID not an integer
-      res.status(400).json({ error: 'Observation ID must be an integer'});
+    if (!isValidParam(obsID)) {
+      // if obsID not an integer
+      res.status(400).json({ error: 'Observation ID must be an integer' });
       return;
     }
 
@@ -162,61 +159,66 @@ export async function getObservation(req: Request, res: Response){
       .from('Observations')
       .select()
       .eq('observationID', obsID)
+      .eq('deletedOn', null) 
       .single();
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });
       return;
     }
-    
-    if (!observation) { // observation does not exist
-      res.status(400).json({ error: `Observation ID: ${obsID} is not valid`})
+
+    if (!observation) {
+      // observation does not exist
+      res.status(400).json({ error: `Observation ID: ${obsID} is not valid` });
       return;
     }
 
-    res.status(200).json({ observation })
+    res.status(200).json({ observation });
   } catch (error) {
-    res.status(500).json({ error: `Internal server error: ${error}` })
+    res.status(500).json({ error: `Internal server error: ${error}` });
   }
 }
 
-export async function getAllObservation(req: Request, res: Response){
-  try{
+export async function getAllObservation(req: Request, res: Response) {
+  try {
     // TODO: authentication and authorization
 
     const { data: observations, error: obsError } = await supabase // find observation to make sure it exists
       .from('Observations')
       .select()
+      .eq('deletedOn', null);
 
     if (obsError) {
       res.status(400).json({ error: obsError.message });
       return;
     }
-    
-    if (!observations) { // observation does not exist
-      res.status(400).json({ error: `No observations`})
+
+    if (!observations) {
+      // observation does not exist
+      res.status(400).json({ error: `No observations` });
       return;
     }
 
-    res.status(200).json({ data: observations })
+    res.status(200).json({ data: observations });
   } catch (error) {
-    res.status(500).json({ error: `Internal server error: ${error}` })
+    res.status(500).json({ error: `Internal server error: ${error}` });
   }
 }
 
-export async function getAllFromSnapshot(req: Request, res: Response){
-  try{
+export async function getAllFromSnapshot(req: Request, res: Response) {
+  try {
     // TODO: authentication and authorization
 
     const { snapshotID } = req.params;
 
-    if (!snapshotID) { // if obsID not passed
-      res.status(400).json({ error: 'Missing snapshot ID'});
+    if (!snapshotID) {
+      // if obsID not passed
+      res.status(400).json({ error: 'Missing snapshot ID' });
       return;
     }
 
-    if (!/^\d+$/.test(snapshotID)){ // if snapshotID not an integer
-      res.status(400).json({ error: 'Snapshot ID must be an integer'});
+    if (!isValidParam(snapshotID)) {
+      res.status(400).json({ error: 'Snapshot ID must be an integer' });
       return;
     }
 
@@ -224,19 +226,62 @@ export async function getAllFromSnapshot(req: Request, res: Response){
       .from('Observations')
       .select()
       .eq('snapshotID', snapshotID)
+      .eq('deletedOn', null);
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });
       return;
     }
-    
-    if (!observations) { // observation does not exist
-      res.status(400).json({ error: `No observations for snapshot ID: ${snapshotID}`})
+
+    if (!observations) {
+      // observation does not exist
+      res.status(400).json({ error: `No observations for snapshot ID: ${snapshotID}` });
       return;
     }
 
-    res.status(200).json({ observations })
+    res.status(200).json({ observations });
   } catch (error) {
-    res.status(500).json({ error: `Internal server error: ${error}` })
+    res.status(500).json({ error: `Internal server error: ${error}` });
+  }
+}
+
+export async function getAllFromSnapshotDetailed(req: Request, res: Response) {
+  try {
+    // TODO: authentication and authorization
+
+    const { snapshotID } = req.params;
+
+    if (!snapshotID) {
+      // if obsID not passed
+      res.status(400).json({ error: 'Missing snapshot ID' });
+      return;
+    }
+
+    if (!isValidParam(snapshotID)) {
+      // if snapshotID not an integer
+      res.status(400).json({ error: 'Snapshot ID must be an integer' });
+      return;
+    }
+
+    const { data: observations, error: obsError1 } = await supabase // find snapshot to make sure it exists
+      .from('Observations')
+      .select('*, PlantInfo(*)')
+      .eq('snapshotID', snapshotID)
+      .eq('deletedOn', null); 
+
+    if (obsError1) {
+      res.status(400).json({ error: obsError1.message });
+      return;
+    }
+
+    if (!observations) {
+      // observation does not exist
+      res.status(400).json({ error: `No observations for snapshot ID: ${snapshotID}` });
+      return;
+    }
+
+    res.status(200).json({ observations });
+  } catch (error) {
+    res.status(500).json({ error: `Internal server error: ${error}` });
   }
 }
