@@ -6,7 +6,7 @@ const userRoutes: Router = express.Router();
 
 userRoutes.get('/id/:userid', authMiddleware, userController.getUserByID);
 userRoutes.get('/email/:email', authMiddleware, userController.getUserByEmail);
-// userRoutes.put('/info', authMiddleware, userController.updateUserPersonalInfo);
-// userRoutes.put('/role/:userID', authMiddleware, userController.updateUserRole);
+userRoutes.put('/info', authMiddleware, userController.updateUserPersonalInfo);
+userRoutes.put('/role/:email', authMiddleware, userController.updateUserRole);
 
 export default userRoutes;

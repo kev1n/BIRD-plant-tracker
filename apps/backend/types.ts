@@ -12,6 +12,7 @@ export interface UserData {
   email: string;
   firstname: string | null;
   lastname: string | null;
+  role: string;
 }
 
 export interface SignupBody {
@@ -103,4 +104,11 @@ export interface UpdatePlantBody {
   plantScientificName?: string;
   isNative?: boolean;
   subcategory?: string;
+}
+
+export interface UpdateUserBody {
+  username?: string;
+  email?: string;
+  firstname?: string;
+  lastname?: string;
 }
