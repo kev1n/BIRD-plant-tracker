@@ -104,3 +104,10 @@ export interface UpdatePlantBody {
   isNative?: boolean;
   subcategory?: string;
 }
+
+export interface UpdatePatchBody {
+  patchID?: string;
+  latitude?: number;
+  longitude?: number;
+  soilType?: string;
+}
