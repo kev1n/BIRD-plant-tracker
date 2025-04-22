@@ -5,7 +5,6 @@ import { isValidParam, isValidPatch } from '../utils.js';
 
 export async function newSnapshot(req: AuthRequest, res: Response) {
   try {
-    // TODO: authentication and authorization
     const { dateCreated, patchID, notes } = req.body;
 
     const userID = req.user?.id;
@@ -44,7 +43,6 @@ export async function newSnapshot(req: AuthRequest, res: Response) {
 
 export async function delSnapshot(req: AuthRequest, res: Response) {
   try {
-    // TODO: authentication and authorization
     const userID = req.user?.id;
     const { snapshotID } = req.params;
 
@@ -95,7 +93,6 @@ export async function delSnapshot(req: AuthRequest, res: Response) {
 
 export async function updateSnapshot(req: AuthRequest, res: Response) {
   try {
-    // TODO: authentication and authorization
     const authID = req.user?.id;
 
     if (!authID) {
@@ -146,8 +143,6 @@ export async function updateSnapshot(req: AuthRequest, res: Response) {
 
 export async function getSnapshot(req: Request, res: Response) {
   try {
-    // TODO: authentication and authorization
-
     const { snapshotID } = req.params;
 
     if (!snapshotID) {
@@ -188,7 +183,6 @@ export async function getSnapshot(req: Request, res: Response) {
 
 export async function getLatestPatchSnapshot(req: Request, res: Response) {
   try {
-    // TODO: authentication and authorization
     const { patchID } = req.params;
 
     if (!patchID) {
@@ -231,7 +225,6 @@ export async function getLatestPatchSnapshot(req: Request, res: Response) {
 
 export async function getAllSnapshots(req: Request, res: Response) {
   try {
-    // TODO: authentication and authorization
     const { data: snapshots, error: error } = await supabase
       .from('Snapshots')
       .select()
