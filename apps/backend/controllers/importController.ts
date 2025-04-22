@@ -2,6 +2,7 @@ import csvParser from 'csv-parser';
 import { Request, Response } from 'express';
 import { Readable } from 'stream';
 import supabase from '../config/supabase.js';
+import { CsvError, Plant } from '../types.js';
 
 export async function importPlants(req: Request, res: Response){
   try {
@@ -12,8 +13,8 @@ export async function importPlants(req: Request, res: Response){
       return;
     }
 
-    const results: any[] = [];
-    const errors: any[] = [];
+    const results: Plant[] = [];
+    const errors: CsvError[] = [];
 
     const stream = Readable.from(csvText);
 
@@ -25,7 +26,7 @@ export async function importPlants(req: Request, res: Response){
             throw new Error('Missing required fields');
           }
 
-          const parsedRow = {
+          const parsedRow: Plant = {
             plantCommonName: row.plantCommonName,
             plantScientificName: row.plantScientificName || null,
             isNative: row.isNative ? (row.isNative.trim().toLowerCase() === "true") : null,
