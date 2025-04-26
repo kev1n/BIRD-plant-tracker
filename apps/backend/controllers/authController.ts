@@ -139,7 +139,7 @@ export async function getMe(req: Request, res: Response): Promise<void> {
 
     const { data: userData, error: dbError } = await supabase
       .from('users')
-      .select('id, username, email, firstname, lastname')
+      .select('userID, username, email, firstname, lastname, role')
       .eq('email', user.email)
       .single();
 
@@ -162,8 +162,14 @@ export async function getMe(req: Request, res: Response): Promise<void> {
 }
 
 export async function logout(_req: Request, res: Response): Promise<void> {
-  res.clearCookie('session');
   await supabase.auth.signOut();
+  // Matching the cookie options from the login endpoint
+  res.clearCookie('session', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    path: '/',
+  });
   res.json({ message: 'Logged out successfully' });
 }
 

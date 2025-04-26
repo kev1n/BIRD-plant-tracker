@@ -10,6 +10,8 @@ import patchRoutes from '../routes/patchRoutes.js';
 import plantRoutes from '../routes/plantRoutes.js';
 import snapshotRoutes from '../routes/snapshotRoutes.js';
 import validRoutes from '../routes/validRoutes.js';
+import filterRoutes from '../routes/filterRoutes.js';
+import userRoutes from '../routes/userRoutes.js';
 
 dotenv.config();
 
@@ -67,6 +69,7 @@ app.use('/snapshot', snapshotRoutes);
 app.use('/plants', plantRoutes);
 app.use('/valid', validRoutes);
 app.use('/patch', patchRoutes);
+app.use('/users', userRoutes);
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });

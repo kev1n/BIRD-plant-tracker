@@ -12,6 +12,7 @@ export interface UserData {
   email: string;
   firstname: string | null;
   lastname: string | null;
+  role: string;
 }
 
 export interface SignupBody {
@@ -110,4 +111,11 @@ export interface UpdatePatchBody {
   latitude?: number;
   longitude?: number;
   soilType?: string;
+}
+
+export interface UpdateUserBody {
+  username?: string;
+  email?: string;
+  firstname?: string;
+  lastname?: string;
 }
