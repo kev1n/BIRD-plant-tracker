@@ -12,6 +12,7 @@ export interface UserData {
   email: string;
   firstname: string | null;
   lastname: string | null;
+  role: string;
 }
 
 export interface SignupBody {
@@ -57,8 +58,7 @@ export interface ObservationBody {
   snapshotID: number;
   plantQuantity: number;
   plantID: number;
-  soilType?: string;
-  dateBloomed?: string;
+  hasBloomed?: boolean | null;
   datePlanted?: string;
 }
 
@@ -74,8 +74,7 @@ export interface UpdateObservationBody {
   snapshotID?: number;
   plantQuantity?: number;
   plantID?: number;
-  soilType?: string;
-  dateBloomed?: string;
+  hasBloomed?: boolean;
   datePlanted?: string;
 }
 
@@ -105,4 +104,11 @@ export interface UpdatePlantBody {
   plantScientificName?: string;
   isNative?: boolean;
   subcategory?: string;
+}
+
+export interface UpdateUserBody {
+  username?: string;
+  email?: string;
+  firstname?: string;
+  lastname?: string;
 }
