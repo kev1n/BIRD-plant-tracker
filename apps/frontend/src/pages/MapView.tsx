@@ -1,9 +1,11 @@
 import PatchView from '@/components/snapshots/patch-view';
 import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeafletAssets from '../components/LeafletAssets';
+import { LocationDemo } from "../components/ui/location";
+import { useGeolocated } from "react-geolocated";
 
 // Constants for the grid
 const GRID_SIZE_FEET = 15;
@@ -63,6 +65,19 @@ function Sidebar({ patchInfo }: SidebarProps) {
 }
 
 function GridOverlay() {
+
+  // find coordinates with geolocation
+  const { coords, isGeolocationAvailable, isGeolocationEnabled } =
+  useGeolocated({
+      positionOptions: {
+          enableHighAccuracy: true,
+      },
+      userDecisionTimeout: 5000,
+      watchPosition: true,
+  });
+
+  // initialize variables
+  const [patchName, setPatchName] = useState<string | null>(null);
   const map = useMap();
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,6 +88,9 @@ function GridOverlay() {
 
   useEffect(() => {
     if (!map) return;
+
+    // variable taking in patch name
+    let matchedPatchLabel: string | null = null;
 
     // Create a new LayerGroup
     gridRef.current = new LayerGroup();
@@ -92,7 +110,6 @@ function GridOverlay() {
 
         // Create patch label
         const label = `${String.fromCharCode(65 + col)}${row + 1}`;
-
         const isSelected = patch === label;
 
         // Create rectangle for grid patch
@@ -111,7 +128,25 @@ function GridOverlay() {
 
         rect.addTo(gridRef.current);
         // make the rectangle 
+
+        // use geolocation to see if user is on a certain patch
+        if (coords?.latitude && coords?.longitude){
+          if (coords?.latitude <= topLeft[0] && coords?.latitude >= bottomRight[0] &&
+              coords?.longitude >= topLeft[1] && coords?.longitude <= bottomRight[1]) {
+                matchedPatchLabel = label;
+              }
+        }
       }
+    }
+
+    if (matchedPatchLabel) {
+      setPatchName(`You are on the ${matchedPatchLabel} patch`);
+    }
+    else if (coords?.latitude && coords?.longitude) {
+      setPatchName("You are not on a patch right now");
+    }
+    else {
+      setPatchName("Detecting your location...");
     }
 
     // Add column labels (A-Z)
@@ -150,14 +185,18 @@ function GridOverlay() {
         map.removeLayer(gridRef.current);
       }
     };
-  }, [map, navigate, patch, location]);
+  }, [map, navigate, patch, location, coords]);
 
-  return null;
+  return (
+    <div className="absolute bottom-4 left-4 bg-white p-5 rounded shadow-md z-[1000]">
+        <h2>{patchName}</h2>
+    </div>
+  );
 }
+
 
 export default function MapView() {
 
-  
 
   const { patch } = useParams<{ patch?: string }>();
 
@@ -183,6 +222,7 @@ export default function MapView() {
           />
           <GridOverlay />
         </MapContainer>
+        <LocationDemo />
       </div>
 
       {patchInfo && 
