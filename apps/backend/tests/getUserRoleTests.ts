@@ -3,6 +3,8 @@ import getUserRole from '../utilities/getUserRole.js';
 // Run these test functions by typing the following command in the terminal:
 // (Make sure you are in the backend directory)
 
+/* eslint-disable no-console */
+
 // node --loader ts-node/esm tests/getUserRoleTests.ts
 
 (async () => {

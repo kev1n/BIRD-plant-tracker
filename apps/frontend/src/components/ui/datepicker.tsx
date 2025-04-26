@@ -10,10 +10,12 @@ import { format } from "date-fns"
 
 export default function DatePicker({ 
   date, 
-  setDate 
+  setDate,
+  pickerName
 }: { 
   date: Date | null, 
   setDate: (date: Date | null) => void 
+  pickerName?: string
 }) {
   return (
     <Popover>
@@ -25,7 +27,7 @@ export default function DatePicker({
             !date && "text-muted-foreground"
           )}
         >
-          {date ? format(date, "PPP") : <span>Check your date of record</span>}
+          {date ? format(date, "PPP") : <span>{pickerName}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
