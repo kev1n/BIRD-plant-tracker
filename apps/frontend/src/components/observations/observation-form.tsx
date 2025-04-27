@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon , Check, ChevronsUpDown} from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
@@ -17,11 +17,21 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Ensure you have the Popover component
 import { Input } from '@/components/ui/input';
 import { Observation } from 'types/database_types'; // Ensure you have the correct type for Observation
 import { useEffect } from 'react';
-
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { PlantInfo } from 'types/database_types'; // Ensure you have the correct type for PlantInfo
 const PlantInfoSchema = z.object({
   plantID: z.number(),
   plantCommonName: z.string(),
@@ -52,6 +62,8 @@ export default function ObservationForm({
   observation?: Observation;
   submitCallback?: (values: Observation) => void; // Optional callback for submission
 }) {
+  const [plants, setPlants] = useState<PlantInfo[]>([]); // Assuming you have a Plant type
+  const [searchTerm, setSearchTerm] = useState('');
   const form = useForm<FormValues>({
     resolver: zodResolver(ObservationSchema),
     defaultValues: {
@@ -73,6 +85,34 @@ export default function ObservationForm({
       deletedOn: undefined,
     },
   });
+
+  useEffect(() => {
+    const fetchPlants = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+        const api_path = `${baseUrl}/plants?name=${searchTerm}`;
+        const response = await fetch(api_path, {
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setPlants(data.plants);
+        } else {
+          setPlants([]);
+        }
+      } catch (error) {
+        console.error('Error fetching plants:', error);
+      }
+    };
+    if (searchTerm.length>0){
+    fetchPlants();
+    }
+  }, [searchTerm]);
   useEffect(() => {
     if (observation) {
       form.reset({
@@ -95,6 +135,7 @@ export default function ObservationForm({
       });
     }
   }, [observation, form]);
+
   function onSubmit(values: FormValues) {
     const observationData: Observation = {
       tempKey: values.tempKey,
@@ -124,6 +165,77 @@ export default function ObservationForm({
     <div className="p-4">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="PlantInfo"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Plant Common Name</FormLabel>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-[200px] justify-between",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value.plantCommonName
+                        ? plants.find(
+                            (plant) => plant.plantCommonName === field.value.plantCommonName
+                          )?.plantCommonName
+                        : "Select plant"}
+                      <ChevronsUpDown className="opacity-50" />
+                    </Button>
+                  </FormControl>
+                </DialogTrigger>
+                <DialogContent className="w-[200px] p-0">
+                  <Command>
+                    <CommandInput
+                      placeholder="Search framework..."
+                      className="h-9"
+                      onValueChange={(value) => {
+                        setSearchTerm(value);
+                      }}
+                    />
+                    <Button>Add a new plant</Button>
+                    <CommandList>
+                      <CommandEmpty>No framework found.</CommandEmpty>
+                      <CommandGroup>
+                        {plants.map((plant) => (
+                          <CommandItem
+                            value={plant.plantCommonName}
+                            key={plant.plantID}
+                            onSelect={() => {
+                              console.log("Selected plant:", plant);
+                              field.onChange(plant)
+                            }}
+                          >
+                            {plant.plantCommonName}
+                            <Check
+                              className={cn(
+                                "ml-auto",
+                                field?.value.plantCommonName === plant.plantCommonName
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </DialogContent>
+              </Dialog>
+              <FormDescription>
+                This is the language that will be used in the dashboard.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
           <FormField
             control={form.control}
             name="plantQuantity" // Field name in the form
