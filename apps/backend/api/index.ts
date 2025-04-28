@@ -9,9 +9,8 @@ import obsRoutes from '../routes/obsRoutes.js';
 import patchRoutes from '../routes/patchRoutes.js';
 import plantRoutes from '../routes/plantRoutes.js';
 import snapshotRoutes from '../routes/snapshotRoutes.js';
-import validRoutes from '../routes/validRoutes.js';
-import filterRoutes from '../routes/filterRoutes.js';
 import userRoutes from '../routes/userRoutes.js';
+import validRoutes from '../routes/validRoutes.js';
 
 dotenv.config();
 
