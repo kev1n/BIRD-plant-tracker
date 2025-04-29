@@ -233,7 +233,7 @@ export async function updateUserRole(req: Request, res: Response): Promise<void>
         // make supabase call
         const { data: updateData, error: updateError } = await supabase
             .from('users')
-            .update({ role: role })
+            .update({ role: role, roleRequested: null }) // also erase any requested roles
             .eq('email', email)
             .select()
             .single();
