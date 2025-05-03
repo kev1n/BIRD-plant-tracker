@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import type { User } from '../../types/auth';
 import UserContainer from '@/components/admin/user-container';
 import AllUsers from '@/components/admin/all-users';
+import RoleRequest from '@/components/admin/role-request';
+import UserRoleInfo from '@/components/admin/user-role-info';
 
 export default function AdminPage(){
   const [users, setUsers] = useState<User[]>([]);
@@ -10,12 +12,12 @@ export default function AdminPage(){
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        //const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken');
         const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
         const response = await fetch(`${baseUrl}/auth/users`,{
           method: 'GET',
           headers: {
-            'Authorization': 'application/json',
+            'Authorization': `Bearer ${token}`,
           }
         });
     
@@ -35,13 +37,15 @@ export default function AdminPage(){
     fetchUsers();
   })
 
+  // for the Role Requests panel, only show people actively requesting
+  const filteredUsers = [...users].filter((user) => user.roleRequested != null);
 
   return(
     <div>
       {error ? (<p>{error}</p>) : (
       <div>
-        <UserContainer users={users} containerTitle='Role Requests'/>
-        <AllUsers users={users} containerTitle='All Users'/>
+        <UserContainer users={filteredUsers} containerTitle='Role Requests' UserComponent={RoleRequest}/>
+        <AllUsers users={users} containerTitle='All Users' UserComponent={UserRoleInfo}/>
       </div> 
       )}
     </div>
