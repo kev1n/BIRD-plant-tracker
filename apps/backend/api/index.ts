@@ -3,12 +3,15 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import authRoutes from '../routes/authRoutes.js';
+import filterRoutes from '../routes/filterRoutes.js';
 import getObsRoutes from '../routes/getObsRoutes.js';
 import importRoutes from '../routes/importRoutes.js';
 import obsRoutes from '../routes/obsRoutes.js';
+import patchRoutes from '../routes/patchRoutes.js';
 import plantRoutes from '../routes/plantRoutes.js';
-import filterRoutes from '../routes/filterRoutes.js';
+import snapshotRoutes from '../routes/snapshotRoutes.js';
 import userRoutes from '../routes/userRoutes.js';
+import validRoutes from '../routes/validRoutes.js';
 
 import snapshotRoutes from '../routes/snapshotRoutes.js';
 
@@ -67,6 +70,8 @@ app.use('/filter', filterRoutes);
 app.use('/snapshot', snapshotRoutes);
 app.use('/plants', plantRoutes);
 app.use('/import', importRoutes);
+app.use('/valid', validRoutes);
+app.use('/patch', patchRoutes);
 app.use('/users', userRoutes);
 
 app.get('/health', (_req: Request, res: Response) => {

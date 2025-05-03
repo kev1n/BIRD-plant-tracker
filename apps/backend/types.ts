@@ -111,6 +111,13 @@ export interface CsvError {
   error: string;
 }
   
+export interface UpdatePatchBody {
+  patchID?: string;
+  latitude?: number;
+  longitude?: number;
+  soilType?: string;
+}
+
 export interface UpdateUserBody {
   username?: string;
   email?: string;
