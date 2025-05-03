@@ -1,33 +1,8 @@
 import { Button } from "@/components/ui/button";
 import type { User } from '../../../types/auth';
+import { updateRole } from '../../lib/admin-utils';
 
-let role = 'user';
 
-async function updateRole(email: string, approved: boolean){
-
-  if (approved){
-    role = 'editor';
-  } 
-
-  const token = localStorage.getItem('authToken');
-  try {
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users/role/${email}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        role: `${role}`,
-      })
-    });
-
-    if (!response.ok){
-      throw new Error('Failed to update user role');
-    }
-  } catch (err){
-    console.error('Error updating user:', err);
-  }
-}
 
 
 export default function RoleRequest(props: User){
