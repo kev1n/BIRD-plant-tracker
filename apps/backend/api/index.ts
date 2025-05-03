@@ -13,8 +13,6 @@ import snapshotRoutes from '../routes/snapshotRoutes.js';
 import userRoutes from '../routes/userRoutes.js';
 import validRoutes from '../routes/validRoutes.js';
 
-import snapshotRoutes from '../routes/snapshotRoutes.js';
-
 dotenv.config();
 
 const app: Express = express();
