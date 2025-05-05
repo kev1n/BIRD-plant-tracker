@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { Observation } from 'types/database_types'; // Ensure you have the correct type for Observation
 import { useEffect } from 'react';
 import { PlantInfo } from 'types/database_types'; // Ensure you have the correct type for PlantInfo
+import NewPlantFormDialog from '../plant-selector/new-plant-form-dialog';
 const PlantInfoSchema = z.object({
   plantID: z.number(),
   plantCommonName: z.string(),
@@ -199,7 +200,7 @@ export default function ObservationForm({
                         setSearchTerm(value);
                       }}
                     />
-                    <Button>Add a new plant</Button>
+                    <NewPlantFormDialog newPlant={true} />
                     <CommandList>
                       <CommandEmpty>No framework found.</CommandEmpty>
                       <CommandGroup>
