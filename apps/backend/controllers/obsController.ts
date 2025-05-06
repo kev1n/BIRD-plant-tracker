@@ -151,7 +151,7 @@ export async function getObservation(req: Request, res: Response) {
       .from('Observations')
       .select()
       .eq('observationID', obsID)
-      .is('deletedOn', null) 
+      .is("deletedOn", null) 
       .single();
 
     if (obsError1) {
@@ -176,7 +176,7 @@ export async function getAllObservation(req: Request, res: Response) {
     const { data: observations, error: obsError } = await supabase // find observation to make sure it exists
       .from('Observations')
       .select()
-      .is('deletedOn', null);
+      .is("deletedOn", null);
 
     if (obsError) {
       res.status(400).json({ error: obsError.message });
@@ -214,7 +214,7 @@ export async function getAllFromSnapshot(req: Request, res: Response) {
       .from('Observations')
       .select()
       .eq('snapshotID', snapshotID)
-      .is('deletedOn', null);
+      .is("deletedOn", null);
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });
@@ -253,7 +253,7 @@ export async function getAllFromSnapshotDetailed(req: Request, res: Response) {
       .from('Observations')
       .select('*, PlantInfo(*)')
       .eq('snapshotID', snapshotID)
-      .is('deletedOn', null); 
+      .is("deletedOn", null); 
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });
