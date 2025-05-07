@@ -33,12 +33,14 @@ function App() {
             <Route path="auth/reset-password" element={<ResetPassword />} />
             <Route path="auth/verify-email" element={<EmailVerification />} />
 
-            {/* TODO: MOVE THE NECESSARY PRIVATE ROUTES INTO PRIVATE ROUTE */}
             <Route path="map" element={<MapView />} />
             <Route path="map/:patch" element={<MapView />} />
             <Route path="example" element={<ExamplePage />} />
 
-            <Route path="admin" element={<AdminPage/>} />
+            {/* only admins and owners can access */}
+            <Route element={<PrivateRoute allowedRoles={['admin', 'owner']} />}>
+              <Route path="admin" element={<AdminPage />} />
+            </Route>
 
             <Route path="*" element={<NotFound />} />
           </Route>
