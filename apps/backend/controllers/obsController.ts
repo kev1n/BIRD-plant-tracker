@@ -5,8 +5,6 @@ import { isValidParam } from '../utils.js';
 
 export async function newObservation(req: AuthRequest, res: Response) {
   try {
-    // TODO: authentication and authorization
-
     const { snapshotID, plantQuantity, plantID, hasBloomed, datePlanted } = req.body;
 
     if (!snapshotID || !plantQuantity || !plantID) {
@@ -44,8 +42,6 @@ export async function newObservation(req: AuthRequest, res: Response) {
 
 export async function delObservation(req: AuthRequest, res: Response) {
   try {
-    // TODO: authentication and authorization
-
     const { obsID } = req.params;
 
     if (!obsID) {
@@ -90,8 +86,6 @@ export async function delObservation(req: AuthRequest, res: Response) {
 
 export async function updateObservation(req: AuthRequest, res: Response) {
   try {
-    // TODO: authentication and authorization
-
     const { snapshotID, plantQuantity, plantID, hasBloomed, datePlanted } = req.body;
 
     const { obsID } = req.params;
@@ -139,8 +133,6 @@ export async function updateObservation(req: AuthRequest, res: Response) {
 
 export async function getObservation(req: Request, res: Response) {
   try {
-    // TODO: authentication and authorization
-
     const { obsID } = req.params;
 
     if (!obsID) {
@@ -159,7 +151,7 @@ export async function getObservation(req: Request, res: Response) {
       .from('Observations')
       .select()
       .eq('observationID', obsID)
-      .eq('deletedOn', null) 
+      .is('deletedOn', null) 
       .single();
 
     if (obsError1) {
@@ -181,8 +173,6 @@ export async function getObservation(req: Request, res: Response) {
 
 export async function getAllObservation(req: Request, res: Response) {
   try {
-    // TODO: authentication and authorization
-
     const { data: observations, error: obsError } = await supabase // find observation to make sure it exists
       .from('Observations')
       .select("*, Snapshots(*, users(username)), PlantInfo(*)")
@@ -207,8 +197,6 @@ export async function getAllObservation(req: Request, res: Response) {
 
 export async function getAllFromSnapshot(req: Request, res: Response) {
   try {
-    // TODO: authentication and authorization
-
     const { snapshotID } = req.params;
 
     if (!snapshotID) {
@@ -226,7 +214,7 @@ export async function getAllFromSnapshot(req: Request, res: Response) {
       .from('Observations')
       .select()
       .eq('snapshotID', snapshotID)
-      .eq('deletedOn', null);
+      .is('deletedOn', null);
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });
@@ -247,8 +235,6 @@ export async function getAllFromSnapshot(req: Request, res: Response) {
 
 export async function getAllFromSnapshotDetailed(req: Request, res: Response) {
   try {
-    // TODO: authentication and authorization
-
     const { snapshotID } = req.params;
 
     if (!snapshotID) {
@@ -267,7 +253,7 @@ export async function getAllFromSnapshotDetailed(req: Request, res: Response) {
       .from('Observations')
       .select('*, PlantInfo(*)')
       .eq('snapshotID', snapshotID)
-      .eq('deletedOn', null); 
+      .is('deletedOn', null); 
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });
