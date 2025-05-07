@@ -185,8 +185,8 @@ export async function getAllObservation(req: Request, res: Response) {
 
     const { data: observations, error: obsError } = await supabase // find observation to make sure it exists
       .from('Observations')
-      .select()
-      .eq('deletedOn', null);
+      .select("*, Snapshots(*, users(username)), PlantInfo(*)")
+      .is('deletedOn', null);
 
     if (obsError) {
       res.status(400).json({ error: obsError.message });
