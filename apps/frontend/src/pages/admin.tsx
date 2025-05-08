@@ -44,8 +44,16 @@ export default function AdminPage(){
     <div>
       {error ? (<p>{error}</p>) : (
       <div>
-        <UserContainer users={filteredUsers} containerTitle='Role Requests' UserComponent={RoleRequest}/>
-        <AllUsers users={users} containerTitle='All Users' UserComponent={UserRoleInfo}/>
+        <UserContainer 
+          users={filteredUsers} 
+          containerTitle='Role Requests' 
+          UserComponent={RoleRequest}
+        />
+        <AllUsers 
+          users={users} 
+          containerTitle='All Users' 
+          UserComponent={UserRoleInfo}
+        />
       </div> 
       )}
     </div>
