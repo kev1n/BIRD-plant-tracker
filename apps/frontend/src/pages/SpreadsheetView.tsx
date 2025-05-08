@@ -1,24 +1,10 @@
-import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz } from 'ag-grid-community';
+import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { useEffect, useState } from 'react';
 import { Observation } from 'types/database_types';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
-
-type ObservationRow = {
-  "Observation Date": string;
-  Observer: string;
-  "Patch ID": string;
-  "Plant Quantity": number;
-  "Common Name": string;
-  "Scientific Name": string | null;
-  "Date Planted": string | null;
-  "Native?": boolean | null;
-  "Has Bloomed": boolean | null;
-  Subcategory: "tree" | "shrub" | "grass" | "other" | null;
-  Notes: string | null;
-};
 
 export default function SpreadSheetView() {
   const [rowData, setRowData] = useState<Observation[]>();
@@ -76,7 +62,7 @@ export default function SpreadSheetView() {
   const colDefs: ColDef[] = [
     { 
       field: "Observation Date",
-      valueGetter: (params: any) => params.data?.Snapshots?.dateCreated || '',
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.dateCreated || '',
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center', // Centers the header
@@ -84,7 +70,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Observer Name",
-      valueGetter: (params: any) => params.data?.Snapshots?.users?.username || '',
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.users?.username || '',
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
@@ -92,7 +78,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Patch ID",
-      valueGetter: (params: any) => params.data?.Snapshots?.patchID || '',
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.patchID || '',
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
@@ -100,7 +86,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Plant Quantity",
-      valueGetter: (params: any) => params.data?.plantQuantity,
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.plantQuantity,
       sortable: true,
       filter: true,
       type: 'numericColumn',
@@ -109,7 +95,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Plant Common Name",
-      valueGetter: (params: any) => params.data?.PlantInfo?.plantCommonName || '',
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.plantCommonName || '',
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
@@ -117,7 +103,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Plant Scientific Name",
-      valueGetter: (params: any) => params.data?.PlantInfo?.plantScientificName || '',
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.plantScientificName || '',
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
@@ -125,7 +111,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Date Planted",
-      valueGetter: (params: any) => params.data?.datePlanted || '',
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.datePlanted || '',
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
@@ -133,7 +119,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "isNative",
-      valueGetter: (params: any) => params.data?.PlantInfo?.isNative,
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.isNative,
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
@@ -141,7 +127,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Has Bloomed",
-      valueGetter: (params: any) => params.data?.hasBloomed,
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.hasBloomed,
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
@@ -149,7 +135,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Subcategory",
-      valueGetter: (params: any) => params.data?.PlantInfo?.subcategory || '',
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.subcategory || '',
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
@@ -157,7 +143,7 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Additional Notes",
-      valueGetter: (params: any) => params.data?.Snapshots?.notes || '',
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.notes || '',
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
