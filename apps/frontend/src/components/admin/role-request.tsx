@@ -7,7 +7,7 @@ import UserPopup from "./user-popup";
 
 
 export default function RoleRequest(props: User){
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup] = useState(false); // popup card with more user info
   
   return (
     <div className="p-2 m-2 grid grid-cols-[minmax(100px,1fr)_auto] items-center border border-gray-700 rounded-[3px]">
