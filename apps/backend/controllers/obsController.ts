@@ -175,7 +175,7 @@ export async function getAllObservation(req: Request, res: Response) {
   try {
     const { data: observations, error: obsError } = await supabase // find observation to make sure it exists
       .from('Observations')
-      .select()
+      .select("*, Snapshots(*, users(username)), PlantInfo(*)")
       .is('deletedOn', null);
 
     if (obsError) {

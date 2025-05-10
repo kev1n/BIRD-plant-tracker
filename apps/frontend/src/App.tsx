@@ -13,6 +13,7 @@ import Home from './pages/home';
 import MapView from './pages/MapView';
 import NotFound from './pages/not-found';
 import SignUp from './pages/signup';
+import SpreadsheetView from './pages/SpreadsheetView';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             {/* TODO: MOVE THE NECESSARY PRIVATE ROUTES INTO PRIVATE ROUTE */}
             <Route path="map" element={<MapView />} />
             <Route path="map/:patch" element={<MapView />} />
+            <Route path="spreadsheet" element={<SpreadsheetView />} />
             <Route path="example" element={<ExamplePage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
