@@ -1,9 +1,5 @@
 # Important Preface
 
-**Owner:** Kevin Wang
-
----
-
 ## What is a Patch?
 
 A **patch** is an individual 15 ft × 15 ft plot of land. Approximately 400 patches make up the area of the sanctuary.
