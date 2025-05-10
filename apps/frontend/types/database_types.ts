@@ -25,7 +25,7 @@ export interface Observation {
   observationID: number;
   snapshotID: number;
   PlantInfo: PlantInfo;
-  Snapshots: Snapshots;
+  Snapshots?: Snapshots;
   plantQuantity: number;
   datePlanted: Date | null;
   hasBloomed: boolean | null;
