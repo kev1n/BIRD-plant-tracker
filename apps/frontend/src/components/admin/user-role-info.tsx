@@ -56,7 +56,7 @@ export default function UserRoleInfo(props: User) {
             <Button
               variant="darkGreen"
               onClick={() => setShowEditDialog(true)}
-              className="hover:shadow-lg"
+              className="hover:shadow-lg bg-[#BB0030] hover:bg-[#800000]"
             >
               REVOKE EDITING
             </Button>
@@ -98,7 +98,7 @@ export default function UserRoleInfo(props: User) {
             <Button
               variant="darkGreen"
               onClick={() => setShowAdminDialog(true)}
-              className="hover:shadow-lg"
+              className="hover:shadow-lg bg-[#BB0030] hover:bg-[#800000]"
             >
               REVOKE ADMIN
             </Button>
