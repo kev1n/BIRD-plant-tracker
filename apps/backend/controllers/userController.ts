@@ -13,7 +13,7 @@ export async function getUserByID(req: Request, res: Response): Promise<void> {
 
         const {data: user, error } = await supabase
             .from('users')
-            .select('userID, email, username, firstname, lastname, role')
+            .select('userID, email, username, firstname, lastname, role, roleRequested')
             .eq('userID', userID)
             .single();
         
@@ -44,7 +44,7 @@ export async function getUserByEmail(req: Request, res: Response): Promise<void>
         
         const { data: user, error} = await supabase
             .from('users')
-            .select('userID, email, username, firstname, lastname, role')
+            .select('userID, email, username, firstname, lastname, role, roleRequested')
             .eq('email', email)
             .single();
 
