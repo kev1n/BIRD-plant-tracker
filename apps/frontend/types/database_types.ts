@@ -6,6 +6,18 @@ export interface PlantInfo {
   subcategory: string;
 }
 
+/**
+ * Update with the remaining fields when needed
+ */
+export interface Snapshots {
+  dateCreated: string;
+  patchID: string;
+  notes: string | null;
+  users: {
+    username: string;
+  };
+}
+
 export interface Observation {
   tempKey: number;
   isNew: boolean;
@@ -13,6 +25,7 @@ export interface Observation {
   observationID: number;
   snapshotID: number;
   PlantInfo: PlantInfo;
+  Snapshots?: Snapshots;
   plantQuantity: number;
   datePlanted: Date | null;
   hasBloomed: boolean | null;

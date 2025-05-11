@@ -14,6 +14,7 @@ import MapView from './pages/MapView';
 import NotFound from './pages/not-found';
 import SignUp from './pages/signup';
 import AdminPage from './pages/admin';
+import SpreadsheetView from './pages/SpreadsheetView';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
 
             <Route path="map" element={<MapView />} />
             <Route path="map/:patch" element={<MapView />} />
+            <Route path="spreadsheet" element={<SpreadsheetView />} />
             <Route path="example" element={<ExamplePage />} />
 
             {/* only admins and owners can access */}
