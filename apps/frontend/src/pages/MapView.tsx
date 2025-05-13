@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeafletAssets from '../components/LeafletAssets';
+import FiltersList from '@/components/filters/filters-list';
+import WhereAmI from '@/components/map-navigation/where-am-i';
 
 // Constants for the grid
 const GRID_SIZE_FEET = 15;
@@ -46,18 +48,17 @@ interface SidebarProps {
 
 // TODO: Move into seperate component, call it inspection details
 function Sidebar({ patchInfo }: SidebarProps) {
-  if (!patchInfo) return null;
-
   return (
-    <div className="w-72 p-5 bg-gray-50 h-[500px] overflow-y-auto shadow-md">
+    <div className="w-50 p-5 bg-gray-50 h-[500px] overflow-y-auto shadow-md">
       <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
-        Grid patch: {patchInfo.label}
+        Grid patch: {patchInfo?patchInfo.label:'Not Selected'}
       </h2>
       <div className="mt-4">
-        <p className="mb-2">Row: {patchInfo.row}</p>
-        <p className="mb-2">Column: {String.fromCharCode(65 + patchInfo.col)}</p>
+        <p className="mb-2">Row: {patchInfo? patchInfo.row : "Not Selected"}</p>
+        <p className="mb-2">Column: {patchInfo?String.fromCharCode(65 + patchInfo.col):"Not Selected"}</p>
       </div>
-      <SnapshotView patch={patchInfo.label} triggerTitle='Click Here to View Latest Snapshot' />
+      
+      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle='View Latest Snapshot' />}
     </div>
   );
 }
@@ -168,8 +169,14 @@ export default function MapView() {
   }
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-full w-full relative">
       <LeafletAssets />
+
+      <div className='absolute top-12 left-0 p-4 z-12'>
+        <WhereAmI />
+        <FiltersList />
+      </div>
+      
 
       <div className="flex-1 h-[500px] z-10">
         <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
@@ -182,11 +189,11 @@ export default function MapView() {
         </MapContainer>
       </div>
 
-      {patchInfo && (
+      
         <div>
           <Sidebar patchInfo={patchInfo} />
         </div>
-      )}
+      
     </div>
   );
 }

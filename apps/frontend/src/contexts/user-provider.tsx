@@ -44,10 +44,19 @@ export function UserProvider({ children }: UserProviderProps): React.ReactElemen
       }
 
       const userData = await response.json();
-      console.log('User data:', userData);
-      setUser(userData);
+      const parsedUserData: User = {
+        id: userData.userID,
+        username: userData.username,
+        email: userData.email,
+        firstname: userData.firstname,
+        lastname: userData.lastname, 
+        role: userData.role,
+      };
+      console.log('User data:', parsedUserData);
+      setUser(parsedUserData);
       setIsAuthenticated(true);
       return true;
+
     } catch (error) {
       console.error('Auth check error:', error);
       setUser(null);
