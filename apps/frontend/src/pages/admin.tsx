@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import type { User } from '../../types/auth';
-import UserContainer from '@/components/admin/user-container';
 import AllUsers from '@/components/admin/all-users';
+import ImportContainer from '@/components/admin/plant-import-form';
 import RoleRequest from '@/components/admin/role-request';
+import UserContainer from '@/components/admin/user-container';
 import UserRoleInfo from '@/components/admin/user-role-info';
+import { useEffect, useState } from 'react';
+import type { User } from '../../types/auth';
 
 export default function AdminPage(){
   const [users, setUsers] = useState<User[]>([]);
@@ -46,6 +47,7 @@ export default function AdminPage(){
       <div>
         <UserContainer users={filteredUsers} containerTitle='Role Requests' UserComponent={RoleRequest}/>
         <AllUsers users={users} containerTitle='All Users' UserComponent={UserRoleInfo}/>
+        <ImportContainer/>
       </div> 
       )}
     </div>
