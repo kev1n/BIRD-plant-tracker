@@ -13,6 +13,7 @@ import Home from './pages/home';
 import MapView from './pages/MapView';
 import NotFound from './pages/not-found';
 import SignUp from './pages/signup';
+import AdminPage from './pages/admin';
 import SpreadsheetView from './pages/SpreadsheetView';
 
 function App() {
@@ -38,6 +39,9 @@ function App() {
             <Route path="map/:patch" element={<MapView />} />
             <Route path="spreadsheet" element={<SpreadsheetView />} />
             <Route path="example" element={<ExamplePage />} />
+
+            <Route path="admin" element={<AdminPage/>} />
+
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

@@ -13,6 +13,7 @@ export interface User {
   firstname?: string;
   lastname?: string;
   role: string;
+  roleRequested?: string;
 }
 
 export interface UserContextType {

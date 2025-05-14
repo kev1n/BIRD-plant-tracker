@@ -6,17 +6,15 @@ import { CsvError, Plant } from '../types.js';
 
 export async function importPlants(req: Request, res: Response){
   try {
-    const csvText = req.body;
-
-    if (!csvText || typeof csvText !== 'string') {
-      res.status(400).json({ error: 'Invalid CSV content'});
+    if (!req.file || !req.file.buffer) {
+      res.status(400).json({ error: 'Missing file upload' });
       return;
     }
+  
+    const stream = Readable.from([ req.file.buffer ]);
 
     const results: Plant[] = [];
     const errors: CsvError[] = [];
-
-    const stream = Readable.from(csvText);
 
     stream
       .pipe(csvParser())
@@ -46,7 +44,8 @@ export async function importPlants(req: Request, res: Response){
             .insert(results);
           
           if (error) {
-            return res.status(500).json({ error: error.message });
+            res.status(500).json({ error: error.message });
+            return;
           }
 
           res.status(200).json({
@@ -57,6 +56,7 @@ export async function importPlants(req: Request, res: Response){
           });
         } catch (err) {
           res.status(500).json({ message: 'Unexpected error', error: err });
+          return;
         }
       });
 
