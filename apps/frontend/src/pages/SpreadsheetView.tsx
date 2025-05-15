@@ -2,6 +2,18 @@ import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuart
 import { AgGridReact } from 'ag-grid-react';
 import { useEffect, useState } from 'react';
 import { Observation } from 'types/database_types';
+import { Button } from '@/components/ui/button';
+import { EllipsisVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { 
+  AlertDialog, 
+  AlertDialogTrigger, 
+  AlertDialogHeader, 
+  AlertDialogContent, 
+  AlertDialogCancel, 
+  AlertDialogAction, 
+  AlertDialogFooter 
+} from '@/components/ui/alert-dialog';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -40,7 +52,26 @@ export default function SpreadSheetView() {
     fetchData();
   }, []);
 
-  
+async function deleteObservation(obsID: number) {
+  // call to endpoint
+  const token = localStorage.getItem('authToken');
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+  const apiPath = `${baseUrl}/observation/${obsID}`;
+  const response = await fetch(apiPath, {
+    method: "DELETE",
+    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("failed to delete observation");
+  }
+
+}
+
+
   // const handleAddRow = () => {
   //   const newRow = {
   //     Observer: "",
@@ -60,6 +91,58 @@ export default function SpreadSheetView() {
   // };
   
   const colDefs: ColDef[] = [
+    {
+      field: "Options",
+      cellRenderer: (params: ValueGetterParams<Observation>) => 
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <div className="flex w-full h-full justify-center items-center">
+            <EllipsisVertical />
+            </div>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent>
+          <DropdownMenuItem>
+            Edit
+          </DropdownMenuItem>  
+          <DropdownMenuItem>
+            Duplicate            
+          </DropdownMenuItem>  
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <AlertDialog>
+
+              <AlertDialogTrigger asChild>
+                <Button className="w-full text-left">Delete</Button>
+              </AlertDialogTrigger>
+
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                    Are you sure you want to delete this observation?
+                </AlertDialogHeader>
+                
+                <AlertDialogFooter>  
+                  <AlertDialogCancel>
+                    Cancel
+                  </AlertDialogCancel>
+
+                  <AlertDialogAction onClick={() => {
+                    const obsID = params.data?.observationID || -1;
+                    console.log(obsID);
+                    if (obsID === -1) { return; } // no valid obs to delete
+                    deleteObservation(obsID);
+                  }}>
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuItem>
+        </DropdownMenuContent>  
+      </DropdownMenu>,
+      headerClass: 'ag-header-cell-center',
+      cellStyle: {textAlign: 'center'}
+    },
     { 
       field: "Observation Date",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.dateCreated || '',
