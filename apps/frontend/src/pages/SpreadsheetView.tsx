@@ -20,57 +20,103 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 export default function SpreadSheetView() {
   const [rowData, setRowData] = useState<Observation[]>();
+  
+  // Function to get all observations on intial rendering, and after editing the spreadsheet
+  // Should token and baseUrl be abstracted out of the function?
+  const fetchData = async () => {
+    try {
+      // call to endpoint
+      const token = localStorage.getItem('authToken');
+      const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const apiPath = `${baseUrl}/get-observation`;
+      const response = await fetch(apiPath, {
+        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch observations');
+      }
+
+      const data = await response.json();
+      const real = data["data"];
+
+      setRowData(real);
+
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }
 
   // fetch initial observations from backend
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // call to endpoint
-        const token = localStorage.getItem('authToken');
-        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-        const apiPath = `${baseUrl}/get-observation`;
-        const response = await fetch(apiPath, {
-          credentials: 'include',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch observations');
-        }
-
-        const data = await response.json();
-        const real = data["data"];
-
-        setRowData(real);
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    }
     fetchData();
   }, []);
 
 async function deleteObservation(obsID: number) {
-  // call to endpoint
-  const token = localStorage.getItem('authToken');
-  const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-  const apiPath = `${baseUrl}/observation/${obsID}`;
-  const response = await fetch(apiPath, {
-    method: "DELETE",
-    credentials: 'include',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    // call to endpoint
+    const token = localStorage.getItem('authToken');
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+    const apiPath = `${baseUrl}/observation/${obsID}`;
+    const response = await fetch(apiPath, {
+      method: "DELETE",
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error("failed to delete observation");
+    if (!response.ok) {
+      throw new Error("failed to delete observation");
+    }
+
+    // Refresh data to show deletion
+    fetchData();
+
+  } catch (error) {
+    console.error("Error duplicating observation:", error);
   }
-
 }
 
+// take observationData and duplicate the relevant data in the Observations table
+// does not need to duplicate data referenced by foreign keys
+async function duplicateObservation(obsData: Observation) {
+  try {
+    // call to endpoint
+    const token = localStorage.getItem('authToken');
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+    const apiPath = `${baseUrl}/observation`;
+    
+    const response = await fetch(apiPath, {
+      method: "POST",
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        snapshotID: obsData.snapshotID,
+        plantQuantity: obsData.plantQuantity,
+        plantID: obsData.PlantInfo.plantID,
+        hasBloomed: obsData.hasBloomed,
+        datePlanted: obsData.datePlanted
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to duplicate observation");
+    }
+
+    // Refresh the data to show new observation
+    fetchData();
+    
+  } catch (error) {
+    console.error("Error duplicating observation:", error);
+  }
+}
 
   // const handleAddRow = () => {
   //   const newRow = {
@@ -105,12 +151,36 @@ async function deleteObservation(obsID: number) {
           <DropdownMenuItem>
             Edit
           </DropdownMenuItem>  
-          <DropdownMenuItem>
-            Duplicate            
-          </DropdownMenuItem>  
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="w-full text-left">Duplicate</Button>
+              </AlertDialogTrigger>  
 
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  Are you sure you want to duplicate this observation?
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel>
+                    Cancel
+                  </AlertDialogCancel>
+
+                  <AlertDialogAction onClick={() => {
+                      if (params.data) { duplicateObservation(params.data); }
+                    }}
+                  >
+                    Confirm
+                  </AlertDialogAction>
+
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>            
+          </DropdownMenuItem> 
+
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button className="w-full text-left">Delete</Button>
               </AlertDialogTrigger>
@@ -119,7 +189,7 @@ async function deleteObservation(obsID: number) {
                 <AlertDialogHeader>
                     Are you sure you want to delete this observation?
                 </AlertDialogHeader>
-                
+
                 <AlertDialogFooter>  
                   <AlertDialogCancel>
                     Cancel
@@ -130,11 +200,12 @@ async function deleteObservation(obsID: number) {
                     console.log(obsID);
                     if (obsID === -1) { return; } // no valid obs to delete
                     deleteObservation(obsID);
-                  }}>
+                  }}
+                  >
                     Confirm
                   </AlertDialogAction>
-                </AlertDialogFooter>
 
+                </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           </DropdownMenuItem>
