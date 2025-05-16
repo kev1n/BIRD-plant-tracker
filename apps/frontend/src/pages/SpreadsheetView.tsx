@@ -14,6 +14,7 @@ import {
   AlertDialogAction, 
   AlertDialogFooter 
 } from '@/components/ui/alert-dialog';
+import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -151,64 +152,23 @@ async function duplicateObservation(obsData: Observation) {
           <DropdownMenuItem>
             Edit
           </DropdownMenuItem>  
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button className="w-full text-left">Duplicate</Button>
-              </AlertDialogTrigger>  
 
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  Are you sure you want to duplicate this observation?
-                </AlertDialogHeader>
+          <SpreadsheetRowActionItem
+            actionName="Duplicate"
+            prompt="Are you sure you want to duplicate this observation?"
+            onConfirm={() => {if (params.data) { duplicateObservation(params.data); }}}
+          />
 
-                <AlertDialogFooter>
-                  <AlertDialogCancel>
-                    Cancel
-                  </AlertDialogCancel>
+          <SpreadsheetRowActionItem 
+            actionName="Delete"
+            prompt="Are you sure you want to delete this observation?" 
+            onConfirm={() => {
+              const obsID = params.data?.observationID || -1;
+              if (obsID === -1) { return; }
+              deleteObservation(obsID);
+            }}
+          />
 
-                  <AlertDialogAction onClick={() => {
-                      if (params.data) { duplicateObservation(params.data); }
-                    }}
-                  >
-                    Confirm
-                  </AlertDialogAction>
-
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>            
-          </DropdownMenuItem> 
-
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button className="w-full text-left">Delete</Button>
-              </AlertDialogTrigger>
-
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                    Are you sure you want to delete this observation?
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>  
-                  <AlertDialogCancel>
-                    Cancel
-                  </AlertDialogCancel>
-
-                  <AlertDialogAction onClick={() => {
-                    const obsID = params.data?.observationID || -1;
-                    console.log(obsID);
-                    if (obsID === -1) { return; } // no valid obs to delete
-                    deleteObservation(obsID);
-                  }}
-                  >
-                    Confirm
-                  </AlertDialogAction>
-
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </DropdownMenuItem>
         </DropdownMenuContent>  
       </DropdownMenu>,
       headerClass: 'ag-header-cell-center',
