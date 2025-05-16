@@ -2,18 +2,8 @@ import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuart
 import { AgGridReact } from 'ag-grid-react';
 import { useEffect, useState } from 'react';
 import { Observation } from 'types/database_types';
-import { Button } from '@/components/ui/button';
 import { EllipsisVertical } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { 
-  AlertDialog, 
-  AlertDialogTrigger, 
-  AlertDialogHeader, 
-  AlertDialogContent, 
-  AlertDialogCancel, 
-  AlertDialogAction, 
-  AlertDialogFooter 
-} from '@/components/ui/alert-dialog';
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
 
 // Register all Community features
