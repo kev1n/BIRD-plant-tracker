@@ -27,6 +27,7 @@ async function updateRole(email: string, approved: boolean) {
 }
 
 // Update a user between editor and admin (for UserRoleInfo components)
+
 async function updateAdmin(email:string, approved: boolean) {
     const newRole = approved ? 'admin' : 'editor';
   
@@ -51,4 +52,26 @@ async function updateAdmin(email:string, approved: boolean) {
     }
 }
 
-export { updateRole, updateAdmin };
+async function sendCSV(formData:FormData){
+  const token = localStorage.getItem('authToken');
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/import`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to import plant data to database');
+    }
+
+    return response.json();
+  } catch (err) {
+    console.error('Error uploading CSV:', err);
+  }
+}
+
+export { sendCSV, updateAdmin, updateRole };

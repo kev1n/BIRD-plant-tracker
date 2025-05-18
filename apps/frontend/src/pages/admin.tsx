@@ -4,7 +4,8 @@ import UserContainer from '@/components/admin/user-container';
 import AllUsers from '@/components/admin/all-users';
 import RoleRequest from '@/components/admin/role-request';
 import UserRoleInfo from '@/components/admin/user-role-info';
-
+import ImportContainer from '@/components/admin/plant-import-form';
+        
 export default function AdminPage(){
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +55,7 @@ export default function AdminPage(){
           containerTitle='All Users' 
           UserComponent={UserRoleInfo}
         />
+         <ImportContainer/>
       </div> 
       )}
     </div>
