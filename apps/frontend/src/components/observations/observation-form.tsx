@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarIcon , Check, ChevronsUpDown} from 'lucide-react';
+import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
@@ -24,7 +24,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from '@/components/ui/command';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Ensure you have the Popover component
 import { Input } from '@/components/ui/input';
@@ -32,12 +32,13 @@ import { Observation } from 'types/database_types'; // Ensure you have the corre
 import { useEffect } from 'react';
 import { PlantInfo } from 'types/database_types'; // Ensure you have the correct type for PlantInfo
 import NewPlantFormDialog from '../plant-selector/new-plant-form-dialog';
+import DeletePlantButton from '../plant-selector/delete-plant-button';
 const PlantInfoSchema = z.object({
   plantID: z.number(),
   plantCommonName: z.string(),
   plantScientificName: z.string().nullable(),
   isNative: z.boolean().nullable(),
-  subcategory: z.string(),
+  subcategory: z.string().nullable().optional(),
 });
 
 const ObservationSchema = z.object({
@@ -49,20 +50,20 @@ const ObservationSchema = z.object({
   PlantInfo: PlantInfoSchema,
   plantQuantity: z.number(),
   datePlanted: z.date().optional(),
-  hasBloomed: z.boolean().optional(), // Allow null for backward compatibility, but can be boolean
+  hasBloomed: z.boolean().nullable().optional(),
   deletedOn: z.date().optional(),
 });
 
 type FormValues = z.infer<typeof ObservationSchema>;
 
 export default function ObservationForm({
-  observation, // Optional: if you want to edit an existing observation
-  submitCallback, // Optional: callback function to handle form submission
+  observation,
+  submitCallback,
 }: {
   observation?: Observation;
-  submitCallback?: (values: Observation) => void; // Optional callback for submission
+  submitCallback?: (values: Observation) => void;
 }) {
-  const [plants, setPlants] = useState<PlantInfo[]>([]); // Assuming you have a Plant type
+  const [plants, setPlants] = useState<PlantInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const form = useForm<FormValues>({
     resolver: zodResolver(ObservationSchema),
@@ -72,17 +73,6 @@ export default function ObservationForm({
       modified: false,
       observationID: 0,
       snapshotID: -1,
-      PlantInfo: {
-        plantID: 1,
-        plantCommonName: 'test plant',
-        plantScientificName: null,
-        isNative: null,
-        subcategory: 'Shrub',
-      },
-      plantQuantity: 1,
-      datePlanted: undefined,
-      hasBloomed: undefined,
-      deletedOn: undefined,
     },
   });
 
@@ -109,8 +99,10 @@ export default function ObservationForm({
         console.error('Error fetching plants:', error);
       }
     };
-    if (searchTerm.length>0){
-    fetchPlants();
+    if (searchTerm.length > 0) {
+      fetchPlants();
+    } else {
+      setPlants([]);
     }
   }, [searchTerm]);
   useEffect(() => {
@@ -136,7 +128,7 @@ export default function ObservationForm({
     }
   }, [observation, form]);
 
-  function onSubmit(values: FormValues) {
+  function onObservationSubmit(values: FormValues) {
     const observationData: Observation = {
       tempKey: values.tempKey,
       isNew: values.isNew,
@@ -164,78 +156,98 @@ export default function ObservationForm({
   return (
     <div className="p-4">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="PlantInfo"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Plant Common Name</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-[200px] justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value.plantCommonName
-                        ? plants.find(
-                            (plant) => plant.plantCommonName === field.value.plantCommonName
-                          )?.plantCommonName
-                        : "Select plant"}
-                      <ChevronsUpDown className="opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search framework..."
-                      className="h-9"
-                      onValueChange={(value) => {
-                        setSearchTerm(value);
-                      }}
-                    />
-                    <NewPlantFormDialog newPlant={true} />
-                    <CommandList>
-                      <CommandEmpty>No framework found.</CommandEmpty>
-                      <CommandGroup>
-                        {plants.map((plant) => (
-                          <CommandItem
-                            value={plant.plantCommonName}
-                            key={plant.plantID}
-                            onSelect={() => {
-                              console.log("Selected plant:", plant);
-                              field.onChange(plant)
-                            }}
-                          >
-                            {plant.plantCommonName}
-                            <Check
-                              className={cn(
-                                "ml-auto",
-                                field?.value.plantCommonName === plant.plantCommonName
-                                  ? "opacity-100"
-                                  : "opacity-0"
+        <form onSubmit={form.handleSubmit(onObservationSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="PlantInfo"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel className="text-base font-bold">
+                  Plant Common Name <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormDescription>
+                  Search and select a plant from the list or add a new one by clicking "New Plant"
+                </FormDescription>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          'w-[400px] justify-between',
+                          !field.value && 'text-muted-foreground'
+                        )}
+                      >
+                        {field.value?.plantCommonName
+                          ? plants.find(
+                              plant => plant.plantCommonName === field.value.plantCommonName
+                            )?.plantCommonName
+                          : 'Select plant'}
+                        <ChevronsUpDown className="opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0">
+                    <Command>
+                      <CommandInput
+                        placeholder="Begin typing to search..."
+                        className="h-9"
+                        onValueChange={value => {
+                          setSearchTerm(value);
+                        }}
+                      />
+                      <NewPlantFormDialog newPlant={true} />
+                      <CommandList>
+                        <CommandEmpty>No framework found.</CommandEmpty>
+                        <CommandGroup>
+                          {plants.map(plant => (
+                            <CommandItem
+                              value={plant.plantCommonName}
+                              key={plant.plantID}
+                              onSelect={() => {
+                                console.log('Selected plant:', plant);
+                                field.onChange(plant);
+                              }}
+                            >
+                              {plant.plantCommonName}{' '}
+                              {plant.plantScientificName && `(${plant.plantScientificName})`}{' '}
+                              {plant.isNative != null && plant.isNative ? (
+                                <span className="text-green-500">[Native]</span>
+                              ) : (
+                                <span className="text-red-500">[Non-native]</span>
                               )}
-                            />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormDescription>
-                This is the language that will be used in the dashboard.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                              {plant.subcategory && (
+                                <span className="text-gray-500">[{plant.subcategory}]</span>
+                              )}
+                              <Check
+                                className={cn(
+                                  'ml-auto',
+                                  field?.value?.plantCommonName === plant.plantCommonName
+                                    ? 'opacity-100'
+                                    : 'opacity-0'
+                                )}
+                              />
+                              <DeletePlantButton
+                                plantCommonName={plant.plantCommonName}
+                                plantID={plant.plantID.toString()}
+                                callBack={() => {
+                                  setSearchTerm('');
+                                  setPlants([]);
+                                }}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="plantQuantity" // Field name in the form
@@ -262,10 +274,8 @@ export default function ObservationForm({
             name="hasBloomed" // Field name in the form
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base font-bold">
-                  Has Bloomed <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormDescription>Enter whether the flower has bloomed</FormDescription>
+                <FormLabel className="text-base font-bold">Has Bloomed</FormLabel>
+                <FormDescription>Enter whether the plant has bloomed</FormDescription>
                 <FormControl>
                   <RadioGroup
                     onValueChange={value =>
@@ -306,9 +316,7 @@ export default function ObservationForm({
             name="datePlanted"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base font-bold">
-                  Date Planted <span className="text-red-500">*</span>
-                </FormLabel>
+                <FormLabel className="text-base font-bold">Date Planted</FormLabel>
                 <FormDescription>Select the date the plant was planted</FormDescription>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -334,7 +342,6 @@ export default function ObservationForm({
             )}
           />
 
-          {/* make a radio group*/}
           <div className="mt-10 flex items-center justify-end space-x-2">
             <Button type="submit">Submit</Button>
           </div>
