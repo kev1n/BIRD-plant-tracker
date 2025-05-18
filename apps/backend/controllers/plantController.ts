@@ -193,6 +193,7 @@ export async function getPlant(req: Request, res: Response) {
             .from('PlantInfo')
             .select()
             .eq('plantID', plantID)
+            .is('deletedOn', null) 
             .single();
         
         if (plantError) {
