@@ -15,12 +15,13 @@ export default function AllUsers(props: UserContainerProps ) {
     return (
         <div>
             <div>
-            <input
-                type="text"
-                placeholder="Search users..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
+                <input
+                    className="pl-3 pr-3 mt-2 border-2 rounded border-gray-700 w-full max-w-2xl mx-auto"
+                    type="text"
+                    placeholder="Search users..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
             <div>
             <UserContainer

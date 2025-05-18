@@ -1,11 +1,11 @@
-import AllUsers from '@/components/admin/all-users';
-import ImportContainer from '@/components/admin/plant-import-form';
-import RoleRequest from '@/components/admin/role-request';
-import UserContainer from '@/components/admin/user-container';
-import UserRoleInfo from '@/components/admin/user-role-info';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { User } from '../../types/auth';
-
+import UserContainer from '@/components/admin/user-container';
+import AllUsers from '@/components/admin/all-users';
+import RoleRequest from '@/components/admin/role-request';
+import UserRoleInfo from '@/components/admin/user-role-info';
+import ImportContainer from '@/components/admin/plant-import-form';
+        
 export default function AdminPage(){
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -45,9 +45,17 @@ export default function AdminPage(){
     <div>
       {error ? (<p>{error}</p>) : (
       <div>
-        <UserContainer users={filteredUsers} containerTitle='Role Requests' UserComponent={RoleRequest}/>
-        <AllUsers users={users} containerTitle='All Users' UserComponent={UserRoleInfo}/>
-        <ImportContainer/>
+        <UserContainer 
+          users={filteredUsers} 
+          containerTitle='Role Requests' 
+          UserComponent={RoleRequest}
+        />
+        <AllUsers 
+          users={users} 
+          containerTitle='All Users' 
+          UserComponent={UserRoleInfo}
+        />
+         <ImportContainer/>
       </div> 
       )}
     </div>

@@ -2,7 +2,7 @@
 // to update user roles
 
 // update a user between editor and user (for RoleRequest components)
-async function updateRole(email: string, approved: boolean){
+async function updateRole(email: string, approved: boolean) {
     const newRole = approved ? 'editor' : 'user';
   
     const token = localStorage.getItem('authToken');
@@ -27,7 +27,8 @@ async function updateRole(email: string, approved: boolean){
 }
 
 // Update a user between editor and admin (for UserRoleInfo components)
-async function updateAdmin(email:string, approved: boolean){
+
+async function updateAdmin(email:string, approved: boolean) {
     const newRole = approved ? 'admin' : 'editor';
   
     const token = localStorage.getItem('authToken');
