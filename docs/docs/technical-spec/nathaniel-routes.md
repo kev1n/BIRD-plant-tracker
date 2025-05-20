@@ -51,7 +51,8 @@ Updates a user’s own profile information (all fields except `role`).
   "username":   "string",
   "email":      "string",
   "firstname":  "string",
-  "lastname":   "string"
+  "lastname":   "string",
+  "roleRequested": "string",
 }
 ```
 
