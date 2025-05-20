@@ -10,9 +10,18 @@ The database for storing plant information is organized into eight different tab
 - **ValidRoles**
 - **ValidSoilTypes**
 - **ValidSubcategories**
+
+Each section covers one table's data fields, including descriptions and constraints, as well as the row-level security policies for each table.
+
 ---
-**NOTE**
+**NOTE:** *DeletedOn Field*
 The **deletedOn** field is present in every table. If the data in that row was deleted (and therefore not visible to the user), **deletedOn** is set to the date the row was deleted. Otherwise, **deletedOn** is NULL. This soft delete method avoids permanent data loss, but will disclude data from user queries.
+
+---
+**NOTE:** *Row-Level Security Policies*
+While some tables have row-level security (RLS) policies, others do not due to technical difficulties. For tables that do not, server-side logic is implemented to the same effect to prevent malicious queries and to otherwise restrict user access to data as necessary. 
+
+As we only perform soft deletes, we do not need to define delete policies; soft deletion is encompassed by our update policies. 
 
 ---
 ### Observations
@@ -40,6 +49,14 @@ Observations store information about specific plants. Every observation belongs 
 
 **deletedOn** - `timestamptz`
 
+#### RLS Policies
+- All_users_read_observations
+  - Everyone has read access.
+- All_non_users_create_observations
+  - Editors, admins, and owners have insert access.
+- All_non_users_update_observations
+  - Editors, admins, and owners have update access.
+
 ---
 ### PatchInfo
 Stores information about patches in the grid dividing the sanctuary, namely latitude, longitude, and soil type (defined in the ValidSoilTypes table).
@@ -58,6 +75,15 @@ Stores information about patches in the grid dividing the sanctuary, namely lati
   - foreign key: **soilType** in the *ValidSoilTypes* table.
 
 **deletedOn** - `timestamptz`
+
+#### RLS Policies
+- Admins_owners_create_patches
+  - Admins and ownerss are allowed to add new patches to the table
+    - *Unused functionality in the current app*
+- Admins_owners_update_patches
+  - Admins and owners are allowed to update patch information
+- All_users_read_patchinfo
+  - Everyone can read information from the table.
 
 ---
 ### PlantInfo
@@ -79,6 +105,14 @@ Stores information about plant species, namely common and scientific names, whet
   - foreign key: references **subcategory** in the *ValidSubcategories* table.
 
 **deletedOn** - `timestamptz`
+
+#### RLS Policies
+- All_users_read_plantinfo
+  - Everyone can read information from the table
+- All_non_users_create_plantinfo
+  - those with more permissions than the `user` role can create new plants. (`editor`, `admin`, `owner`)
+- All_non_users_update_plantinfo
+  - those with more permissions than the `user` role can update plant information.
 
 ---
 ### Snapshots
@@ -103,6 +137,14 @@ Snapshots are designed to be collections of observations for a particular patch,
   - foreign key: references **patchID** in the *PatchInfo* table.
 
 **deletedOn** - `timestamptz`
+
+#### RLS Policies
+- All_users_read_snapshots
+  - Everyone has read access
+- All_non_users_create_snapshots
+  - Editors, admins, and owners have insert access
+- All_non_users_update_snapshots
+  - Editors, admins, and owners have update access
 
 ---
 ### users
@@ -135,6 +177,11 @@ Stores information about registered users of the app, such as id, email, name, a
 **updated_at** - `timestamptz`
 **deletedOn** - `timestamptz`
 
+#### RLS Policies
+*Security is handled in our endpoints instead of RLS policies.*
+  - users can update any of their own personal information besides **role**
+  - admins and owners can update **role** for other users, as long as that user is lower than them in the permissions heirarchy (i.e. only owners can promote/demote admins, and owners are untouchable).
+
 ---
 ### ValidRoles
 Defines that list of acceptable roles that a user can have or request. 
@@ -143,6 +190,9 @@ Defines that list of acceptable roles that a user can have or request.
   - as of 5/19/2025, entries are `user`, `editor`, `admin`, `owner`.
 
 **deletedOn** - `timestamptz`
+
+#### RLS Policies
+- Read-only for everyone.
 
 ---
 ### ValidSoilTypes
@@ -153,6 +203,9 @@ Defines the list of acceptable soil types that a patch in the sanctuary can have
 
 **deletedOn** - `timestamptz`
 
+#### RLS Policies
+- Read-only for everyone.
+
 ---
 ### ValidSubcategories
 Defines the list of acceptable plant types that a plant species can be classified as. 
@@ -161,3 +214,6 @@ Defines the list of acceptable plant types that a plant species can be classifie
   - as of 5/19/2025, entries are `forb`, `grass`, `tree`, `shrub`, `other`.
 
 **deletedOn** - `timestamptz`
+
+#### RLS Policies
+- Read-only for everyone.
