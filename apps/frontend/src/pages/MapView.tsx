@@ -1,12 +1,14 @@
+import FiltersList from '@/components/filters/filters-list';
+import WhereAmI from '@/components/map-navigation/where-am-i';
 import SnapshotView from '@/components/snapshots/snapshot-view';
+import { Button } from '@/components/ui/button';
+import { useUser } from '@/hooks/useUser';
 import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import LeafletAssets from '../components/LeafletAssets';
-import FiltersList from '@/components/filters/filters-list';
-import WhereAmI from '@/components/map-navigation/where-am-i';
-
 // Constants for the grid
 const GRID_SIZE_FEET = 15;
 const EARTH_RADIUS_FEET = 20902231; // Earth's radius in feet
@@ -51,14 +53,16 @@ function Sidebar({ patchInfo }: SidebarProps) {
   return (
     <div className="w-50 p-5 bg-gray-50 h-[500px] overflow-y-auto shadow-md">
       <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
-        Grid patch: {patchInfo?patchInfo.label:'Not Selected'}
+        Grid patch: {patchInfo ? patchInfo.label : 'Not Selected'}
       </h2>
       <div className="mt-4">
-        <p className="mb-2">Row: {patchInfo? patchInfo.row : "Not Selected"}</p>
-        <p className="mb-2">Column: {patchInfo?String.fromCharCode(65 + patchInfo.col):"Not Selected"}</p>
+        <p className="mb-2">Row: {patchInfo ? patchInfo.row : 'Not Selected'}</p>
+        <p className="mb-2">
+          Column: {patchInfo ? String.fromCharCode(65 + patchInfo.col) : 'Not Selected'}
+        </p>
       </div>
-      
-      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle='View Latest Snapshot' />}
+
+      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle="View Latest Snapshot" />}
     </div>
   );
 }
@@ -159,6 +163,9 @@ function GridOverlay() {
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
 
+  // Get the current user
+  const { user } = useUser();
+
   // Parse patch into row and column if patch is defined
   let patchInfo = null;
   if (patch) {
@@ -168,32 +175,55 @@ export default function MapView() {
     patchInfo = { row: row + 1, col, label: patch };
   }
 
+  const handleRequestEditing = async () => {
+    const token = localStorage.getItem('authToken');
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+    const response = await fetch(`${baseUrl}/users/info`, {
+      method: 'PUT',
+      body: JSON.stringify({ roleRequested: 'editor' }),
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (response.status >= 200 && response.status < 300) {
+      toast.success('Editing requested');
+    } else {
+      toast.error('Failed to request editing');
+    }
+  };
+
   return (
-    <div className="flex h-full w-full relative">
-      <LeafletAssets />
+    <div>
+      <div className="flex h-full w-full relative">
+        <LeafletAssets />
 
-      <div className='absolute top-12 left-0 p-4 z-12'>
-        <WhereAmI />
-        <FiltersList />
-      </div>
-      
+        <div className="absolute top-12 left-0 p-4 z-12">
+          <WhereAmI />
+          <FiltersList />
+        </div>
 
-      <div className="flex-1 h-[500px] z-10">
-        <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
-          <TileLayer
-            maxNativeZoom={30}
-            attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
-            url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
-          />
-          <GridOverlay />
-        </MapContainer>
-      </div>
+        <div className="flex-1 h-[500px] z-10">
+          <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
+            <TileLayer
+              maxNativeZoom={30}
+              attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
+              url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+            />
+            <GridOverlay />
+          </MapContainer>
+        </div>
 
-      
         <div>
           <Sidebar patchInfo={patchInfo} />
         </div>
-      
+      </div>
+      <div className="flex justify-end">
+        {/* Put this button in the lower right*/}
+        {user?.role === 'user' && (
+        <Button onClick={handleRequestEditing}>Request Editing</Button>
+        )}
+      </div>
     </div>
   );
 }
