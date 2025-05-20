@@ -38,8 +38,6 @@ function App() {
             <Route path="map/:patch" element={<MapView />} />
             <Route path="spreadsheet" element={<SpreadsheetView />} />
             <Route path="example" element={<ExamplePage />} />
-
-            {/* only admins and owners can access */}
             <Route element={<PrivateRoute allowedRoles={['admin', 'owner']} />}>
               <Route path="admin" element={<AdminPage />} />
             </Route>
