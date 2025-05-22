@@ -47,6 +47,9 @@ export default function SpreadSheetView() {
   }, []);
 
 
+// TODO: eventually need to abstract these functions into another file
+// Also: remove fetchData from these function calls and do that manually when the dialog buttons are clicked.
+
 // Delete an observation entirely. This erases it from the associated snapshot, 
 // as if this observation was never made.
 async function deleteObservation(obsID: number) {
@@ -204,6 +207,7 @@ async function duplicateObservation(obsData: Observation) {
     console.error("Error duplicating observation:", error);
   }
 }
+
 // duplicates the observation into a new, mostly blank snapshot.
 async function duplicateObservationEmptySnapshot(obsData: Observation) {
   try {
@@ -211,7 +215,7 @@ async function duplicateObservationEmptySnapshot(obsData: Observation) {
     const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
 
     // Get snapshot associated with this observation
-    const snapshotResponse = await fetch(`${baseUrl}/snapshot`, {
+    const snapshotResponse = await fetch(`${baseUrl}/snapshot/${obsData.snapshotID}`, {
       method: "GET",
       credentials: 'include', 
       headers: {
@@ -225,6 +229,7 @@ async function duplicateObservationEmptySnapshot(obsData: Observation) {
     }
 
     const snapshotData = await snapshotResponse.json();
+    const snapshot = snapshotData.data;
 
     // create new snapshot. Defaults to same date, user, and patch as original.
     const snapshotDupResponse = await fetch(`${baseUrl}/snapshot`, {
@@ -235,9 +240,9 @@ async function duplicateObservationEmptySnapshot(obsData: Observation) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        dateCreated: snapshotData.data.dateCreated,
-        userID: snapshotData.data.userID,
-        patchID: snapshotData.data.patchID,
+        dateCreated: snapshot.dateCreated,
+        userID: snapshot.userID,
+        patchID: snapshot.patchID,
       }),
     });
 
@@ -246,7 +251,7 @@ async function duplicateObservationEmptySnapshot(obsData: Observation) {
     }
 
     const newSnapshotData = await snapshotDupResponse.json();
-    const newSnapshotID = await newSnapshotData.data.snapshotID;
+    const newSnapshotID = newSnapshotData.snapshotID.snapshotID;
 
     // copy the single observation into the new snapshot
     const copyObservationResponse = await fetch(`${baseUrl}/observation`, {
