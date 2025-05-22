@@ -1,7 +1,7 @@
 import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { useEffect, useState } from 'react';
-import { Observation } from 'types/database_types';
+import { Observation, Snapshot } from 'types/database_types';
 import { EllipsisVertical } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
@@ -46,6 +46,9 @@ export default function SpreadSheetView() {
     fetchData();
   }, []);
 
+
+// Delete an observation entirely. This erases it from the associated snapshot, 
+// as if this observation was never made.
 async function deleteObservation(obsID: number) {
   try {
     // call to endpoint
@@ -69,6 +72,99 @@ async function deleteObservation(obsID: number) {
 
   } catch (error) {
     console.error("Error duplicating observation:", error);
+  }
+}
+
+// Delete an observation from a newly duplicated snapshot. This is for situations where
+// an observation *was* accurate for a time, and is not representative anymore. This preserves the
+// integrity of all other observations that are still in the snapshot.
+async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: number) {
+  try {
+    const token = localStorage.getItem('authToken');
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+
+    // Step 1: Get all observations from this snapshot
+    const getSnapshotObsApiPath = `${baseUrl}/observation/all/${snapshotID}`;
+    const snapshotObsResponse = await fetch(getSnapshotObsApiPath, {
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!snapshotObsResponse.ok) {
+      throw new Error("Failed to get snapshot observations");
+    }
+
+    const snapshotObsData = await snapshotObsResponse.json();
+    
+    // exclude the one we're deleting
+    const observations = snapshotObsData.data.filter((obs: Observation) => obs.observationID !== obsID);
+
+    // Step 2: Get actual snapshot
+    const getSnapshotPath = `${baseUrl}/snapshot/${snapshotID}`;
+    const snapshotResponse = await fetch(getSnapshotPath, {
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+
+    if (!snapshotResponse.ok) {
+      throw new Error("Failed to get snapshot");
+    }
+
+    const snapshotData = await snapshotResponse.json();
+    const snapshot: Snapshot = snapshotData.data;
+
+    // Step 3: Create a new snapshot (duplicate of the original)
+    const createSnapshotApiPath = `${baseUrl}/snapshot`;
+    const createSnapshotResponse = await fetch(createSnapshotApiPath, {
+      method: "POST",
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        dateCreated: snapshot.dateCreated,
+        userID: snapshot.userID,
+        patchID: snapshot.patchID,
+        notes: snapshot.notes
+      })
+    });
+
+    if (!createSnapshotResponse.ok) {
+      throw new Error("Failed to create new snapshot");
+    }
+
+    const newSnapshotData = await createSnapshotResponse.json();
+    const newSnapshotID = newSnapshotData.data.snapshotID;
+
+    // Step 4: Create new observations in the new snapshot for each observation except the excluded one
+    for (const obs of observations) {
+      await fetch(`${baseUrl}/observation`, {
+        method: "POST",
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          snapshotID: newSnapshotID,
+          plantQuantity: obs.plantQuantity,
+          plantID: obs.PlantInfo.plantID,
+          hasBloomed: obs.hasBloomed,
+          datePlanted: obs.datePlanted
+        })
+      });
+    }
+
+    // Refresh data to show the changes
+    fetchData();
+    
+  } catch (error) {
+    console.error("Error during snapshot duplication:", error);
   }
 }
 
@@ -106,6 +202,171 @@ async function duplicateObservation(obsData: Observation) {
     
   } catch (error) {
     console.error("Error duplicating observation:", error);
+  }
+}
+// duplicates the observation into a new, mostly blank snapshot.
+async function duplicateObservationEmptySnapshot(obsData: Observation) {
+  try {
+    const token = localStorage.getItem('authToken');
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+
+    // Get snapshot associated with this observation
+    const snapshotResponse = await fetch(`${baseUrl}/snapshot`, {
+      method: "GET",
+      credentials: 'include', 
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!snapshotResponse.ok) {
+      throw new Error("Failed to get snapshot");
+    }
+
+    const snapshotData = await snapshotResponse.json();
+
+    // create new snapshot. Defaults to same date, user, and patch as original.
+    const snapshotDupResponse = await fetch(`${baseUrl}/snapshot`, {
+      method: "POST",
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        dateCreated: snapshotData.data.dateCreated,
+        userID: snapshotData.data.userID,
+        patchID: snapshotData.data.patchID,
+      }),
+    });
+
+    if (!snapshotDupResponse.ok) {
+      throw new Error("Failed to duplicate snapshot");
+    }
+
+    const newSnapshotData = await snapshotDupResponse.json();
+    const newSnapshotID = await newSnapshotData.data.snapshotID;
+
+    // copy the single observation into the new snapshot
+    const copyObservationResponse = await fetch(`${baseUrl}/observation`, {
+      method: "POST",
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        snapshotID: newSnapshotID,
+        plantQuantity: obsData.plantQuantity,
+        plantID: obsData.PlantInfo.plantID,
+        hasBloomed: obsData.hasBloomed,
+        datePlanted: obsData.datePlanted
+      })
+    });
+
+    if (!copyObservationResponse.ok) {
+      throw new Error("Failed to duplicate observation");
+    }
+
+    fetchData();
+  } catch (error) {
+    console.error("Error duplicating observation to empty snapshot:", error);
+  }
+}
+
+// duplicate entire snapshot, including making duplicates of all observations
+async function duplicateSnapshot(snapID: number) {
+  try {
+    const token = localStorage.getItem('authToken');
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+
+    // Step 1: Get all observations from this snapshot
+    const getSnapshotObsApiPath = `${baseUrl}/observation/all/${snapID}`;
+    const snapshotObsResponse = await fetch(getSnapshotObsApiPath, {
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!snapshotObsResponse.ok) {
+      throw new Error("Failed to get snapshot observations");
+    }
+
+    const snapshotObsData = await snapshotObsResponse.json();
+    const observations = snapshotObsData.observations;
+
+    // Step 2: Get actual snapshot
+    const getSnapshotPath = `${baseUrl}/snapshot/${snapID}`;
+    const snapshotResponse = await fetch(getSnapshotPath, {
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+
+    if (!snapshotResponse.ok) {
+      throw new Error("Failed to get snapshot");
+    }
+
+    const snapshotData = await snapshotResponse.json();
+    const snapshot: Snapshot = snapshotData.data;
+
+    // Step 3: Create a new snapshot (duplicate of the original, with the current date)
+    const createSnapshotApiPath = `${baseUrl}/snapshot`;
+    const createSnapshotResponse = await fetch(createSnapshotApiPath, {
+      method: "POST",
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        // user can edit the date anyways, 
+        // can help distinguish the copy from the original
+        dateCreated: new Date().toISOString(), 
+        userID: snapshot.userID,
+        patchID: snapshot.patchID,
+        notes: snapshot.notes
+      })
+    });
+
+    if (!createSnapshotResponse.ok) {
+      throw new Error("Failed to create new snapshot");
+    }
+
+    const newSnapshotData = await createSnapshotResponse.json();
+    const newSnapshotID = newSnapshotData.snapshotID.snapshotID; // I do not know
+
+    // Step 4: Create new observations in the new snapshot for each observation
+    for (const obs of observations) {
+      const duplicateObsResponse = await fetch(`${baseUrl}/observation`, {
+        method: "POST",
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          snapshotID: newSnapshotID,
+          plantQuantity: obs.plantQuantity,
+          plantID: obs.plantID,
+          hasBloomed: obs.hasBloomed,
+          datePlanted: obs.datePlanted
+        })
+      });
+
+      if (!duplicateObsResponse) {
+        throw new Error("Failed to duplicate observation to new snapshot");
+      }
+    }
+
+    // Refresh data to show the changes
+    fetchData();
+    
+  } catch (error) {
+    console.error("Error during snapshot duplication:", error);
   }
 }
 
@@ -156,6 +417,34 @@ async function duplicateObservation(obsData: Observation) {
               const obsID = params.data?.observationID || -1;
               if (obsID === -1) { return; }
               deleteObservation(obsID);
+            }}
+          />
+
+          <SpreadsheetRowActionItem
+            actionName="Duplicate snapshot without this observation"
+            prompt="Are you sure you want to duplicate the snapshot without this observation?"
+            onConfirm={() => {
+              const obsID = params.data?.observationID || -1;
+              const snapID = params.data?.snapshotID || -1;
+              if (obsID === -1 || snapID === -1) { return; }
+              duplicateSnapshotAndDeleteObservation(obsID, snapID);
+            }}
+          />
+
+          <SpreadsheetRowActionItem
+            actionName="Duplicate into empty snapshot"
+            prompt="Are you sure you want to duplicate this observation into an empty snapshot?"
+            onConfirm={() => { if (params.data) { duplicateObservationEmptySnapshot(params.data); }}}
+          />
+
+          <SpreadsheetRowActionItem
+            actionName="Duplicate snapshot"
+            prompt="Are you sure you want to duplicate the entire snapshot?"
+            onConfirm={() => { 
+              if (params.data?.snapshotID) { 
+                console.log(params.data.snapshotID);
+                duplicateSnapshot(params.data?.snapshotID); 
+              }
             }}
           />
 
