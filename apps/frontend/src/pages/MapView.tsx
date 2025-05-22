@@ -1,11 +1,11 @@
+import FiltersList from '@/components/filters/filters-list';
+import WhereAmI from '@/components/map-navigation/where-am-i';
 import SnapshotView from '@/components/snapshots/snapshot-view';
 import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeafletAssets from '../components/LeafletAssets';
-import FiltersList from '@/components/filters/filters-list';
-import WhereAmI from '@/components/map-navigation/where-am-i';
 
 // Constants for the grid
 const GRID_SIZE_FEET = 15;
@@ -49,7 +49,7 @@ interface SidebarProps {
 // TODO: Move into seperate component, call it inspection details
 function Sidebar({ patchInfo }: SidebarProps) {
   return (
-    <div className="w-50 p-5 bg-gray-50 h-[500px] overflow-y-auto shadow-md">
+    <div className="w-full md:w-50 p-5 bg-gray-50 h-auto md:h-[500px] overflow-y-auto shadow-md">
       <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
         Grid patch: {patchInfo?patchInfo.label:'Not Selected'}
       </h2>
@@ -158,6 +158,7 @@ function GridOverlay() {
 
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
+  const [showTools, setShowTools] = useState(false);
 
   // Parse patch into row and column if patch is defined
   let patchInfo = null;
@@ -169,16 +170,43 @@ export default function MapView() {
   }
 
   return (
-    <div className="flex h-full w-full relative">
+    <div className="flex flex-col md:flex-row h-full w-full relative">
       <LeafletAssets />
 
-      <div className='absolute top-12 left-0 p-4 z-12'>
+      {/* Tools toggle button - visible only on mobile */}
+      <button 
+        className="md:hidden absolute top-2 left-2 z-20 bg-white p-2 rounded-full shadow-md"
+        onClick={() => setShowTools(!showTools)}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showTools ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+        </svg>
+      </button>
+
+      {/* Desktop tools panel */}
+      <div className='hidden md:block absolute top-12 left-0 p-4 z-12'>
         <WhereAmI />
         <FiltersList />
       </div>
       
+      {/* Mobile tools panel - slides in from bottom */}
+      {showTools && (
+        <div className='md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white shadow-lg rounded-t-lg max-h-[80vh] overflow-y-auto'>
+          <div className="flex justify-end p-2">
+            <button onClick={() => setShowTools(false)} className="p-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex flex-col gap-2 p-2">
+            <WhereAmI />
+            <FiltersList />
+          </div>
+        </div>
+      )}
 
-      <div className="flex-1 h-[500px] z-10">
+      <div className="flex-1 h-[300px] md:h-[500px] z-10">
         <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
           <TileLayer
             maxNativeZoom={30}
@@ -189,11 +217,9 @@ export default function MapView() {
         </MapContainer>
       </div>
 
-      
-        <div>
-          <Sidebar patchInfo={patchInfo} />
-        </div>
-      
+      <div className="w-full md:w-auto">
+        <Sidebar patchInfo={patchInfo} />
+      </div>
     </div>
   );
 }
