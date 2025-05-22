@@ -172,8 +172,8 @@ export default function SpreadSheetView() {
     });
 
   return (
-    <div className="flex flex-col h-screen p-4">
-      <div className="h-full md:h-[40%]">
+    <div className="flex flex-col h-full py-4">
+      <div className="h-full">
         <AgGridReact
           rowData={rowData}
           columnDefs={colDefs}

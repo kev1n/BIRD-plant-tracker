@@ -27,7 +27,7 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="flex gap-2 p-2 px-2 md:px-5 text-lg md:text-xl items-center border-b border-black shadow-md">
+    <nav className="flex gap-2 py-1 px-2 md:px-4 text-lg md:text-xl items-center border-b border-black shadow-md">
       <div className="flex-1 flex gap-2 items-center">
         <img src={BirdLogo} alt="Sanctuary Logo" className="w-9 h-9 md:w-12 md:h-12"/>
         <button

@@ -49,7 +49,7 @@ interface SidebarProps {
 // TODO: Move into seperate component, call it inspection details
 function Sidebar({ patchInfo }: SidebarProps) {
   return (
-    <div className="w-full md:w-50 p-5 bg-gray-50 h-auto md:h-[500px] overflow-y-auto shadow-md">
+    <div className="w-full md:w-50 p-5 bg-gray-50 h-full overflow-y-auto shadow-md">
       <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
         Grid patch: {patchInfo?patchInfo.label:'Not Selected'}
       </h2>
@@ -170,7 +170,7 @@ export default function MapView() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-full w-full relative">
+    <div className="flex flex-col md:flex-row h-full w-full relative py-4">
       <LeafletAssets />
 
       {/* Tools toggle button - visible only on mobile */}
@@ -206,7 +206,7 @@ export default function MapView() {
         </div>
       )}
 
-      <div className="flex-1 h-[300px] md:h-[500px] z-10">
+      <div className="flex-1 h-full z-10">
         <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
           <TileLayer
             maxNativeZoom={30}

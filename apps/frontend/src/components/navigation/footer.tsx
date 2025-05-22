@@ -2,7 +2,7 @@ import CSBBSLogo from '../../assets/logos/csbbs_logo.svg';
 
 export default function Footer() {
   return (
-    <footer className="flex gap-2 p-2 px-2 md:px-4 text-base items-center border-t border-black shadow-md sticky top-[100vh]">
+    <footer className="flex gap-2 p-2 px-2 md:px-4 text-base items-center border-t border-black shadow-md bg-white">
       <div className="flex-1 flex gap-2">
         <ul className="p-0 m-0 list-none flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
           <img className="w-20 md:w-24" src={CSBBSLogo} alt="sanctuary logo"/>
