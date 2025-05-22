@@ -100,9 +100,13 @@ async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: 
     }
 
     const snapshotObsData = await snapshotObsResponse.json();
+
+    console.log("observations: ", snapshotObsData);
     
     // exclude the one we're deleting
-    const observations = snapshotObsData.data.filter((obs: Observation) => obs.observationID !== obsID);
+    const observations = snapshotObsData.observations.filter((obs: Observation) => obs.observationID !== obsID);
+
+    console.log("filtered obs: ", observations);
 
     // Step 2: Get actual snapshot
     const getSnapshotPath = `${baseUrl}/snapshot/${snapshotID}`;
@@ -118,6 +122,7 @@ async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: 
     }
 
     const snapshotData = await snapshotResponse.json();
+    console.log(snapshotData);
     const snapshot: Snapshot = snapshotData.data;
 
     // Step 3: Create a new snapshot (duplicate of the original)
@@ -130,7 +135,7 @@ async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: 
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        dateCreated: snapshot.dateCreated,
+        dateCreated: new Date().toISOString(),
         userID: snapshot.userID,
         patchID: snapshot.patchID,
         notes: snapshot.notes
@@ -142,7 +147,7 @@ async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: 
     }
 
     const newSnapshotData = await createSnapshotResponse.json();
-    const newSnapshotID = newSnapshotData.data.snapshotID;
+    const newSnapshotID = newSnapshotData.snapshotID.snapshotID;
 
     // Step 4: Create new observations in the new snapshot for each observation except the excluded one
     for (const obs of observations) {
@@ -156,7 +161,7 @@ async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: 
         body: JSON.stringify({
           snapshotID: newSnapshotID,
           plantQuantity: obs.plantQuantity,
-          plantID: obs.PlantInfo.plantID,
+          plantID: obs.plantID,
           hasBloomed: obs.hasBloomed,
           datePlanted: obs.datePlanted
         })
@@ -240,7 +245,7 @@ async function duplicateObservationEmptySnapshot(obsData: Observation) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        dateCreated: snapshot.dateCreated,
+        dateCreated: new Date().toISOString(),
         userID: snapshot.userID,
         patchID: snapshot.patchID,
       }),
@@ -410,13 +415,29 @@ async function duplicateSnapshot(snapID: number) {
           </DropdownMenuItem>  
 
           <SpreadsheetRowActionItem
-            actionName="Duplicate"
+            actionName="Duplicate Observation"
             prompt="Are you sure you want to duplicate this observation?"
             onConfirm={() => {if (params.data) { duplicateObservation(params.data); }}}
           />
 
+          <SpreadsheetRowActionItem
+            actionName="Duplicate into new empty snapshot"
+            prompt="Are you sure you want to duplicate this observation into an empty snapshot?"
+            onConfirm={() => { if (params.data) { duplicateObservationEmptySnapshot(params.data); }}}
+          />
+
+          <SpreadsheetRowActionItem
+            actionName="Duplicate snapshot"
+            prompt="Are you sure you want to duplicate the entire snapshot?"
+            onConfirm={() => { 
+              if (params.data?.snapshotID) { 
+                duplicateSnapshot(params.data?.snapshotID); 
+              }
+            }}
+          />
+
           <SpreadsheetRowActionItem 
-            actionName="Delete"
+            actionName="Delete Observation"
             prompt="Are you sure you want to delete this observation?" 
             onConfirm={() => {
               const obsID = params.data?.observationID || -1;
@@ -433,23 +454,6 @@ async function duplicateSnapshot(snapID: number) {
               const snapID = params.data?.snapshotID || -1;
               if (obsID === -1 || snapID === -1) { return; }
               duplicateSnapshotAndDeleteObservation(obsID, snapID);
-            }}
-          />
-
-          <SpreadsheetRowActionItem
-            actionName="Duplicate into empty snapshot"
-            prompt="Are you sure you want to duplicate this observation into an empty snapshot?"
-            onConfirm={() => { if (params.data) { duplicateObservationEmptySnapshot(params.data); }}}
-          />
-
-          <SpreadsheetRowActionItem
-            actionName="Duplicate snapshot"
-            prompt="Are you sure you want to duplicate the entire snapshot?"
-            onConfirm={() => { 
-              if (params.data?.snapshotID) { 
-                console.log(params.data.snapshotID);
-                duplicateSnapshot(params.data?.snapshotID); 
-              }
             }}
           />
 
