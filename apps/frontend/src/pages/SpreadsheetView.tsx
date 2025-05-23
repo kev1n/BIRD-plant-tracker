@@ -416,19 +416,22 @@ async function duplicateSnapshot(snapID: number) {
 
           <SpreadsheetRowActionItem
             actionName="Duplicate Observation"
-            prompt="Are you sure you want to duplicate this observation?"
+            prompt="Are you sure you want to DUPLICATE this observation?"
+            color=""
             onConfirm={() => {if (params.data) { duplicateObservation(params.data); }}}
           />
 
           <SpreadsheetRowActionItem
             actionName="Duplicate into new empty snapshot"
-            prompt="Are you sure you want to duplicate this observation into an empty snapshot?"
+            prompt="Are you sure you want to DUPLICATE this observation into an EMPTY SNAPSHOT?"
+            color=""
             onConfirm={() => { if (params.data) { duplicateObservationEmptySnapshot(params.data); }}}
           />
 
           <SpreadsheetRowActionItem
             actionName="Duplicate snapshot"
-            prompt="Are you sure you want to duplicate the entire snapshot?"
+            prompt="Are you sure you want to DUPLICATE the ENTIRE SNAPSHOT?"
+            color=""
             onConfirm={() => { 
               if (params.data?.snapshotID) { 
                 duplicateSnapshot(params.data?.snapshotID); 
@@ -436,9 +439,10 @@ async function duplicateSnapshot(snapID: number) {
             }}
           />
 
-          <SpreadsheetRowActionItem 
+          <SpreadsheetRowActionItem
             actionName="Delete Observation"
-            prompt="Are you sure you want to delete this observation?" 
+            prompt="Are you sure you want to DELETE this observation?" 
+            color="red"
             onConfirm={() => {
               const obsID = params.data?.observationID || -1;
               if (obsID === -1) { return; }
@@ -448,7 +452,8 @@ async function duplicateSnapshot(snapID: number) {
 
           <SpreadsheetRowActionItem
             actionName="Duplicate snapshot without this observation"
-            prompt="Are you sure you want to duplicate the snapshot without this observation?"
+            prompt="Are you sure you want to DUPLICATE the snapshot WITHOUT THIS OBSERVATION?"
+            color="red"
             onConfirm={() => {
               const obsID = params.data?.observationID || -1;
               const snapID = params.data?.snapshotID || -1;

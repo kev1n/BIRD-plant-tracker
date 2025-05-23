@@ -13,6 +13,7 @@ import {
 interface ActionItemProps {
   actionName: string
   prompt: string,
+  color: string,
   onConfirm: () => void
 }
 
@@ -23,7 +24,12 @@ export default function SpreadsheetRowActionItem(props: ActionItemProps) {
     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button className="w-full text-left">{props.actionName}</Button>
+          <Button 
+            className={`w-full text-left hover:shadow-lg 
+              ${props.color === "red" ? "bg-[#BB0030] hover:bg-[#800000]" : ""}`}
+          >
+            {props.actionName}
+          </Button>
         </AlertDialogTrigger>  
 
         <AlertDialogContent>
