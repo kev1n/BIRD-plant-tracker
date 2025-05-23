@@ -1,7 +1,7 @@
-import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams } from 'ag-grid-community';
+import { AllCommunityModule, CellValueChangedEvent, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams, ValueSetterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { useEffect, useState } from 'react';
-import { Observation } from 'types/database_types';
+import { Observation, updatedObservation } from 'types/database_types';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -40,6 +40,39 @@ export default function SpreadSheetView() {
     fetchData();
   }, []);
 
+  const commitUpdate = async (e: CellValueChangedEvent) => {
+    try {
+      const updatedRow: Observation = e.data;
+
+      const obsID = updatedRow.observationID;
+
+      const updates: updatedObservation = {
+        plantQuantity: updatedRow.plantQuantity,
+        hasBloomed: updatedRow.hasBloomed,
+        datePlanted: updatedRow.datePlanted
+      };
+
+      const token = localStorage.getItem('authToken');
+      const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const apiPath = `${baseUrl}/observation/${obsID}`;
+      const response = await fetch(apiPath, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+    } catch (error){
+      console.error("Error:", error);
+    }
+  }
+
   
   // const handleAddRow = () => {
   //   const newRow = {
@@ -67,6 +100,8 @@ export default function SpreadSheetView() {
       filter: true,
       headerClass: 'ag-header-cell-center', // Centers the header
       cellStyle: { textAlign: 'center' }, // Centers the cell content
+      editable: true,
+      cellEditor: 'agDateCellEditor',
     },
     { 
       field: "Observer Name",
@@ -75,6 +110,8 @@ export default function SpreadSheetView() {
       filter: true,
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      editable: true,
+      cellEditor: 'agTextCellEditor',
     },
     { 
       field: "Patch ID",
@@ -92,6 +129,18 @@ export default function SpreadSheetView() {
       type: 'numericColumn',
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      editable: true,
+      cellEditor: 'agNumberCellEditor',
+      valueSetter: (params: ValueSetterParams<Observation>) => {
+        const oldValue = params.data.plantQuantity;
+        const newValue = params.newValue;
+        // only do anything if it actually changed:
+        if (newValue !== oldValue) {
+          params.data.plantQuantity = newValue;
+          return true;    // tells AG-Grid “I applied the change”
+        }
+        return false;     // “nothing changed, revert to oldValue”
+      },
     },
     { 
       field: "Plant Common Name",
@@ -111,11 +160,24 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Date Planted",
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.datePlanted || '',
+      cellDataType: 'dateString',
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.datePlanted || null,
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      editable: true,
+      cellEditor: 'agDateStringCellEditor',
+      valueSetter: (params: ValueSetterParams<Observation>) => {
+        const oldValue = params.data.datePlanted;
+        const newValue = params.newValue;
+        // only do anything if it actually changed:
+        if (newValue !== oldValue) {
+          params.data.datePlanted = newValue;
+          return true;    // tells AG-Grid “I applied the change”
+        }
+        return false;     // “nothing changed, revert to oldValue”
+      },
     },
     { 
       field: "isNative",
@@ -132,6 +194,21 @@ export default function SpreadSheetView() {
       filter: true,
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      editable: true,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: ['true', 'false']
+      },
+      valueSetter: (params: ValueSetterParams<Observation>) => {
+        const oldValue = params.data.hasBloomed;
+        const newValue = params.newValue;
+        // only do anything if it actually changed:
+        if (newValue !== oldValue) {
+          params.data.hasBloomed = newValue;
+          return true;    // tells AG-Grid “I applied the change”
+        }
+        return false;     // “nothing changed, revert to oldValue”
+      },
     },
     { 
       field: "Subcategory",
@@ -150,6 +227,8 @@ export default function SpreadSheetView() {
       cellStyle: { textAlign: 'center' },
     }
   ];  
+
+  
   
   // AG Grid Theme
   const myTheme = themeQuartz
@@ -180,6 +259,7 @@ export default function SpreadSheetView() {
           pagination={true}
           paginationAutoPageSize={true}
           theme={myTheme}
+          onCellValueChanged={commitUpdate}
         />
       </div>
     </div>
