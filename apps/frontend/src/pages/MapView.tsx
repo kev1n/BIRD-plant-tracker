@@ -64,6 +64,9 @@ function GridOverlay() {
     gridRef.current = new LayerGroup();
     map.addLayer(gridRef.current);
 
+    // Track if user is on any valid patch
+    let userOnValidPatch = false;
+
     // Create grid patchs
     for (let row = 0; row < numRows; row++) {
       for (let col = 0; col < numCols; col++) {
@@ -84,6 +87,10 @@ function GridOverlay() {
           coords?.latitude <= topLeft[0] && coords?.latitude >= bottomRight[0] &&
           coords?.longitude >= topLeft[1] && coords?.longitude <= bottomRight[1]
 
+        if (isUserHere) {
+          userOnValidPatch = true;
+        }
+
         // Create rectangle for grid patch
         // TODO: Match with color variables from project
         const rect = new Rectangle([topLeft, bottomRight], {
@@ -101,6 +108,24 @@ function GridOverlay() {
         rect.addTo(gridRef.current);
         // make the rectangle
       }
+    }
+
+    // Add user location marker if they're not on a valid patch but have GPS coordinates
+    if (coords?.latitude && coords?.longitude && !userOnValidPatch) {
+      const userLocationMarker = new Marker([coords.latitude, coords.longitude], {
+        icon: divIcon({
+          className: 'user-location-marker',
+          html: `<div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <circle cx="12" cy="12" r="8" fill="#FF4444" stroke="#FFFFFF" stroke-width="2"/>
+              <circle cx="12" cy="12" r="3" fill="#FFFFFF"/>
+            </svg>
+          </div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        }),
+      });
+      userLocationMarker.addTo(gridRef.current);
     }
 
     // Add column labels (A-Z)
