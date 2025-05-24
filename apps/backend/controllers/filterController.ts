@@ -176,7 +176,7 @@ export async function getPatchesFilteredByLatestPlants(req: Request, res: Respon
       return;
     }
     if (!data || data.length === 0) {
-      res.status(404).json({ error: 'No patches found for the given plant IDs' });
+      res.status(200).json({ data: [] });
       return;
     }
     res.status(200).json({ data: data });
@@ -186,6 +186,7 @@ export async function getPatchesFilteredByLatestPlants(req: Request, res: Respon
 }
 
 export async function getPatchesFilteredByDateRangePlants(req: Request, res: Response) {
+  console.log('getPatchesFilteredByDateRangePlants');
   try {
     const plantIDJson = req.query.plants;
     if (!plantIDJson) {
