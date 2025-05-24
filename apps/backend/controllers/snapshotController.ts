@@ -161,7 +161,7 @@ export async function getSnapshot(req: Request, res: Response) {
       .from('Snapshots')
       .select('*, users(username)')
       .eq('snapshotID', snapshotID)
-      .is('deletedOn', null)
+      .is("deletedOn", null)
       .single();
 
     if (error) {

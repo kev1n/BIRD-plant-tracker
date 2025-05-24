@@ -3,7 +3,7 @@ export interface PlantInfo {
   plantCommonName: string;
   plantScientificName: string | null;
   isNative: boolean | null;
-  subcategory: string;
+  subcategory?: string | null;
 }
 
 /**
