@@ -608,8 +608,8 @@ async function duplicateSnapshot(snapID: number) {
     });
 
   return (
-    <div className="flex flex-col h-screen p-4">
-      <div className="h-[40%]">
+    <div className="flex flex-col h-full py-4">
+      <div className="h-full">
         <AgGridReact
           rowData={rowData}
           columnDefs={colDefs}
