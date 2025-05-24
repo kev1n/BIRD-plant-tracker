@@ -8,6 +8,7 @@ plantRoutes.post('/', authMiddleware, plantController.postPlant);
 plantRoutes.delete('/:plantID', authMiddleware, plantController.deletePlant);
 plantRoutes.put('/:plantID', authMiddleware, plantController.updatePlant);
 plantRoutes.get('/:plantID', plantController.getPlant);
+plantRoutes.get('/name/:plantCommonName', plantController.getPlantName);
 //  plants?name=partialName
 //  search string is query param
 plantRoutes.get('/', plantController.getPlants);

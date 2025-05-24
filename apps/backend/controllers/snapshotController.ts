@@ -28,7 +28,7 @@ export async function newSnapshot(req: AuthRequest, res: Response) {
       .single();
 
     if (error) {
-      res.status(400).json({ error: error.message });
+      res.status(500).json({ error: error.message });
       return;
     }
 

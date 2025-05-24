@@ -27,7 +27,7 @@ export async function newObservation(req: AuthRequest, res: Response) {
       .single();
 
     if (obsError) {
-      res.status(400).json({ error: obsError.message });
+      res.status(500).json({ error: obsError.message });
       return;
     }
 

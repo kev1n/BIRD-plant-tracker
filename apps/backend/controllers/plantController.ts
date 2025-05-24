@@ -217,6 +217,43 @@ export async function getPlant(req: Request, res: Response) {
     }
 };
 
+export async function getPlantName(req: Request, res: Response) {
+    try {
+        const {plantCommonName} = req.params;
+
+        if (!plantCommonName) {
+            // if plantname not passed
+            res.status(400).json({ error: 'Missing plant ID'})
+            return;
+        }
+
+        const {data: plant, error: plantError} = await supabase
+            .from('PlantInfo')
+            .select()
+            .eq('plantCommonName', plantCommonName)
+            .single();
+        
+        if (plantError) {
+            // error retrieving from database
+            res.status(400).json({ error: plantError.message });
+            return;
+        }
+        
+        if (!plant) {
+            // plant does not exist
+            res.status(404).json({ error: `Plant: ${plantCommonName} is not valid` });
+            return;
+        }
+
+        // success, plant retrieved
+        res.status(200).json({ plant });
+
+    } catch (error) {
+        // another unexpected server error
+        res.status(500).json({ error: `Internal server error: ${error}` });
+    }
+};
+
 // Get all plants based on name. Name CAN BE A SUBSTRING of the full name. If name is empty,
 // return all plants. Searches based on the common name, NOT the scientific name. 
 export async function getPlants(req: Request, res: Response) {
