@@ -7,19 +7,32 @@ Click Spreadsheet on the upper right of the header:
 
 
 ### Navigating through the Spreadsheet
-The page shows all volunteer observations in a spreadheet. Fields that are included are:
-- list fields here
-
+- **Observation Date** *(Taken from the observation's snapshot)*
+- **Observer Name**    *(Taken from the observation's snapshot)*
+- **Patch ID**         *(Taken from the observation's snapshot)*
+- **Plant Quantity**   
+- **Plant Common Name** *(Taken from the associated plant in the database)*
+- **Plant Scientific Name** *(Taken from the associated plant in the database)*
+- **Date Planted**
+- **Is Native**
+- **Has Bloomed**
+- **Subcategory** *(Taken from the associated plant in the database)*
+- **Additional Notes** *(Taken from the observation's snapshot)*
+ 
 ![overall spreadsheet view](./spreadsheet-images/spreadsheet.png)
 
-The table has fields continuing to the right, so scroll right to view more columns, once you are scrolling, a scroll bar appears at the bottom of the table to allow for easier scrolling:
-![scrollable table](./spreadsheet-images/scrolling-table.png)
+---
+#### Scrolling
+Not every column is visible on screen at once. To view the rest of the columns, use the **black and gray scrollbar** at the bottom of the spreadsheet window. 
 
-At the bottom right of the spreadsheet, users can see the pages and move through them to access all observations:
+---
+#### Pagination
+At the bottom right of the spreadsheet, users can see the pages and move through them to access the rest of the observations in the spreadsheet:
 ![pagination ability](./spreadsheet-images/pagination.png)
 
-
-To reorder columns, click and drag the title of the column, that is in green. This should show a box with the title of that column, allowing users to move it:
+---
+#### Reordering and Sorting
+To reorder columns, click and drag the title of the column, that is in green. This should show a box with the title of that column, allowing users to drag it, swapping its location with surrounding columns :
 ![movable columns on spreadsheet](./spreadsheet-images/movable-columns.png)
 
 ### Filtering Options Within a Column
