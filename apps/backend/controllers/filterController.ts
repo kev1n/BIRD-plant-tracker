@@ -186,7 +186,6 @@ export async function getPatchesFilteredByLatestPlants(req: Request, res: Respon
 }
 
 export async function getPatchesFilteredByDateRangePlants(req: Request, res: Response) {
-  console.log('getPatchesFilteredByDateRangePlants');
   try {
     const plantIDJson = req.query.plants;
     if (!plantIDJson) {
