@@ -1,11 +1,12 @@
 import SnapshotView from '@/components/snapshots/snapshot-view';
 import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeafletAssets from '../components/LeafletAssets';
 import FiltersList from '@/components/filters/filters-list';
 import WhereAmI from '@/components/map-navigation/where-am-i';
+import { PlantInfo } from 'types/database_types';
 
 // Constants for the grid
 const GRID_SIZE_FEET = 15;
@@ -51,30 +52,40 @@ function Sidebar({ patchInfo }: SidebarProps) {
   return (
     <div className="w-50 p-5 bg-gray-50 h-[500px] overflow-y-auto shadow-md">
       <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
-        Grid patch: {patchInfo?patchInfo.label:'Not Selected'}
+        Grid patch: {patchInfo ? patchInfo.label : 'Not Selected'}
       </h2>
       <div className="mt-4">
-        <p className="mb-2">Row: {patchInfo? patchInfo.row : "Not Selected"}</p>
-        <p className="mb-2">Column: {patchInfo?String.fromCharCode(65 + patchInfo.col):"Not Selected"}</p>
+        <p className="mb-2">Row: {patchInfo ? patchInfo.row : 'Not Selected'}</p>
+        <p className="mb-2">
+          Column: {patchInfo ? String.fromCharCode(65 + patchInfo.col) : 'Not Selected'}
+        </p>
       </div>
-      
-      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle='View Latest Snapshot' />}
+
+      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle="View Latest Snapshot" />}
     </div>
   );
 }
 
-function GridOverlay() {
+function GridOverlay({
+  filteredStartDate,
+  filteredEndDate,
+  filteredLatest,
+  filteredPlants,
+}: {
+  filteredStartDate?: Date;
+  filteredEndDate?: Date;
+  filteredLatest?: boolean;
+  filteredPlants?: PlantInfo[];
+}) {
   const map = useMap();
   const navigate = useNavigate();
   const location = useLocation();
   const gridRef = useRef<LayerGroup | null>(null);
-
-  // Extract grid patch from URL params
   const { patch } = useParams<{ patch?: string }>();
+  const patchRectangleRefs = useRef<Map<string, Rectangle>>(new Map());
 
   useEffect(() => {
     if (!map) return;
-
     // Create a new LayerGroup
     gridRef.current = new LayerGroup();
     map.addLayer(gridRef.current);
@@ -102,8 +113,11 @@ function GridOverlay() {
           color: '#000000',
           weight: 1,
           fillColor: isSelected ? '#4a90e2' : '#000000',
-          fillOpacity: isSelected ? 0.9 : 0,
+          fillOpacity: isSelected ? 0.7 : 0,
         });
+
+        // Store the rectangle in the ref for later access
+        patchRectangleRefs.current.set(label, rect);
 
         // Make patchs clickable
         rect.on('click', () => {
@@ -145,7 +159,6 @@ function GridOverlay() {
       marker.addTo(gridRef.current);
     }
 
-    // Cleanup function
     return () => {
       if (gridRef.current) {
         map.removeLayer(gridRef.current);
@@ -153,11 +166,83 @@ function GridOverlay() {
     };
   }, [map, navigate, patch, location]);
 
+  useEffect(() => {
+    if (!gridRef.current || !patchRectangleRefs.current) return;
+
+    async function fetchHighlightedPatches() {
+      try {
+        const token = localStorage.getItem('authToken');
+        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+
+        const encodedPlantIDsJson = JSON.stringify(
+          filteredPlants ? filteredPlants.map(plant => plant.plantID) : []
+        );
+        console.log('Encoded Plant IDs JSON:', encodedPlantIDsJson);
+        const plantList = encodeURIComponent(encodedPlantIDsJson);
+
+        if (!filteredLatest && (!filteredStartDate || !filteredEndDate)) {
+          return;
+        }
+
+        const url =
+          baseUrl +
+          (filteredLatest ? '/filter/latest-plant?plants=' : '/filter/date-range-plant?plants=') +
+          plantList +
+          ('&startDate=' +
+            (filteredStartDate ? filteredStartDate.toISOString() : '') +
+            '&endDate=' +
+            (filteredEndDate ? filteredEndDate.toISOString() : ''));
+        console.log('Fetching highlighted patches from:', url);
+        const response = await fetch(`${url}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch highlighted patches');
+        }
+        const data = await response.json();
+        const highlightedPatches: string[] = data.data.map(
+          (value: { patchid: string }) => value.patchid
+        );
+        patchRectangleRefs.current.forEach((rect, label) => {
+          if (label === patch) {
+            rect.setStyle({
+              fillColor: '#4a90e2',
+              fillOpacity: 0.7,
+            });
+          } else if (highlightedPatches.includes(label)) {
+            rect.setStyle({
+              fillColor: '#f1c40f',
+              fillOpacity: 0.5,
+            });
+          } else {
+            rect.setStyle({
+              fillColor: '#000000', // Default color for unhighlighted patches
+              fillOpacity: 0,
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching highlighted patches:', error);
+      }
+    }
+    fetchHighlightedPatches().catch(console.error);
+  }, [patch, filteredStartDate, filteredEndDate, filteredLatest, filteredPlants]);
+
   return null;
 }
 
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
+
+  const [beginDate, setBeginDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [selectedPlants, setSelectedPlants] = useState<PlantInfo[]>([]);
+  const [latest, setLatest] = useState(false);
 
   // Parse patch into row and column if patch is defined
   let patchInfo = null;
@@ -172,11 +257,19 @@ export default function MapView() {
     <div className="flex h-full w-full relative">
       <LeafletAssets />
 
-      <div className='absolute top-12 left-0 p-4 z-12'>
+      <div className="absolute top-12 left-0 p-4 z-12">
         <WhereAmI />
-        <FiltersList />
+        <FiltersList
+          beginDate={beginDate}
+          setBeginDate={setBeginDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          selectedPlants={selectedPlants}
+          setSelectedPlants={setSelectedPlants}
+          latest={latest}
+          setLatest={setLatest}
+        />
       </div>
-      
 
       <div className="flex-1 h-[500px] z-10">
         <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
@@ -185,15 +278,18 @@ export default function MapView() {
             attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
             url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
           />
-          <GridOverlay />
+          <GridOverlay
+            filteredStartDate={beginDate}
+            filteredEndDate={endDate}
+            filteredLatest={latest}
+            filteredPlants={selectedPlants}
+          />
         </MapContainer>
       </div>
 
-      
-        <div>
-          <Sidebar patchInfo={patchInfo} />
-        </div>
-      
+      <div>
+        <Sidebar patchInfo={patchInfo} />
+      </div>
     </div>
   );
 }
