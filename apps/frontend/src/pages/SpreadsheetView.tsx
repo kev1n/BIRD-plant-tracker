@@ -1,10 +1,10 @@
+import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
+import { EllipsisVertical } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Observation, Snapshot } from 'types/database_types';
-import { EllipsisVertical } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -401,6 +401,9 @@ async function duplicateSnapshot(snapID: number) {
   const colDefs: ColDef[] = [
     {
       field: "Options",
+      headerName: "",
+      width: 60,
+      resizable: false,
       cellRenderer: (params: ValueGetterParams<Observation>) => 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
