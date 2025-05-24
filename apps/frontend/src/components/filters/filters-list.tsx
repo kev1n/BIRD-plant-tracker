@@ -1,9 +1,8 @@
-
 import FilterPlantCategory from "./filter-plant-category";
 export default function FiltersList() {
   const types = ["Shrub", "Tree", "Grass", "Other"]
   return (
-    <div className="p-4 bg-secondary rounded shadow-md z-12 overflow-y-auto">
+    <div className="p-4 bg-secondary rounded shadow-md z-12 overflow-y-auto border border-gray-300">
       <h2>
         Filter
       </h2>

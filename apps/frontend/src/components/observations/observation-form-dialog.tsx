@@ -24,21 +24,27 @@ export default function ObservationFormDialog({
   return (
     <Dialog open={open} onOpenChange={setopen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{newObservation ? 'New Plant' : 'Editing Plant'}</Button>
+        <Button variant={newObservation ? 'outline' : 'ghost'}>
+          {newObservation ? (
+            'New Observation'
+          ) : (
+            <img src="/icons/pen.svg" className="w-4 h-4" alt="Edit" />
+          )}
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="overflow-y-scroll max-h-[80vh]">
         <DialogHeader>
           {newObservation ? (
-            <DialogTitle>New Plant</DialogTitle>
+            <DialogTitle>New Observation</DialogTitle>
           ) : (
-            <DialogTitle>Editing Plant</DialogTitle>
+            <DialogTitle>Edit Observation</DialogTitle>
           )}
         </DialogHeader>
 
-        <ObservationForm 
+        <ObservationForm
           observation={observation} // Pass the existing observation if editing
-          submitCallback={(values) => {
+          submitCallback={values => {
             submitCallback(values); // Call the provided submit callback
             setopen(false); // Close the dialog after submission
           }}

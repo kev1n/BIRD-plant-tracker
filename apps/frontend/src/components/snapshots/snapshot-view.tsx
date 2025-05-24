@@ -12,6 +12,7 @@ import ObservationsSection from '../observations/observations-section';
 import LatestSnapshotContext from './latest-snapshot-context';
 import PatchSnapshotHistory from './patch-snapshot-history';
 import SnapshotForm from './snapshot-form-dialog';
+import PatchSoil from '../patch/patch-soil';
 
 const ConditionalWrapper = ({
   condition,
@@ -44,9 +45,6 @@ export default function SnapshotView({
   const [author, setAuthor] = useState<string>('Not available');
 
   const fetchCompleteSnapshot = async (patch: string, snapshotID: number | null) => {
-    console.log(
-      `Fetching complete snapshot for patch: ${patch}, snapshotID: ${snapshotID}`
-    ); // For debugging purposes
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
@@ -78,7 +76,7 @@ export default function SnapshotView({
       const snapshot_data = await snapshot_response.json();
       setCurrentSnapshot({
         snapshotID: snapshot_data.data.snapshotID,
-        dateCreated: new Date(snapshot_data.data.dateCreated+"T00:00:00"),
+        dateCreated: new Date(snapshot_data.data.dateCreated + 'T00:00:00'),
         patchID: snapshot_data.data.patchID,
         notes: snapshot_data.data.notes || 'No notes available for this patch.',
         userID: snapshot_data.data.userID,
@@ -133,80 +131,85 @@ export default function SnapshotView({
     <ConditionalWrapper
       condition={historicalSnapshotID === undefined}
       wrapper={(children: JSX.Element) => (
-        <LatestSnapshotContext.Provider value={{ fetchLatestSnapshot:fetchCompleteSnapshot }}>
+        <LatestSnapshotContext.Provider value={{ fetchLatestSnapshot: fetchCompleteSnapshot }}>
           {children}
         </LatestSnapshotContext.Provider>
       )}
     >
       <>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button>{triggerTitle}</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          {!patch_found && (
-            <div className="text-red-500">
-              <h1>
-                There are no snapshots for Patch {patch}. Create one by clicking New Snapshot{' '}
-              </h1>
-            </div>
-          )}
-
-          <DialogHeader>
-            <div className="flex flex-row justify-between">
-              <div className="flex-1 text-left">
-                <DialogTitle>Patch {patch}</DialogTitle>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>{triggerTitle}</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            {!patch_found && (
+              <div className="text-red-500">
+                <h1>
+                  There are no snapshots for Patch {patch}. Create one by clicking New Snapshot{' '}
+                </h1>
               </div>
-              <div className="flex-1 text-right">
-                <div className="mr-5">
-                  <h1>
-                    Accurate as of:
-                    {current_snapshot.dateCreated.toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true,
-                    })}
-                  </h1>
-                  <h1>By: {author}</h1>
+            )}
+
+            <DialogHeader>
+              <div className="flex flex-row justify-between">
+                <div className="flex-1 text-left">
+                  <DialogTitle>Patch {patch}</DialogTitle>
+                </div>
+                <div className="flex-1 text-right">
+                  <div className="mr-5">
+                    <h1>
+                      Accurate as of:
+                      {current_snapshot.dateCreated.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
+                    </h1>
+                    <h1>By: {author}</h1>
+                  </div>
                 </div>
               </div>
-            </div>
-          </DialogHeader>
-          <ObservationsSection observations={observations} editing={false}/>
+            </DialogHeader>
+            <ObservationsSection observations={observations} editing={false} />
 
-        <div>      
-        </div>
-          <div>
-            <h1>Notes</h1>
-            <div className="border border-gray-300 rounded-lg p-4">
-              <p>{current_snapshot.notes || 'No notes available for this patch.'}</p>
-            </div>
-          </div>
+            {historicalSnapshotID === undefined && <PatchSoil patchID={patch} />}
 
-          {historicalSnapshotID === undefined && (
-            <div className="flex flex-row justify-between">
-              <div className="flex-1 text-left">
-                <SnapshotForm newSnapshot={true} patchID={patch} snapshotTemplate={current_snapshot} observationsTemplate={observations} />
-              </div>
-              <div>
-                <PatchSnapshotHistory patch={patch} />
+            <div>
+              <h1>Notes</h1>
+              <div className="border border-gray-300 rounded-lg p-4">
+                <p>{current_snapshot.notes || 'No notes available for this patch.'}</p>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
-      {historicalSnapshotID !== undefined && (
-        <SnapshotForm
-          newSnapshot={false}
-          patchID={patch}
-          snapshotTemplate={current_snapshot}
-          observationsTemplate={observations}
-        />
-      )}
+            {historicalSnapshotID === undefined && (
+              <div className="flex flex-row justify-between">
+                <div className="flex-1 text-left">
+                  <SnapshotForm
+                    newSnapshot={true}
+                    patchID={patch}
+                    snapshotTemplate={current_snapshot}
+                    observationsTemplate={observations}
+                  />
+                </div>
+                <div>
+                  <PatchSnapshotHistory patch={patch} />
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {historicalSnapshotID !== undefined && (
+          <SnapshotForm
+            newSnapshot={false}
+            patchID={patch}
+            snapshotTemplate={current_snapshot}
+            observationsTemplate={observations}
+          />
+        )}
       </>
     </ConditionalWrapper>
   );

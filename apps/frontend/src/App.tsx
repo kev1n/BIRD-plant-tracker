@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import { PrivateRoute, PublicOnlyRoute } from './components/protected-routes';
@@ -13,10 +14,13 @@ import Home from './pages/home';
 import MapView from './pages/MapView';
 import NotFound from './pages/not-found';
 import SignUp from './pages/signup';
+import AdminPage from './pages/admin';
 import SpreadsheetView from './pages/SpreadsheetView';
 
 function App() {
   return (
+    <>
+    <Toaster />
     <UserProvider>
       <BrowserRouter>
         <Routes>
@@ -33,16 +37,20 @@ function App() {
             <Route path="auth/reset-password" element={<ResetPassword />} />
             <Route path="auth/verify-email" element={<EmailVerification />} />
 
-            {/* TODO: MOVE THE NECESSARY PRIVATE ROUTES INTO PRIVATE ROUTE */}
             <Route path="map" element={<MapView />} />
             <Route path="map/:patch" element={<MapView />} />
             <Route path="spreadsheet" element={<SpreadsheetView />} />
             <Route path="example" element={<ExamplePage />} />
+            <Route element={<PrivateRoute allowedRoles={['admin', 'owner']} />}>
+              <Route path="admin" element={<AdminPage />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
       </BrowserRouter>
     </UserProvider>
+    </>
   );
 }
 
