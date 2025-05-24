@@ -79,17 +79,13 @@ export default function SnapshotForm({
       alert('Please select a date for the snapshot.');
       return;
     }
-    if (notes.trim() === '') {
-      alert('Please enter notes for the snapshot.');
-      return;
-    }
     if (!user || !user.id) {
       console.error('User is not authenticated or missing user ID.');
       alert('You must be logged in to submit a snapshot. Please log in and try again.');
       return;
     }
     const newSnapshotData: Snapshot = {
-      snapshotID: snapshotTemplate ? snapshotTemplate.snapshotID : undefined,
+      snapshotID: snapshotTemplate && snapshotTemplate.snapshotID!=-1 ? snapshotTemplate.snapshotID : undefined,
       dateCreated: date,
       patchID: patchID,
       notes: notes.trim(),

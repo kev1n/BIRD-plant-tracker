@@ -1,14 +1,15 @@
+
 import FiltersList from '@/components/filters/filters-list';
 import { CENTER, LABEL_OFFSET_LAT, LABEL_OFFSET_LNG, numCols, numRows, patchSizeLat, patchSizeLng, TOP_LEFT } from '@/components/map-navigation/constants';
 import WhereAmI from '@/components/map-navigation/where-am-i';
 import SnapshotView from '@/components/snapshots/snapshot-view';
 import { divIcon, LatLngTuple, LayerGroup, Marker, Rectangle } from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
-import { useGeolocated } from "react-geolocated";
+import { useGeolocated } from 'react-geolocated';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { PlantInfo } from 'types/database_types';
 import LeafletAssets from '../components/LeafletAssets';
-
 
 // Sidebar component to display grid patch information
 interface SidebarProps {
@@ -24,19 +25,31 @@ function Sidebar({ patchInfo }: SidebarProps) {
   return (
     <div className="w-full md:w-50 p-5 bg-gray-50 h-full overflow-y-auto shadow-md">
       <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
-        Grid patch: {patchInfo?patchInfo.label:'Not Selected'}
+        Grid patch: {patchInfo ? patchInfo.label : 'Not Selected'}
       </h2>
       <div className="mt-4">
-        <p className="mb-2">Row: {patchInfo? patchInfo.row : "Not Selected"}</p>
-        <p className="mb-2">Column: {patchInfo?String.fromCharCode(65 + patchInfo.col):"Not Selected"}</p>
+        <p className="mb-2">Row: {patchInfo ? patchInfo.row : 'Not Selected'}</p>
+        <p className="mb-2">
+          Column: {patchInfo ? String.fromCharCode(65 + patchInfo.col) : 'Not Selected'}
+        </p>
       </div>
-      
-      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle='View Latest Snapshot' />}
+
+      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle="View Latest Snapshot" />}
     </div>
   );
 }
 
-function GridOverlay() {
+function GridOverlay({
+  filteredStartDate,
+  filteredEndDate,
+  filteredLatest,
+  filteredPlants,
+}: {
+  filteredStartDate?: Date;
+  filteredEndDate?: Date;
+  filteredLatest?: boolean;
+  filteredPlants?: PlantInfo[];
+}) {  
 
   // find coordinates with geolocation
   const { coords } =
@@ -48,18 +61,16 @@ function GridOverlay() {
       watchPosition: true,
   });
 
-  // initialize variables
+
   const map = useMap();
   const navigate = useNavigate();
   const location = useLocation();
   const gridRef = useRef<LayerGroup | null>(null);
-
-  // Extract grid patch from URL params
   const { patch } = useParams<{ patch?: string }>();
+  const patchRectangleRefs = useRef<Map<string, Rectangle>>(new Map());
 
   useEffect(() => {
     if (!map) return;
-
     // Create a new LayerGroup
     gridRef.current = new LayerGroup();
     map.addLayer(gridRef.current);
@@ -99,6 +110,9 @@ function GridOverlay() {
           fillColor: isUserHere ? '#4CAF50' : isSelected ? '#4a90e2' : '#000000',
           fillOpacity: isUserHere ? 0.9 : isSelected ? 0.9 : 0,
         });
+
+        // Store the rectangle in the ref for later access
+        patchRectangleRefs.current.set(label, rect);
 
         // Make patchs clickable
         rect.on('click', () => {
@@ -158,7 +172,6 @@ function GridOverlay() {
       marker.addTo(gridRef.current);
     }
 
-    // Cleanup function
     return () => {
       if (gridRef.current) {
         map.removeLayer(gridRef.current);
@@ -166,12 +179,84 @@ function GridOverlay() {
     };
   }, [map, navigate, patch, location, coords]);
 
+  useEffect(() => {
+    if (!gridRef.current || !patchRectangleRefs.current) return;
+
+    async function fetchHighlightedPatches() {
+      try {
+        const token = localStorage.getItem('authToken');
+        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+
+        const encodedPlantIDsJson = JSON.stringify(
+          filteredPlants ? filteredPlants.map(plant => plant.plantID) : []
+        );
+        console.log('Encoded Plant IDs JSON:', encodedPlantIDsJson);
+        const plantList = encodeURIComponent(encodedPlantIDsJson);
+
+        if (!filteredLatest && (!filteredStartDate || !filteredEndDate)) {
+          return;
+        }
+
+        const url =
+          baseUrl +
+          (filteredLatest ? '/filter/latest-plant?plants=' : '/filter/date-range-plant?plants=') +
+          plantList +
+          ('&startDate=' +
+            (filteredStartDate ? filteredStartDate.toISOString() : '') +
+            '&endDate=' +
+            (filteredEndDate ? filteredEndDate.toISOString() : ''));
+        console.log('Fetching highlighted patches from:', url);
+        const response = await fetch(`${url}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch highlighted patches');
+        }
+        const data = await response.json();
+        const highlightedPatches: string[] = data.data.map(
+          (value: { patchid: string }) => value.patchid
+        );
+        patchRectangleRefs.current.forEach((rect, label) => {
+          if (label === patch) {
+            rect.setStyle({
+              fillColor: '#4a90e2',
+              fillOpacity: 0.7,
+            });
+          } else if (highlightedPatches.includes(label)) {
+            rect.setStyle({
+              fillColor: '#f1c40f',
+              fillOpacity: 0.5,
+            });
+          } else {
+            rect.setStyle({
+              fillColor: '#000000', // Default color for unhighlighted patches
+              fillOpacity: 0,
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching highlighted patches:', error);
+      }
+    }
+    fetchHighlightedPatches().catch(console.error);
+  }, [patch, filteredStartDate, filteredEndDate, filteredLatest, filteredPlants]);
+
   return null;
 }
 
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
   const [showTools, setShowTools] = useState(false);
+
+  const [beginDate, setBeginDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [selectedPlants, setSelectedPlants] = useState<PlantInfo[]>([]);
+  const [latest, setLatest] = useState(false);
 
   // Parse patch into row and column if patch is defined
   let patchInfo = null;
@@ -199,7 +284,16 @@ export default function MapView() {
       {/* Desktop tools panel */}
       <div className='hidden md:block absolute top-12 left-0 p-4 z-12'>
         <WhereAmI />
-        <FiltersList />
+        <FiltersList
+          beginDate={beginDate}
+          setBeginDate={setBeginDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          selectedPlants={selectedPlants}
+          setSelectedPlants={setSelectedPlants}
+          latest={latest}
+          setLatest={setLatest}
+        />
       </div>
       
       {/* Mobile tools panel - slides in from bottom */}
@@ -214,7 +308,16 @@ export default function MapView() {
           </div>
           <div className="flex flex-col gap-2 p-2">
             <WhereAmI />
-            <FiltersList />
+            <FiltersList
+          beginDate={beginDate}
+          setBeginDate={setBeginDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          selectedPlants={selectedPlants}
+          setSelectedPlants={setSelectedPlants}
+          latest={latest}
+          setLatest={setLatest}
+        />
           </div>
         </div>
       )}
@@ -226,7 +329,12 @@ export default function MapView() {
             attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
             url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
           />
-          <GridOverlay />
+          <GridOverlay
+            filteredStartDate={beginDate}
+            filteredEndDate={endDate}
+            filteredLatest={latest}
+            filteredPlants={selectedPlants}
+          />
         </MapContainer>
       </div>
 
