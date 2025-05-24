@@ -1,11 +1,12 @@
 import SnapshotView from '@/components/snapshots/snapshot-view';
 import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeafletAssets from '../components/LeafletAssets';
 import FiltersList from '@/components/filters/filters-list';
 import WhereAmI from '@/components/map-navigation/where-am-i';
+import { useGeolocated } from "react-geolocated";
 
 // Constants for the grid
 const GRID_SIZE_FEET = 15;
@@ -64,6 +65,18 @@ function Sidebar({ patchInfo }: SidebarProps) {
 }
 
 function GridOverlay() {
+
+  // find coordinates with geolocation
+  const { coords } =
+    useGeolocated({
+      positionOptions: {
+          enableHighAccuracy: true,
+      },
+      userDecisionTimeout: 5000,
+      watchPosition: true,
+  });
+
+  // initialize variables
   const map = useMap();
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,16 +106,19 @@ function GridOverlay() {
 
         // Create patch label
         const label = `${String.fromCharCode(65 + col)}${row + 1}`;
-
         const isSelected = patch === label;
+
+        const isUserHere = coords?.latitude && coords?.longitude &&
+          coords?.latitude <= topLeft[0] && coords?.latitude >= bottomRight[0] &&
+          coords?.longitude >= topLeft[1] && coords?.longitude <= bottomRight[1]
 
         // Create rectangle for grid patch
         // TODO: Match with color variables from project
         const rect = new Rectangle([topLeft, bottomRight], {
           color: '#000000',
           weight: 1,
-          fillColor: isSelected ? '#4a90e2' : '#000000',
-          fillOpacity: isSelected ? 0.9 : 0,
+          fillColor: isUserHere ? '#4CAF50' : isSelected ? '#4a90e2' : '#000000',
+          fillOpacity: isUserHere ? 0.9 : isSelected ? 0.9 : 0,
         });
 
         // Make patchs clickable
@@ -151,7 +167,7 @@ function GridOverlay() {
         map.removeLayer(gridRef.current);
       }
     };
-  }, [map, navigate, patch, location]);
+  }, [map, navigate, patch, location, coords]);
 
   return null;
 }
