@@ -17,6 +17,8 @@ export default function ObservationsSection({
   const [shrubs, setShrubs] = useState<Observation[]>([]);
   const [grasses, setGrasses] = useState<Observation[]>([]);
   const [others, setOthers] = useState<Observation[]>([]);
+  const [forbs, setForbs] = useState<Observation[]>([]);
+  const [uncategorized, setUncategorized] = useState<Observation[]>([]);
 
   const deleteObservation = (tempKey: number) => {
     const updatedObservations = observations
@@ -70,10 +72,16 @@ export default function ObservationsSection({
     const others = observations.filter(
       obs => obs.PlantInfo.subcategory?.toLowerCase() === 'other' && !obs.deletedOn
     );
+    const forbs = observations.filter(
+      obs => obs.PlantInfo.subcategory?.toLowerCase() === 'forb' && !obs.deletedOn
+    );
+    const uncategorized = observations.filter(obs => obs.PlantInfo.subcategory === null);
     setTrees(trees);
     setShrubs(shrubs);
     setGrasses(grasses);
+    setForbs(forbs);
     setOthers(others);
+    setUncategorized(uncategorized);
   }, [observations, editing]);
 
   return (
@@ -86,7 +94,13 @@ export default function ObservationsSection({
         <ObservationsList observations={trees} listName={'Trees'} editing={editing} />
         <ObservationsList observations={shrubs} listName={'Shrubs'} editing={editing} />
         <ObservationsList observations={grasses} listName={'Grasses'} editing={editing} />
+        <ObservationsList observations={forbs} listName={'Forbs'} editing={editing} />
         <ObservationsList observations={others} listName={'Others'} editing={editing} />
+        <ObservationsList
+          observations={uncategorized}
+          listName={'Uncategorized'}
+          editing={editing}
+        />
       </div>
     </ObservationEditorContext.Provider>
   );

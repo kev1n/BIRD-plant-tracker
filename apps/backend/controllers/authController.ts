@@ -139,7 +139,7 @@ export async function getMe(req: Request, res: Response): Promise<void> {
 
     const { data: userData, error: dbError } = await supabase
       .from('users')
-      .select('userID, username, email, firstname, lastname, role')
+      .select('userID, username, email, firstname, lastname, role, roleRequested')
       .eq('email', user.email)
       .single();
 
@@ -215,7 +215,7 @@ export async function getAllUsers(_req: AuthRequest, res: Response): Promise<voi
   try {
     const { data: users, error } = await supabase
       .from('users')
-      .select('username, email, firstname, lastname')
+      .select('userID, email, username, firstname, lastname, role, roleRequested')
       .order('username', { ascending: true });
 
     if (error) {

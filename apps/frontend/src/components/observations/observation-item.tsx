@@ -14,10 +14,12 @@ export default function ObservationItem({
   const { deleteObservation, updateObservation } = useContext(ObservationEditorContext);
   return (
     <div className="flex flex-row">
-      <div>
+      <div className="min-w-[30px]">
         {editing && (
-          <div className="flex flex-col gap-2">
-            <Button onClick={() => deleteObservation(observation.tempKey)}>Delete</Button>
+          <div>
+            <Button variant="ghost" onClick={() => deleteObservation(observation.tempKey)}>
+              <img src="/icons/trash-can.svg" className="w-4 h-4" alt="Delete" />
+            </Button>
             <ObservationFormDialog
               newObservation={false}
               observation={observation}
@@ -32,13 +34,18 @@ export default function ObservationItem({
         <div className="flex flex-row items-center gap-2 pl-2">
           <h3>{observation.PlantInfo.plantCommonName}</h3>
           {observation.PlantInfo.plantScientificName && (
-            <h3>({observation.PlantInfo.plantScientificName})</h3>
+            <h3>
+              ({observation.PlantInfo.plantScientificName}){' '}
+              {observation.PlantInfo.isNative != null &&
+                (observation.PlantInfo.isNative === true ? (
+                  <span className="text-green-500">[Native]</span>
+                ) : (
+                  <span className="text-red-500">[Non-native]</span>
+                ))}
+            </h3>
           )}
         </div>
         <div className="flex flex-col pl-5">
-          {observation.PlantInfo.isNative && (
-            <span className="text-green-500 text-sm">Native Plant</span>
-          )}
           <p className="text-sm">Quantity: {observation.plantQuantity}</p>
           {observation.datePlanted && (
             <p className="text-sm">

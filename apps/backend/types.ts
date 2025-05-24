@@ -95,7 +95,7 @@ export interface UpdateSnapshotBody {
 export interface Plant {
   plantCommonName: string;
   plantScientificName?: string;
-  isNative?: boolean;
+  isNative?: boolean | null;
   subcategory?: string;
 }
 
@@ -106,6 +106,11 @@ export interface UpdatePlantBody {
   subcategory?: string;
 }
 
+export interface CsvError {
+  row: Plant;
+  error: string;
+}
+  
 export interface UpdatePatchBody {
   patchID?: string;
   latitude?: number;

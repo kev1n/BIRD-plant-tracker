@@ -231,17 +231,13 @@ export default function SnapshotForm({
               <DialogTitle>Patch {patchID}</DialogTitle>
               <span>{newSnapshot ? 'New Snapshot' : 'Editing Snapshot'}</span>
               {newSnapshot && (
-                <Button
-                  variant="link"
-                  className="px-2 text-sm text-gray-500"
-                  onClick={duplicateLatestData}
-                >
+                <Button className="px-2 text-sm" onClick={duplicateLatestData}>
                   Duplicate Latest Data
                 </Button>
               )}
             </div>
             <div className="flex-1 text-right">
-              Snapshot Date:
+              <span className="text-red-500 font-bold">*</span>Snapshot Date:
               <DatePicker date={date} setDate={d => setDate(d)} pickerName="Select Date" />
             </div>
           </div>
@@ -267,9 +263,7 @@ export default function SnapshotForm({
             </Button>
           </div>
           <div className="flex-1 text-right">
-            <Button variant="outline" onClick={onSubmit}>
-              Submit
-            </Button>
+            <Button onClick={onSubmit}>Submit</Button>
           </div>
         </div>
       </DialogContent>

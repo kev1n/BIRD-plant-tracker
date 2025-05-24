@@ -18,7 +18,9 @@ export default function ObservationsList({
   return (
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem value="item-1">
-        <AccordionTrigger>{listName}</AccordionTrigger>
+        <AccordionTrigger>
+          {listName} [{observations.length}]
+        </AccordionTrigger>
         <AccordionContent>
           {observations.map((observation, index) => (
             <ObservationItem key={index} observation={observation} editing={editing} />

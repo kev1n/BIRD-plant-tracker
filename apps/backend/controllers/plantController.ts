@@ -6,7 +6,6 @@ export async function postPlant(req: Request, res: Response) {
     try {
         // plant info
         const { plantCommonName, plantScientificName, isNative, subcategory } = req.body;
-            
         if (!plantCommonName) {
             // missing the only required field
             res.status(400).json({ message: 'Bad request: Plant common name is required.'});
@@ -194,6 +193,7 @@ export async function getPlant(req: Request, res: Response) {
             .from('PlantInfo')
             .select()
             .eq('plantID', plantID)
+            .is('deletedOn', null) 
             .single();
         
         if (plantError) {
@@ -226,7 +226,8 @@ export async function getPlants(req: Request, res: Response) {
         const { data: plants, error: plantsError } = await supabase
             .from('PlantInfo')
             .select()
-            .ilike('plantCommonName', `%${name || ''}%`); // Case-insensitive search
+            .ilike('plantCommonName', `%${name || ''}%`)
+            .is('deletedOn', null); // Case-insensitive search
 
         if (plantsError) {
             // Error retrieving from database
