@@ -19,7 +19,7 @@ export async function newObservation(req: AuthRequest, res: Response) {
           snapshotID,
           plantQuantity,
           plantID: plantID,
-          hasBloomed: hasBloomed || null,
+          hasBloomed: hasBloomed === undefined ? null : hasBloomed,
           datePlanted: datePlanted || null,
         },
       ])
@@ -151,7 +151,7 @@ export async function getObservation(req: Request, res: Response) {
       .from('Observations')
       .select()
       .eq('observationID', obsID)
-      .is('deletedOn', null) 
+      .is("deletedOn", null) 
       .single();
 
     if (obsError1) {
@@ -214,7 +214,7 @@ export async function getAllFromSnapshot(req: Request, res: Response) {
       .from('Observations')
       .select()
       .eq('snapshotID', snapshotID)
-      .is('deletedOn', null);
+      .is("deletedOn", null);
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });
@@ -253,7 +253,7 @@ export async function getAllFromSnapshotDetailed(req: Request, res: Response) {
       .from('Observations')
       .select('*, PlantInfo(*)')
       .eq('snapshotID', snapshotID)
-      .is('deletedOn', null); 
+      .is("deletedOn", null); 
 
     if (obsError1) {
       res.status(400).json({ error: obsError1.message });

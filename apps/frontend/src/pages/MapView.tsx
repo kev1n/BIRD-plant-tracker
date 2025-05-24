@@ -1,42 +1,14 @@
+import FiltersList from '@/components/filters/filters-list';
+import { CENTER, LABEL_OFFSET_LAT, LABEL_OFFSET_LNG, numCols, numRows, patchSizeLat, patchSizeLng, TOP_LEFT } from '@/components/map-navigation/constants';
+import WhereAmI from '@/components/map-navigation/where-am-i';
 import SnapshotView from '@/components/snapshots/snapshot-view';
-import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
+import { divIcon, LatLngTuple, LayerGroup, Marker, Rectangle } from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
+import { useGeolocated } from "react-geolocated";
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeafletAssets from '../components/LeafletAssets';
-import FiltersList from '@/components/filters/filters-list';
-import WhereAmI from '@/components/map-navigation/where-am-i';
-import { useGeolocated } from "react-geolocated";
 
-// Constants for the grid
-const GRID_SIZE_FEET = 15;
-const EARTH_RADIUS_FEET = 20902231; // Earth's radius in feet
-const CENTER_LAT = 42.04937; // Our center latitude
-
-// Calculate accurate conversion factors
-const FEET_TO_DEGREES_LAT = (1 / EARTH_RADIUS_FEET) * (180 / Math.PI); // For latitude
-const FEET_TO_DEGREES_LNG =
-  (1 / (EARTH_RADIUS_FEET * Math.cos((CENTER_LAT * Math.PI) / 180))) * (180 / Math.PI); // For longitude
-
-// Grid boundaries
-const TOP_LEFT: LatLngTuple = [42.0500576, -87.6739709];
-const BOTTOM_RIGHT: LatLngTuple = [42.0485898, -87.6729095];
-const CENTER: LatLngTuple = [42.04937, -87.673388];
-
-// Calculate grid dimensions
-const latDiff = TOP_LEFT[0] - BOTTOM_RIGHT[0];
-const lngDiff = BOTTOM_RIGHT[1] - TOP_LEFT[1];
-const patchSizeLat = GRID_SIZE_FEET * FEET_TO_DEGREES_LAT;
-const patchSizeLng = GRID_SIZE_FEET * FEET_TO_DEGREES_LNG;
-
-// Calculate number of patchs
-const numCols = Math.ceil(lngDiff / patchSizeLng);
-const numRows = Math.ceil(latDiff / patchSizeLat);
-
-// Label offset from grid (in degrees)
-const GRID_LABEL_OFFSET = 0.8;
-const LABEL_OFFSET_LAT = patchSizeLat * GRID_LABEL_OFFSET;
-const LABEL_OFFSET_LNG = patchSizeLng * GRID_LABEL_OFFSET;
 
 // Sidebar component to display grid patch information
 interface SidebarProps {
@@ -50,7 +22,7 @@ interface SidebarProps {
 // TODO: Move into seperate component, call it inspection details
 function Sidebar({ patchInfo }: SidebarProps) {
   return (
-    <div className="w-50 p-5 bg-gray-50 h-[500px] overflow-y-auto shadow-md">
+    <div className="w-full md:w-50 p-5 bg-gray-50 h-full overflow-y-auto shadow-md">
       <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
         Grid patch: {patchInfo?patchInfo.label:'Not Selected'}
       </h2>
@@ -92,6 +64,9 @@ function GridOverlay() {
     gridRef.current = new LayerGroup();
     map.addLayer(gridRef.current);
 
+    // Track if user is on any valid patch
+    let userOnValidPatch = false;
+
     // Create grid patchs
     for (let row = 0; row < numRows; row++) {
       for (let col = 0; col < numCols; col++) {
@@ -112,6 +87,10 @@ function GridOverlay() {
           coords?.latitude <= topLeft[0] && coords?.latitude >= bottomRight[0] &&
           coords?.longitude >= topLeft[1] && coords?.longitude <= bottomRight[1]
 
+        if (isUserHere) {
+          userOnValidPatch = true;
+        }
+
         // Create rectangle for grid patch
         // TODO: Match with color variables from project
         const rect = new Rectangle([topLeft, bottomRight], {
@@ -129,6 +108,24 @@ function GridOverlay() {
         rect.addTo(gridRef.current);
         // make the rectangle
       }
+    }
+
+    // Add user location marker if they're not on a valid patch but have GPS coordinates
+    if (coords?.latitude && coords?.longitude && !userOnValidPatch) {
+      const userLocationMarker = new Marker([coords.latitude, coords.longitude], {
+        icon: divIcon({
+          className: 'user-location-marker',
+          html: `<div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <circle cx="12" cy="12" r="8" fill="#FF4444" stroke="#FFFFFF" stroke-width="2"/>
+              <circle cx="12" cy="12" r="3" fill="#FFFFFF"/>
+            </svg>
+          </div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        }),
+      });
+      userLocationMarker.addTo(gridRef.current);
     }
 
     // Add column labels (A-Z)
@@ -174,6 +171,7 @@ function GridOverlay() {
 
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
+  const [showTools, setShowTools] = useState(false);
 
   // Parse patch into row and column if patch is defined
   let patchInfo = null;
@@ -185,16 +183,43 @@ export default function MapView() {
   }
 
   return (
-    <div className="flex h-full w-full relative">
+    <div className="flex flex-col md:flex-row h-full w-full relative py-4">
       <LeafletAssets />
 
-      <div className='absolute top-12 left-0 p-4 z-12'>
+      {/* Tools toggle button - visible only on mobile */}
+      <button 
+        className="md:hidden absolute top-2 left-2 z-20 bg-white p-2 rounded-full shadow-md"
+        onClick={() => setShowTools(!showTools)}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showTools ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+        </svg>
+      </button>
+
+      {/* Desktop tools panel */}
+      <div className='hidden md:block absolute top-12 left-0 p-4 z-12'>
         <WhereAmI />
         <FiltersList />
       </div>
       
+      {/* Mobile tools panel - slides in from bottom */}
+      {showTools && (
+        <div className='md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white shadow-lg rounded-t-lg max-h-[80vh] overflow-y-auto'>
+          <div className="flex justify-end p-2">
+            <button onClick={() => setShowTools(false)} className="p-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex flex-col gap-2 p-2">
+            <WhereAmI />
+            <FiltersList />
+          </div>
+        </div>
+      )}
 
-      <div className="flex-1 h-[500px] z-10">
+      <div className="flex-1 h-full z-10">
         <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
           <TileLayer
             maxNativeZoom={30}
@@ -205,11 +230,9 @@ export default function MapView() {
         </MapContainer>
       </div>
 
-      
-        <div>
-          <Sidebar patchInfo={patchInfo} />
-        </div>
-      
+      <div className="w-full md:w-auto">
+        <Sidebar patchInfo={patchInfo} />
+      </div>
     </div>
   );
 }
