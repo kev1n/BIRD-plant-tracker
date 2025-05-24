@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import { PrivateRoute, PublicOnlyRoute } from './components/protected-routes';
@@ -17,6 +18,8 @@ import SpreadsheetView from './pages/SpreadsheetView';
 
 function App() {
   return (
+    <>
+    <Toaster />
     <UserProvider>
       <BrowserRouter>
         <Routes>
@@ -43,6 +46,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </UserProvider>
+    </>
   );
 }
 

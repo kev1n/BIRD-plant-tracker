@@ -1,9 +1,10 @@
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { EllipsisVertical } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from "sonner";
 import { Observation, Snapshot } from 'types/database_types';
 
 // Register all Community features
@@ -38,6 +39,7 @@ export default function SpreadSheetView() {
 
     } catch (error) {
       console.error("Error fetching data:", error);
+      toast.error("Failed to load observations.");
     }
   }
 
@@ -72,9 +74,11 @@ async function deleteObservation(obsID: number) {
 
     // Refresh data to show deletion
     fetchData();
+    toast("Observation deleted successfully.");
 
   } catch (error) {
-    console.error("Error duplicating observation:", error);
+    console.error("Error deleting observation:", error);
+    toast.error("Failed to delete observation.");
   }
 }
 
@@ -170,9 +174,11 @@ async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: 
 
     // Refresh data to show the changes
     fetchData();
+    toast("Snapshot duplicated and observation removed successfully.");
     
   } catch (error) {
     console.error("Error during snapshot duplication:", error);
+    toast.error("Failed to duplicate snapshot and remove observation.");
   }
 }
 
@@ -207,9 +213,11 @@ async function duplicateObservation(obsData: Observation) {
 
     // Refresh the data to show new observation
     fetchData();
+    toast("Observation duplicated successfully.");
     
   } catch (error) {
     console.error("Error duplicating observation:", error);
+    toast.error("Failed to duplicate observation.");
   }
 }
 
@@ -280,8 +288,10 @@ async function duplicateObservationEmptySnapshot(obsData: Observation) {
     }
 
     fetchData();
+    toast("Observation duplicated into new empty snapshot successfully.");
   } catch (error) {
     console.error("Error duplicating observation to empty snapshot:", error);
+    toast.error("Failed to duplicate observation to empty snapshot.");
   }
 }
 
@@ -374,9 +384,11 @@ async function duplicateSnapshot(snapID: number) {
 
     // Refresh data to show the changes
     fetchData();
+    toast("Entire snapshot duplicated successfully.");
     
   } catch (error) {
     console.error("Error during snapshot duplication:", error);
+    toast.error("Failed to duplicate snapshot.");
   }
 }
 
@@ -417,53 +429,67 @@ async function duplicateSnapshot(snapID: number) {
             Edit
           </DropdownMenuItem>  
 
-          <SpreadsheetRowActionItem
-            actionName="Duplicate Observation"
-            prompt="Are you sure you want to DUPLICATE this observation?"
-            color=""
-            onConfirm={() => {if (params.data) { duplicateObservation(params.data); }}}
-          />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              Duplicate
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <SpreadsheetRowActionItem
+                actionName="Duplicate Observation"
+                prompt="Are you sure you want to DUPLICATE this observation?"
+                color=""
+                onConfirm={() => {if (params.data) { duplicateObservation(params.data); }}}
+              />
 
-          <SpreadsheetRowActionItem
-            actionName="Duplicate into new empty snapshot"
-            prompt="Are you sure you want to DUPLICATE this observation into an EMPTY SNAPSHOT?"
-            color=""
-            onConfirm={() => { if (params.data) { duplicateObservationEmptySnapshot(params.data); }}}
-          />
+              <SpreadsheetRowActionItem
+                actionName="Duplicate into New Empty Snapshot"
+                prompt="Are you sure you want to DUPLICATE this observation into an EMPTY SNAPSHOT?"
+                color=""
+                onConfirm={() => { if (params.data) { duplicateObservationEmptySnapshot(params.data); }}}
+              />
 
-          <SpreadsheetRowActionItem
-            actionName="Duplicate snapshot"
-            prompt="Are you sure you want to DUPLICATE the ENTIRE SNAPSHOT?"
-            color=""
-            onConfirm={() => { 
-              if (params.data?.snapshotID) { 
-                duplicateSnapshot(params.data?.snapshotID); 
-              }
-            }}
-          />
+              <SpreadsheetRowActionItem
+                actionName="Duplicate Entire Snapshot"
+                prompt="Are you sure you want to DUPLICATE the ENTIRE SNAPSHOT?"
+                color=""
+                onConfirm={() => { 
+                  if (params.data?.snapshotID) { 
+                    duplicateSnapshot(params.data?.snapshotID); 
+                  }
+                }}
+              />
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
 
-          <SpreadsheetRowActionItem
-            actionName="Delete Observation"
-            prompt="Are you sure you want to DELETE this observation?" 
-            color="red"
-            onConfirm={() => {
-              const obsID = params.data?.observationID || -1;
-              if (obsID === -1) { return; }
-              deleteObservation(obsID);
-            }}
-          />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              Delete
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <SpreadsheetRowActionItem
+                actionName="Delete Observation"
+                prompt="Are you sure you want to DELETE this observation?" 
+                color="red"
+                onConfirm={() => {
+                  const obsID = params.data?.observationID || -1;
+                  if (obsID === -1) { return; }
+                  deleteObservation(obsID);
+                }}
+              />
 
-          <SpreadsheetRowActionItem
-            actionName="Duplicate snapshot without this observation"
-            prompt="Are you sure you want to DUPLICATE the snapshot WITHOUT THIS OBSERVATION?"
-            color="red"
-            onConfirm={() => {
-              const obsID = params.data?.observationID || -1;
-              const snapID = params.data?.snapshotID || -1;
-              if (obsID === -1 || snapID === -1) { return; }
-              duplicateSnapshotAndDeleteObservation(obsID, snapID);
-            }}
-          />
+              <SpreadsheetRowActionItem
+                actionName="Remove from Snapshot Copy"
+                prompt="Are you sure you want to DUPLICATE the snapshot WITHOUT THIS OBSERVATION?"
+                color="red"
+                onConfirm={() => {
+                  const obsID = params.data?.observationID || -1;
+                  const snapID = params.data?.snapshotID || -1;
+                  if (obsID === -1 || snapID === -1) { return; }
+                  duplicateSnapshotAndDeleteObservation(obsID, snapID);
+                }}
+              />
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
 
         </DropdownMenuContent>  
       </DropdownMenu>,
