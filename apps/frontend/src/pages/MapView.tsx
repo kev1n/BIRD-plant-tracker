@@ -1,41 +1,14 @@
 import FiltersList from '@/components/filters/filters-list';
+import { CENTER, LABEL_OFFSET_LAT, LABEL_OFFSET_LNG, numCols, numRows, patchSizeLat, patchSizeLng, TOP_LEFT } from '@/components/map-navigation/constants';
 import WhereAmI from '@/components/map-navigation/where-am-i';
 import SnapshotView from '@/components/snapshots/snapshot-view';
-import { LatLngTuple, LayerGroup, Marker, Rectangle, divIcon } from 'leaflet';
+import { divIcon, LatLngTuple, LayerGroup, Marker, Rectangle } from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
+import { useGeolocated } from "react-geolocated";
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeafletAssets from '../components/LeafletAssets';
 
-// Constants for the grid
-const GRID_SIZE_FEET = 15;
-const EARTH_RADIUS_FEET = 20902231; // Earth's radius in feet
-const CENTER_LAT = 42.04937; // Our center latitude
-
-// Calculate accurate conversion factors
-const FEET_TO_DEGREES_LAT = (1 / EARTH_RADIUS_FEET) * (180 / Math.PI); // For latitude
-const FEET_TO_DEGREES_LNG =
-  (1 / (EARTH_RADIUS_FEET * Math.cos((CENTER_LAT * Math.PI) / 180))) * (180 / Math.PI); // For longitude
-
-// Grid boundaries
-const TOP_LEFT: LatLngTuple = [42.0500576, -87.6739709];
-const BOTTOM_RIGHT: LatLngTuple = [42.0485898, -87.6729095];
-const CENTER: LatLngTuple = [42.04937, -87.673388];
-
-// Calculate grid dimensions
-const latDiff = TOP_LEFT[0] - BOTTOM_RIGHT[0];
-const lngDiff = BOTTOM_RIGHT[1] - TOP_LEFT[1];
-const patchSizeLat = GRID_SIZE_FEET * FEET_TO_DEGREES_LAT;
-const patchSizeLng = GRID_SIZE_FEET * FEET_TO_DEGREES_LNG;
-
-// Calculate number of patchs
-const numCols = Math.ceil(lngDiff / patchSizeLng);
-const numRows = Math.ceil(latDiff / patchSizeLat);
-
-// Label offset from grid (in degrees)
-const GRID_LABEL_OFFSET = 0.8;
-const LABEL_OFFSET_LAT = patchSizeLat * GRID_LABEL_OFFSET;
-const LABEL_OFFSET_LNG = patchSizeLng * GRID_LABEL_OFFSET;
 
 // Sidebar component to display grid patch information
 interface SidebarProps {
@@ -64,6 +37,18 @@ function Sidebar({ patchInfo }: SidebarProps) {
 }
 
 function GridOverlay() {
+
+  // find coordinates with geolocation
+  const { coords } =
+    useGeolocated({
+      positionOptions: {
+          enableHighAccuracy: true,
+      },
+      userDecisionTimeout: 5000,
+      watchPosition: true,
+  });
+
+  // initialize variables
   const map = useMap();
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,6 +64,9 @@ function GridOverlay() {
     gridRef.current = new LayerGroup();
     map.addLayer(gridRef.current);
 
+    // Track if user is on any valid patch
+    let userOnValidPatch = false;
+
     // Create grid patchs
     for (let row = 0; row < numRows; row++) {
       for (let col = 0; col < numCols; col++) {
@@ -93,16 +81,23 @@ function GridOverlay() {
 
         // Create patch label
         const label = `${String.fromCharCode(65 + col)}${row + 1}`;
-
         const isSelected = patch === label;
+
+        const isUserHere = coords?.latitude && coords?.longitude &&
+          coords?.latitude <= topLeft[0] && coords?.latitude >= bottomRight[0] &&
+          coords?.longitude >= topLeft[1] && coords?.longitude <= bottomRight[1]
+
+        if (isUserHere) {
+          userOnValidPatch = true;
+        }
 
         // Create rectangle for grid patch
         // TODO: Match with color variables from project
         const rect = new Rectangle([topLeft, bottomRight], {
           color: '#000000',
           weight: 1,
-          fillColor: isSelected ? '#4a90e2' : '#000000',
-          fillOpacity: isSelected ? 0.9 : 0,
+          fillColor: isUserHere ? '#4CAF50' : isSelected ? '#4a90e2' : '#000000',
+          fillOpacity: isUserHere ? 0.9 : isSelected ? 0.9 : 0,
         });
 
         // Make patchs clickable
@@ -113,6 +108,24 @@ function GridOverlay() {
         rect.addTo(gridRef.current);
         // make the rectangle
       }
+    }
+
+    // Add user location marker if they're not on a valid patch but have GPS coordinates
+    if (coords?.latitude && coords?.longitude && !userOnValidPatch) {
+      const userLocationMarker = new Marker([coords.latitude, coords.longitude], {
+        icon: divIcon({
+          className: 'user-location-marker',
+          html: `<div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <circle cx="12" cy="12" r="8" fill="#FF4444" stroke="#FFFFFF" stroke-width="2"/>
+              <circle cx="12" cy="12" r="3" fill="#FFFFFF"/>
+            </svg>
+          </div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        }),
+      });
+      userLocationMarker.addTo(gridRef.current);
     }
 
     // Add column labels (A-Z)
@@ -151,7 +164,7 @@ function GridOverlay() {
         map.removeLayer(gridRef.current);
       }
     };
-  }, [map, navigate, patch, location]);
+  }, [map, navigate, patch, location, coords]);
 
   return null;
 }
