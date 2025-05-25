@@ -16,6 +16,7 @@ import NotFound from './pages/not-found';
 import SignUp from './pages/signup';
 import AdminPage from './pages/admin';
 import SpreadsheetView from './pages/SpreadsheetView';
+import AboutUs from "./pages/AboutUs";
 
 function App() {
   return (
@@ -36,7 +37,7 @@ function App() {
             <Route path="auth/callback" element={<AuthCallback />} />
             <Route path="auth/reset-password" element={<ResetPassword />} />
             <Route path="auth/verify-email" element={<EmailVerification />} />
-
+            <Route path="about" element={<AboutUs />} />
             <Route path="map" element={<MapView />} />
             <Route path="map/:patch" element={<MapView />} />
             <Route path="spreadsheet" element={<SpreadsheetView />} />
