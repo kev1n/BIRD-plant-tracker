@@ -1,6 +1,6 @@
 # Welcome to the Handoff Documentation 👋
 
-These pages are a **concise guide for new maintainers** taking over the Clark Street Bird Sanctuary Plant Tracker project. They capture the project context, technical details, and next steps are documented such that knowledge of the project stays within the team.
+These pages are a **concise guide for new maintainers** taking over the _Clark Street Bird Sanctuary Plant Tracker_ project. They capture the project context, technical details, and next steps are documented such that knowledge of the project stays within the team.
 
 ### Who should read this?
 - **New maintainers** inheriting the redesigned website codebase
