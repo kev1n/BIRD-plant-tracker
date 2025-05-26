@@ -9,14 +9,14 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams, ValueSetterParams } from 'ag-grid-community';
-import { Observation, Snapshot, updatedObservation } from 'types/database_types';
-import { useUser } from '../hooks/useUser';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams, ValueSetterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
-import { EllipsisVertical } from 'lucide-react';
+import { EllipsisVertical, Plus, Save, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from "sonner";
+import { Observation, Snapshot, updatedObservation } from 'types/database_types';
+import { useUser } from '../hooks/useUser';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -26,8 +26,27 @@ export default function SpreadSheetView() {
   const [editingRowId, setEditingRowId] = useState<number|null>(null);
   const [backupRow, setBackupRow] = useState<Observation|null>(null);
   const [isNewObs, setIsNewObs] = useState<number|null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { user } = useUser();
   
+  // Unsaved changes warning effect
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    };
+
+    if (hasUnsavedChanges) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
   // Function to get all observations on intial rendering, and after editing the spreadsheet
   // Should token and baseUrl be abstracted out of the function?
   const fetchData = async () => {
@@ -44,7 +63,8 @@ export default function SpreadSheetView() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch observations');
+        toast.error(await response.text());
+        return;
       }
 
       const data = await response.json();
@@ -53,8 +73,7 @@ export default function SpreadSheetView() {
       setRowData(real);
 
     } catch (error) {
-      console.error("Error fetching data:", error);
-      toast.error("Failed to load observations.");
+      toast.error(error as string);
     }
   }
 
@@ -67,6 +86,7 @@ export default function SpreadSheetView() {
   const startEdit = (row: Observation) => {
     setEditingRowId(row.observationID);
     setBackupRow({...row});
+    setHasUnsavedChanges(true);
   }
 
   // TODO: eventually need to abstract these functions into another file
@@ -89,7 +109,8 @@ export default function SpreadSheetView() {
       });
 
       if (!response.ok) {
-        throw new Error("failed to delete observation");
+        toast.error(await response.text());
+        return;
       }
 
       // Refresh data to show deletion
@@ -97,8 +118,7 @@ export default function SpreadSheetView() {
       toast("Observation deleted successfully.");
 
     } catch (error) {
-      console.error("Error duplicating observation:", error);
-      toast.error("Failed to delete observation.");
+      toast.error(error as string);
     }
   }
 
@@ -120,7 +140,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotObsResponse.ok) {
-        throw new Error("Failed to get snapshot observations");
+        toast.error(await snapshotObsResponse.text());
+        return;
       }
 
       const snapshotObsData = await snapshotObsResponse.json();
@@ -142,7 +163,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotResponse.ok) {
-        throw new Error("Failed to get snapshot");
+        toast.error(await snapshotResponse.text());
+        return;
       }
 
       const snapshotData = await snapshotResponse.json();
@@ -167,7 +189,8 @@ export default function SpreadSheetView() {
       });
 
       if (!createSnapshotResponse.ok) {
-        throw new Error("Failed to create new snapshot");
+        toast.error(await createSnapshotResponse.text());
+        return;
       }
 
       const newSnapshotData = await createSnapshotResponse.json();
@@ -196,7 +219,7 @@ export default function SpreadSheetView() {
       fetchData();
       
     } catch (error) {
-      console.error("Error during snapshot duplication:", error);
+      toast.error(error as string);
     }
   }
 
@@ -226,14 +249,15 @@ export default function SpreadSheetView() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to duplicate observation");
+        toast.error(await response.text());
+        return;
       }
 
       // Refresh the data to show new observation
       fetchData();
       
     } catch (error) {
-      console.error("Error duplicating observation:", error);
+      toast.error(error as string);
     }
   }
 
@@ -254,7 +278,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotResponse.ok) {
-        throw new Error("Failed to get snapshot");
+        toast.error(await snapshotResponse.text());
+        return;
       }
 
       const snapshotData = await snapshotResponse.json();
@@ -276,7 +301,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotDupResponse.ok) {
-        throw new Error("Failed to duplicate snapshot");
+        toast.error(await snapshotDupResponse.text());
+        return;
       }
 
       const newSnapshotData = await snapshotDupResponse.json();
@@ -300,12 +326,13 @@ export default function SpreadSheetView() {
       });
 
       if (!copyObservationResponse.ok) {
-        throw new Error("Failed to duplicate observation");
+        toast.error(await copyObservationResponse.text());
+        return;
       }
 
       fetchData();
     } catch (error) {
-      console.error("Error duplicating observation to empty snapshot:", error);
+      toast.error(error as string);
     }
   }
 
@@ -326,7 +353,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotObsResponse.ok) {
-        throw new Error("Failed to get snapshot observations");
+        toast.error(await snapshotObsResponse.text());
+        return;
       }
 
       const snapshotObsData = await snapshotObsResponse.json();
@@ -342,7 +370,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotResponse.ok) {
-        throw new Error("Failed to get snapshot");
+        toast.error(await snapshotResponse.text());
+        return;
       }
 
       const snapshotData = await snapshotResponse.json();
@@ -368,7 +397,8 @@ export default function SpreadSheetView() {
       });
 
       if (!createSnapshotResponse.ok) {
-        throw new Error("Failed to create new snapshot");
+        toast.error(await createSnapshotResponse.text());
+        return;
       }
 
       const newSnapshotData = await createSnapshotResponse.json();
@@ -392,8 +422,9 @@ export default function SpreadSheetView() {
           })
         });
 
-        if (!duplicateObsResponse) {
-          throw new Error("Failed to duplicate observation to new snapshot");
+        if (!duplicateObsResponse.ok) {
+          toast.error(await duplicateObsResponse.text());
+          return;
         }
       }
 
@@ -403,8 +434,7 @@ export default function SpreadSheetView() {
       toast("Snapshot duplicated and observation removed successfully.");
       
     } catch (error) {
-      console.error("Error during snapshot duplication:", error);
-      toast.error("Failed to duplicate snapshot and remove observation.");
+      toast.error(error as string);
     }
   }
 
@@ -413,7 +443,7 @@ export default function SpreadSheetView() {
     // 1) find the row the user just edited
     const editedRow = rowData.find(r => r.observationID === editingRowId);
     if (!editedRow) {
-      console.error('No edited row found!');
+      toast.error('No edited row found!');
       return;
     }
   
@@ -432,7 +462,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotResponse.ok) {
-        throw new Error("Failed to get snapshot");
+        toast.error(await snapshotResponse.text());
+        return;
       }
 
       const snapshotData = await snapshotResponse.json();
@@ -448,7 +479,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotObsResponse.ok) {
-        throw new Error("Failed to get snapshot observations");
+        toast.error(await snapshotObsResponse.text());
+        return;
       }
 
       const snapshotObsData = await snapshotObsResponse.json();
@@ -474,7 +506,8 @@ export default function SpreadSheetView() {
       });
 
       if (!createSnapshotResponse.ok) {
-        throw new Error("Failed to create new snapshot");
+        toast.error(await createSnapshotResponse.text());
+        return;
       }
 
       const newSnapshotData = await createSnapshotResponse.json();
@@ -500,8 +533,9 @@ export default function SpreadSheetView() {
           })
         });
 
-        if (!duplicateObsResponse) {
-          throw new Error("Failed to duplicate observation to new snapshot");
+        if (!duplicateObsResponse.ok) {
+          toast.error(await duplicateObsResponse.text());
+          return;
         }
       }
   
@@ -511,7 +545,7 @@ export default function SpreadSheetView() {
       setBackupRow(null);
   
     } catch (err) {
-      console.error('Error duplicating snapshot with edited row:', err);
+      toast.error(err as string);
     }
   }
 
@@ -520,7 +554,7 @@ export default function SpreadSheetView() {
     // 1) find the row the user just edited
     const editedRow = rowData.find(r => r.observationID === editingRowId);
     if (!editedRow) {
-      console.error('No edited row found!');
+      toast.error('No edited row found!');
       return;
     }
     try {
@@ -538,7 +572,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotResponse.ok) {
-        throw new Error("Failed to get snapshot");
+        toast.error(await snapshotResponse.text());
+        return;
       }
 
       const snapshotData = await snapshotResponse.json();
@@ -560,7 +595,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshotDupResponse.ok) {
-        throw new Error("Failed to duplicate snapshot");
+        toast.error(await snapshotDupResponse.text());
+        return;
       }
 
       const newSnapshotData = await snapshotDupResponse.json();
@@ -584,14 +620,15 @@ export default function SpreadSheetView() {
       });
 
       if (!editObservationResponse.ok) {
-        throw new Error("Failed to duplicate observation");
+        toast.error(await editObservationResponse.text());
+        return;
       }
 
       fetchData();
       setEditingRowId(null);
       setBackupRow(null);
     } catch (error) {
-      console.error("Error duplicating observation to empty snapshot:", error);
+      toast.error(error as string);
     }
   }
 
@@ -621,7 +658,8 @@ export default function SpreadSheetView() {
   //     });
 
   //     if (!response.ok) {
-  //       throw new Error(response.statusText);
+  //       toast.error(await response.text());
+  //       return;
   //     }
   //   } catch (error){
   //     console.error("Error:", error);
@@ -633,7 +671,7 @@ export default function SpreadSheetView() {
       const updatedRow = rowData ? rowData.find(r => r.observationID === editingRowId)! : null;
 
       if (!updatedRow){
-        console.error("Error: edited row not found");
+        toast.error("Error: edited row not found");
         return;
       }
 
@@ -659,13 +697,16 @@ export default function SpreadSheetView() {
       });
 
       if (!response.ok) {
-        throw new Error(response.statusText);
+        toast.error(await response.text());
+        return;
       }
       
       setEditingRowId(null);
       setBackupRow(null);
+      setHasUnsavedChanges(false);
+      toast.success("Changes saved successfully!");
     } catch (error) {
-      console.error("Error:", error);
+      toast.error(error as string);
     }
   };
 
@@ -679,10 +720,12 @@ export default function SpreadSheetView() {
     }
     setEditingRowId(null);
     setBackupRow(null);
+    setHasUnsavedChanges(false);
   };
 
   const cancelAdd = () => {
     setIsNewObs(null);
+    setHasUnsavedChanges(false);
     fetchData();
   };
 
@@ -714,6 +757,7 @@ export default function SpreadSheetView() {
     // append and immediately enter edit mode on it
     setRowData(rds => [blank, ...(rds||[])]);
     setIsNewObs(blank.observationID);
+    setHasUnsavedChanges(true);
   };
 
   async function addNewToRecentSnapshot() {
@@ -722,7 +766,7 @@ export default function SpreadSheetView() {
 
     const newRow = rowData.find(r => r.observationID === -1);
     if (!newRow) {
-      console.error('No new row found!');
+      toast.error('No new row found!');
       return;
     }
 
@@ -757,7 +801,7 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshot_response.ok) {
-        throw new Error(snapshot_response.statusText);
+        toast.error(await snapshot_response.text());
         return;
       }
 
@@ -775,18 +819,19 @@ export default function SpreadSheetView() {
       });
 
       if (!plant_response.ok) {
-        throw new Error(await plant_response.text());
+        toast.error(await plant_response.text());
+        return;
       }
       
       const { plants } = await plant_response.json();
       
       if (!plants || plants.length === 0) {
-        alert(`No plant found matching “${plantName}”`);
+        alert(`No plant found matching "${plantName}"`);
         return;
       }
 
       if (plants.length > 1){
-        alert(`Please enter a more specific plant name. “${plantName}” is not specific enough.`);
+        alert(`Please enter a more specific plant name. "${plantName}" is not specific enough.`);
         return;
       }
 
@@ -808,15 +853,16 @@ export default function SpreadSheetView() {
         })
       });
 
-      if (!obs_response) {
-        throw new Error("Failed to create new observation");
+      if (!obs_response.ok) {
+        toast.error(await obs_response.text());
+        return;
       }
 
       setIsNewObs(null);
       fetchData();
 
     } catch (error) {
-      console.error("Error:", error);
+      toast.error(error as string);
     }
   }
 
@@ -826,7 +872,7 @@ export default function SpreadSheetView() {
 
     const newRow = rowData.find(r => r.observationID === -1);
     if (!newRow) {
-      console.error('No new row found!');
+      toast.error('No new row found!');
       return;
     }
 
@@ -860,7 +906,7 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshot_response.ok) {
-        throw new Error(snapshot_response.statusText);
+        toast.error(await snapshot_response.text());
         return;
       }
 
@@ -876,13 +922,14 @@ export default function SpreadSheetView() {
       });
 
       if (!plant_response.ok) {
-        throw new Error(await plant_response.text());
+        toast.error(await plant_response.text());
+        return;
       }
       
       const { plant } = await plant_response.json();
       
       if (!plant) {
-        alert(`No plant found matching “${plantName}”`);
+        alert(`No plant found matching "${plantName}"`);
         return;
       }
       const plantID = plant.plantID;
@@ -905,15 +952,16 @@ export default function SpreadSheetView() {
         })
       });
 
-      if (!obs_response) {
-        throw new Error("Failed to create new observation");
+      if (!obs_response.ok) {
+        toast.error(await obs_response.text());
+        return;
       }
 
       setIsNewObs(null);
       fetchData();
 
     } catch (error) {
-      console.error("Error:", error);
+      toast.error(error as string);
     }
   }
 
@@ -923,7 +971,7 @@ export default function SpreadSheetView() {
 
     const newRow = rowData.find(r => r.observationID === -1);
     if (!newRow) {
-      console.error('No new row found!');
+      toast.error('No new row found!');
       return;
     }
 
@@ -970,7 +1018,8 @@ export default function SpreadSheetView() {
       });
 
       if (!snapshot_response.ok){
-        throw new Error("Error creating new snapshot.");
+        toast.error(await snapshot_response.text());
+        return;
       }
 
       const snapshotData = await snapshot_response.json();
@@ -985,13 +1034,14 @@ export default function SpreadSheetView() {
       });
 
       if (!plant_response.ok) {
-        throw new Error(await plant_response.text());
+        toast.error(await plant_response.text());
+        return;
       }
       
       const { plant } = await plant_response.json();
       
       if (!plant) {
-        alert(`No plant found matching “${plantName}”`);
+        alert(`No plant found matching "${plantName}"`);
         return;
       }
       const plantID = plant.plantID;
@@ -1012,15 +1062,16 @@ export default function SpreadSheetView() {
         })
       });
 
-      if (!obs_response) {
-        throw new Error("Failed to create new observation");
+      if (!obs_response.ok) {
+        toast.error(await obs_response.text());
+        return;
       }
 
       setIsNewObs(null);
       fetchData();
 
     } catch (error) {
-      console.error("Error:", error);
+      toast.error(error as string);
     }
   }
 
@@ -1058,9 +1109,9 @@ export default function SpreadSheetView() {
 
         <DropdownMenuContent>
           <DropdownMenuItem >
-            <Button className="w-full" onClick={() => { if (params.data) { startEdit(params.data); }}}>
+            <p className="w-full" onClick={() => { if (params.data) { startEdit(params.data); }}}>
               Edit Observation
-            </Button>
+            </p>
           </DropdownMenuItem>  
 
           <DropdownMenuSub>
@@ -1152,9 +1203,16 @@ export default function SpreadSheetView() {
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
-      cellStyle: { textAlign: 'center' },
       editable: params => (params.data.observationID === isNewObs),
       cellEditor: 'agTextCellEditor',
+      cellStyle: params => {
+        const isEditable = params.data.observationID === isNewObs;
+        return {
+          textAlign: 'center',
+          backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
+          border: isEditable ? '2px solid #3b82f6' : 'none',
+        };
+      },
       valueSetter: (params: ValueSetterParams<Observation>) => {
         if (!params.data.Snapshots){
           return false;
@@ -1175,18 +1233,25 @@ export default function SpreadSheetView() {
       filter: true,
       type: 'numericColumn',
       headerClass: 'ag-header-cell-center',
-      cellStyle: { textAlign: 'center' },
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
       cellEditor: 'agNumberCellEditor',
+      cellStyle: params => {
+        const isEditable = params.data.observationID === editingRowId || params.data.observationID === isNewObs;
+        return {
+          textAlign: 'center',
+          backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
+          border: isEditable ? '2px solid #3b82f6' : 'none',
+        };
+      },
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.plantQuantity;
         const newValue = params.newValue;
         // only do anything if it actually changed:
         if (newValue !== oldValue) {
           params.data.plantQuantity = newValue;
-          return true;    // tells AG-Grid “I applied the change”
+          return true;    // tells AG-Grid "I applied the change"
         }
-        return false;     // “nothing changed, revert to oldValue”
+        return false;     // "nothing changed, revert to oldValue"
       }
     },
     { 
@@ -1195,9 +1260,16 @@ export default function SpreadSheetView() {
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
-      cellStyle: { textAlign: 'center' },
       editable: params => (params.data.observationID === isNewObs),
       cellEditor: 'agTextCellEditor',
+      cellStyle: params => {
+        const isEditable = params.data.observationID === isNewObs;
+        return {
+          textAlign: 'center',
+          backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
+          border: isEditable ? '2px solid #3b82f6' : 'none',
+        };
+      },
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.PlantInfo.plantCommonName;
         const newValue = params.newValue;
@@ -1223,18 +1295,25 @@ export default function SpreadSheetView() {
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
-      cellStyle: { textAlign: 'center' },
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
       cellEditor: 'agDateStringCellEditor',
+      cellStyle: params => {
+        const isEditable = params.data.observationID === editingRowId || params.data.observationID === isNewObs;
+        return {
+          textAlign: 'center',
+          backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
+          border: isEditable ? '2px solid #3b82f6' : 'none',
+        };
+      },
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.datePlanted;
         const newValue = params.newValue;
         // only do anything if it actually changed:
         if (newValue !== oldValue) {
           params.data.datePlanted = newValue;
-          return true;    // tells AG-Grid “I applied the change”
+          return true;    // tells AG-Grid "I applied the change"
         }
-        return false;     // “nothing changed, revert to oldValue”
+        return false;     // "nothing changed, revert to oldValue"
       },
     },
     { 
@@ -1251,9 +1330,16 @@ export default function SpreadSheetView() {
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
-      cellStyle: { textAlign: 'center' },
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
       cellEditor: 'agSelectCellEditor',
+      cellStyle: params => {
+        const isEditable = params.data.observationID === editingRowId || params.data.observationID === isNewObs;
+        return {
+          textAlign: 'center',
+          backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
+          border: isEditable ? '2px solid #3b82f6' : 'none',
+        };
+      },
       cellEditorParams: {
         values: ['true', 'false']
       },
@@ -1263,9 +1349,9 @@ export default function SpreadSheetView() {
         // only do anything if it actually changed:
         if (newValue !== oldValue) {
           params.data.hasBloomed = newValue;
-          return true;    // tells AG-Grid “I applied the change”
+          return true;    // tells AG-Grid "I applied the change"
         }
-        return false;     // “nothing changed, revert to oldValue”
+        return false;     // "nothing changed, revert to oldValue"
       },
     },
     { 
@@ -1282,9 +1368,16 @@ export default function SpreadSheetView() {
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center',
-      cellStyle: { textAlign: 'center' },
       editable: params => (params.data.observationID === isNewObs),
       cellEditor: 'agLargeTextCellEditor',
+      cellStyle: params => {
+        const isEditable = params.data.observationID === isNewObs;
+        return {
+          textAlign: 'center',
+          backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
+          border: isEditable ? '2px solid #3b82f6' : 'none',
+        };
+      },
       cellEditorParams: {
         maxLength: 256
       },
@@ -1327,7 +1420,155 @@ export default function SpreadSheetView() {
 
   return (
     <div className="flex flex-col h-full py-4">
-      <div className="h-full">
+      {/* Unsaved Changes Alert & Save Actions Bar */}
+      
+
+      {/* Save Actions for Editing */}
+      {editingRowId != null && (
+        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Save className="h-5 w-5 text-blue-600" />
+              <h3 className="text-sm font-medium text-blue-800">Editing Observation</h3>
+              <span className="text-sm text-blue-700">Choose how to save your changes:</span>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="default" size="sm" onClick={() => saveEdit()}>
+                <Save className="h-4 w-4 mr-1" />
+                Save to Current Snapshot
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="secondary" size="sm">
+                    Save with Snapshot Copy
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <h2 className="text-lg font-semibold">Duplicate Snapshot & Save</h2>
+                    <p className="text-sm text-gray-600">
+                      This will create a copy of the entire snapshot with your changes. 
+                      The original snapshot remains unchanged, preserving historical data.
+                    </p>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => duplicateSnapshotWithEdited()}>
+                      Create Copy & Save
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="secondary" size="sm">
+                    Save to New Snapshot
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <h2 className="text-lg font-semibold">Create New Snapshot</h2>
+                    <p className="text-sm text-gray-600">
+                      This will create a completely new snapshot containing only your edited observation.
+                      Use this when the change represents a new state, not a correction.
+                    </p>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => newSnapshotWithEdited()}>
+                      Create New Snapshot
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <Button variant="outline" size="sm" onClick={() => cancelEdit()}>
+                <X className="h-4 w-4 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Actions for New Observation */}
+      {isNewObs != null && (
+        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-green-600" />
+              <h3 className="text-sm font-medium text-green-800">Adding New Observation</h3>
+              <span className="text-sm text-green-700">Choose where to save this observation:</span>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="default" size="sm" onClick={() => addNewToRecentSnapshot()}>
+                <Save className="h-4 w-4 mr-1" />
+                Add to Recent Snapshot
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="secondary" size="sm">
+                    Add to Snapshot Copy
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <h2 className="text-lg font-semibold">Duplicate Snapshot & Add</h2>
+                    <p className="text-sm text-gray-600">
+                      This will copy the latest snapshot for this patch and add your new observation.
+                      The original snapshot remains unchanged.
+                    </p>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => duplicateSnapshotWithNew()}>
+                      Create Copy & Add
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="secondary" size="sm">
+                    Create New Snapshot
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <h2 className="text-lg font-semibold">Create New Snapshot</h2>
+                    <p className="text-sm text-gray-600">
+                      This will create a completely new snapshot containing only your new observation.
+                      Use this when starting a fresh observation session.
+                    </p>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => newSnapshotWithNewObs()}>
+                      Create New Snapshot
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <Button variant="outline" size="sm" onClick={() => cancelAdd()}>
+                <X className="h-4 w-4 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add New Observation Button */}
+      {!isNewObs && editingRowId === null && (
+        <div className="mb-4 flex justify-end">
+          <Button onClick={handleAddRow} variant="default">
+            <Plus className="h-4 w-4 mr-2" />
+            New Observation
+          </Button>
+        </div>
+      )}
+
+      {/* Data Grid */}
+      <div className="flex-1">
         <AgGridReact
           rowData={rowData}
           columnDefs={colDefs}
@@ -1335,129 +1576,6 @@ export default function SpreadSheetView() {
           paginationAutoPageSize={true}
           theme={myTheme}
         />
-        {!isNewObs && editingRowId === null && (
-          <div className="mt-4 flex justify-end">
-            <Button onClick={handleAddRow}>
-              New Observation
-            </Button>
-          </div>
-        )}
-        {editingRowId != null && (
-          <div className="mt-4 flex gap-2 justify-end">
-            <Button variant="lightGreen" onClick={() => saveEdit()}>
-              Save
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="lightGreen">
-                  Duplicate Snapshot
-                </Button>
-              </AlertDialogTrigger>  
-
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  This action will duplicate the entire snapshot associated with the edited observation and update the single observation!
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel>
-                    Cancel
-                  </AlertDialogCancel>
-
-                  <AlertDialogAction onClick={() => duplicateSnapshotWithEdited()}>
-                    Confirm
-                  </AlertDialogAction>
-
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="lightGreen">
-                  New Snapshot
-                </Button>
-              </AlertDialogTrigger>  
-
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  This action will create a new snapshot containing the edited observation!
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel>
-                    Cancel
-                  </AlertDialogCancel>
-
-                  <AlertDialogAction onClick={() => newSnapshotWithEdited()}>
-                    Confirm
-                  </AlertDialogAction>
-
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <Button variant="outline" onClick={() => cancelEdit()}>
-              Cancel
-            </Button>
-          </div>
-        )}
-        {isNewObs != null && (
-          <div className="mt-4 flex gap-2 justify-end">
-            <Button variant="lightGreen" onClick={() => addNewToRecentSnapshot()}>
-              Add to current snapshot
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="lightGreen">
-                  Duplicate Snapshot
-                </Button>
-              </AlertDialogTrigger>  
-
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  This action will duplicate the latest snapshot associated with the specified patch ID and add the new observation!
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel>
-                    Cancel
-                  </AlertDialogCancel>
-
-                  <AlertDialogAction onClick={() => duplicateSnapshotWithNew()}>
-                    Confirm
-                  </AlertDialogAction>
-
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="lightGreen">
-                  New Snapshot
-                </Button>
-              </AlertDialogTrigger>  
-
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  This action will create a new snapshot containing the new observation!
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel>
-                    Cancel
-                  </AlertDialogCancel>
-
-                  <AlertDialogAction onClick={() => newSnapshotWithNewObs()}>
-                    Confirm
-                  </AlertDialogAction>
-
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <Button variant="outline" onClick={() => cancelAdd()}>
-              Cancel
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
