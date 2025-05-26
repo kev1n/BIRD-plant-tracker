@@ -99,9 +99,6 @@ export default function Login() {
           </Link>
         </div>
       </Form>
-      <Link to="/map" className="text-primary hover:underline">
-        Map
-      </Link>
     </div>
   );
 }

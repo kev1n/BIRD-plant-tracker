@@ -9,12 +9,12 @@ import EmailVerification from './pages/account/email-verifcation';
 import Login from './pages/account/login';
 import RequestPasswordReset from './pages/account/request-password-reset';
 import ResetPassword from './pages/account/reset-password';
+import AdminPage from './pages/admin';
 import ExamplePage from './pages/example';
 import Home from './pages/home';
 import MapView from './pages/MapView';
 import NotFound from './pages/not-found';
 import SignUp from './pages/signup';
-import AdminPage from './pages/admin';
 import SpreadsheetView from './pages/SpreadsheetView';
 import AboutUs from "./pages/AboutUs";
 
