@@ -26,7 +26,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Ensure you have the Popover component
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popoverDialog'; // Ensure you have the Popover component
 import { Input } from '@/components/ui/input';
 import { Observation } from 'types/database_types'; // Ensure you have the correct type for Observation
 import { useEffect } from 'react';
