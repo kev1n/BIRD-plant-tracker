@@ -1,14 +1,15 @@
-# Sign up Guide
+# Sign-up Guide
 
-Click sign up on the upper right of the website
+Click sign up on the upper right of the website.
 
 ![image](./sign-up-images/header.png)
 
 Enter the following information:
 - Email (required)
-- Username
-- First Name
-- Last Name
 - Password (required)
 
-Click the green sign up button
+Click the green log in button.
+
+If you have forgotten your password, click on "Forgot Password?" Enter your email into the prompt and click on the button "Reset Password" to reset your password.
+
+*If you do not already have an account, click the text "Sign up."
