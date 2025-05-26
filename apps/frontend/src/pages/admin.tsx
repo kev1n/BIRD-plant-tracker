@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import type { User } from '../../types/auth';
-import UserContainer from '@/components/admin/user-container';
 import AllUsers from '@/components/admin/all-users';
-import RoleRequest from '@/components/admin/role-request';
-import UserRoleInfo from '@/components/admin/user-role-info';
 import ImportContainer from '@/components/admin/plant-import-form';
+import RoleRequest from '@/components/admin/role-request';
+import UserContainer from '@/components/admin/user-container';
+import UserRoleInfo from '@/components/admin/user-role-info';
+import { useEffect, useState } from 'react';
+import type { User } from '../../types/auth';
         
 export default function AdminPage(){
   const [users, setUsers] = useState<User[]>([]);
@@ -42,9 +42,9 @@ export default function AdminPage(){
   const filteredUsers = [...users].filter((user) => user.roleRequested != null);
 
   return(
-    <div>
-      {error ? (<p>{error}</p>) : (
-      <div>
+    <div className="p-4">
+      {error ? (<p className="text-red-500">{error}</p>) : (
+      <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
         <UserContainer 
           users={filteredUsers} 
           containerTitle='Role Requests' 

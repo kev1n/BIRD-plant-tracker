@@ -19,7 +19,7 @@ export async function newObservation(req: AuthRequest, res: Response) {
           snapshotID,
           plantQuantity,
           plantID: plantID,
-          hasBloomed: hasBloomed || null,
+          hasBloomed: hasBloomed === undefined ? null : hasBloomed,
           datePlanted: datePlanted || null,
         },
       ])
