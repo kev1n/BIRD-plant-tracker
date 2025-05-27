@@ -1,7 +1,7 @@
 import { sendCSV } from "@/lib/admin-utils";
 import { PaperclipIcon } from "lucide-react";
 import { useRef, useState } from 'react';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 import { Button } from "../ui/button";
 
 export default function ImportContainer() {
@@ -40,7 +40,6 @@ export default function ImportContainer() {
 
   return (
       <div className="m-2 border border-gray-700 rounded-[3px]">
-          <Toaster position="top-right" richColors closeButton />
           <h3 className="m-4">Upload Plants</h3>
           <p className="m-4">Please upload plant data in a ".csv" file</p>
           <input
