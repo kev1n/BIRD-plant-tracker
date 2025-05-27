@@ -5,9 +5,9 @@ import { themes as prismThemes } from 'prism-react-renderer';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
-  favicon: 'img/favicon.ico',
+  title: 'Clark Street Beach Bird Sanctuary Plant Tracker',
+  tagline: 'Plant tracker for the Clark Street Beach Bird Sanctuary',
+  favicon: 'img/bird_logo.svg',
 
   // Set the production url of your site here
   url: 'https://your-docusaurus-site.example.com',
@@ -53,10 +53,10 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'My Site',
+      title: 'Clark Street Beach Bird Sanctuary Plant Tracker',
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        alt: 'Clark Street Beach Bird Sanctuary Plant Tracker Logo',
+        src: 'img/bird_logo.svg',
       },
       
     },
