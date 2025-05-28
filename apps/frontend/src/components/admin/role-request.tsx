@@ -2,9 +2,8 @@
  * Role Request Component
  * 
  * Refactored for:
- * - Smaller, appropriate text sizes (text-sm, text-xs)
- * - Modern card-based design with better spacing
- * - Improved visual hierarchy and button layout
+ * - Card-appropriate layout for desktop view
+ * - Compact design that works well in constrained widths
  * - Mobile-first responsive design
  * - Consistent design system integration
  */
@@ -43,75 +42,72 @@ export default function RoleRequest(props: User) {
   };
 
   return (
-    <div className="space-y-0">
-      {/* Main Request Row */}
-      <div className="flex items-center justify-between p-0">
-        <div className="flex items-center space-x-3 min-w-0 flex-1">
+    <div className="border rounded-lg p-4 bg-card">
+      {/* Main Request Content - Vertical Layout for Cards */}
+      <div className="space-y-3">
+        {/* User Info Row */}
+        <div className="flex items-start space-x-3">
           {/* Avatar */}
-          <Avatar className="h-9 w-9 flex-shrink-0">
-            <AvatarFallback className="bg-orange-100 text-orange-700 font-semibold text-xs">
+          <Avatar className="h-10 w-10 flex-shrink-0">
+            <AvatarFallback className="bg-orange-100 text-orange-700 font-semibold text-sm">
               {getInitials(props.firstname, props.lastname, props.username)}
             </AvatarFallback>
           </Avatar>
 
-          {/* User Info */}
+          {/* User Details */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center space-x-2">
-              <h4 className="font-medium text-sm text-foreground truncate">
-                {props.firstname && props.lastname 
-                  ? `${props.firstname} ${props.lastname}`
-                  : props.username
-                }
-              </h4>
-              <Badge variant="warning" className="text-xs">
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                Requesting {roleMessage}
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-2 mt-1">
-              <Badge variant="outline" className="text-xs">
-                Current: {props.role}
-              </Badge>
-              <span className="text-xs text-muted-foreground truncate">
-                @{props.username}
-              </span>
-            </div>
+            <h4 className="font-semibold text-sm text-foreground">
+              {props.firstname && props.lastname 
+                ? `${props.firstname} ${props.lastname}`
+                : props.username
+              }
+            </h4>
+            <p className="text-xs text-muted-foreground">@{props.username}</p>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center space-x-1 flex-shrink-0">
-          {/* Details Button */}
+          {/* Details Toggle */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowDetails(!showDetails)}
             aria-expanded={showDetails}
             aria-controls={`request-details-${props.email}`}
+            className="h-8 w-8 p-0 flex-shrink-0"
           >
             <MoreHorizontal className="h-4 w-4" />
             <span className="sr-only">Toggle request details</span>
           </Button>
+        </div>
 
-          {/* Approve Button */}
+        {/* Badges Row - Full Width */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-xs">
+            Current: {props.role}
+          </Badge>
+          <Badge variant="secondary" className="text-xs">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            Requesting {roleMessage}
+          </Badge>
+        </div>
+
+        {/* Action Buttons - Full Width for Card Layout */}
+        <div className="flex space-x-2">
           <Button
-            variant="default"
             size="sm"
             onClick={() => setShowConfirmDialog(true)}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="flex-1 text-xs"
           >
-            <Check className="h-3 w-3 md:mr-1" />
-            <span className="hidden md:inline">Approve</span>
+            <Check className="h-3 w-3 mr-1" />
+            Approve
           </Button>
-
-          {/* Deny Button */}
           <Button
             variant="destructive"
             size="sm"
             onClick={() => setShowDenyDialog(true)}
+            className="flex-1 text-xs"
           >
-            <X className="h-3 w-3 md:mr-1" />
-            <span className="hidden md:inline">Deny</span>
+            <X className="h-3 w-3 mr-1" />
+            Deny
           </Button>
         </div>
       </div>
@@ -119,29 +115,8 @@ export default function RoleRequest(props: User) {
       {/* Expandable Details Section */}
       <Collapsible open={showDetails} onOpenChange={setShowDetails}>
         <CollapsibleContent id={`request-details-${props.email}`}>
-          <div className="pt-4 space-y-4">
+          <div className="pt-4 mt-4 border-t space-y-4">
             <UserPopup {...props} />
-            
-            {/* Desktop Action Buttons */}
-            <div className="hidden md:flex justify-end space-x-2 pt-2 border-t">
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => setShowConfirmDialog(true)}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Check className="h-4 w-4 mr-2" />
-                Approve {roleMessage} Request
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowDenyDialog(true)}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Deny Request
-              </Button>
-            </div>
           </div>
         </CollapsibleContent>
       </Collapsible>
