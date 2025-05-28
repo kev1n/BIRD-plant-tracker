@@ -1,3 +1,6 @@
+import { Calendar } from "@/components/ui/calendar";
+import DatePicker from "@/components/ui/datepicker";
+import { useState } from "react";
 import { AlertExample } from "../components/ui/examples/AlertExample";
 import { ButtonExample } from "../components/ui/examples/ButtonExample";
 import { CardExample } from "../components/ui/examples/CardExample";
@@ -12,6 +15,21 @@ export default function ExamplePage() {
       <AlertExample />
       <FormExample />
       <LocationDemo />
+      <DatePicker date={new Date()} setDate={() => {}} pickerName="Select Date" />
     </div>
   );
-} 
+}
+
+
+export function CalendarDemo() {
+  const [date, setDate] = useState<Date | undefined>(new Date())
+
+  return (
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={setDate}
+      className="rounded-md border shadow"
+    />
+  )
+}

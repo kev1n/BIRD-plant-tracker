@@ -20,10 +20,11 @@ import UserContainer from './user-container';
 interface AllUsersProps {
   users: User[];
   containerTitle: string;
-  UserComponent: React.ComponentType<User>;
+  UserComponent: React.ComponentType<User & { onUpdateUser?: (email: string, newRole: string, wasRoleRequest?: boolean) => void }>;
+  onRefresh?: (email: string, newRole: string, wasRoleRequest?: boolean) => void;
 }
 
-export default function AllUsers({ users, UserComponent }: AllUsersProps) {
+export default function AllUsers({ users, UserComponent, onRefresh }: AllUsersProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Memoized filtered users for better performance
@@ -69,6 +70,7 @@ export default function AllUsers({ users, UserComponent }: AllUsersProps) {
         users={filteredUsers}
         containerTitle=""
         UserComponent={UserComponent}
+        onRefresh={onRefresh}
       />
     </div>
   );

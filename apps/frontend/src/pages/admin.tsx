@@ -1,5 +1,5 @@
 import { AlertCircle, Upload, UserCheck, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import AllUsers from '@/components/admin/all-users';
 import ImportContainer from '@/components/admin/plant-import-form';
@@ -17,39 +17,57 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        const token = localStorage.getItem('authToken');
-        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-        
-        const response = await fetch(`${baseUrl}/auth/users`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          }
-        });
-
-        const userData = await response.json();
-
-        if (!response.ok) {
-          throw new Error(userData.error || 'Failed to fetch users');
+  const fetchUsers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('authToken');
+      const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+      
+      const response = await fetch(`${baseUrl}/auth/users`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         }
+      });
 
-        setUsers(userData);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error fetching users');
-        toast.error('Error fetching users: ' + err);
-      } finally {
-        setIsLoading(false);
+      const userData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(userData.error || 'Failed to fetch users');
       }
-    };
 
+      setUsers(userData);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error fetching users');
+      toast.error('Error fetching users: ' + err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Function to update a specific user and handle role request processing
+  const updateUserRole = useCallback((email: string, newRole: string, wasRoleRequest: boolean = false) => {
+    setUsers(currentUsers => {
+      return currentUsers.map(user => {
+        if (user.email === email) {
+          const updatedUser: User = {
+            ...user,
+            role: newRole,
+            // Clear the role request since it's been processed
+            roleRequested: wasRoleRequest ? undefined : user.roleRequested
+          };
+          return updatedUser;
+        }
+        return user;
+      });
+    });
+  }, []);
+
+  useEffect(() => {
     fetchUsers();
-  }, []); // Fixed: Added empty dependency array
+  }, [fetchUsers]);
 
   // Filter users with pending role requests
   const pendingRoleRequests = users.filter(user => user.roleRequested != null);
@@ -137,12 +155,12 @@ export default function AdminPage() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Regular Users</CardTitle>
+                  <CardTitle className="text-sm font-medium">Users/Editors</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {users.filter(user => user.role === 'user').length}
+                    {users.filter(user => user.role === 'user').length} / {users.filter(user => user.role === 'editor').length}
                   </div>
                 </CardContent>
               </Card>
@@ -167,6 +185,7 @@ export default function AdminPage() {
                       users={pendingRoleRequests} 
                       containerTitle=""
                       UserComponent={RoleRequest}
+                      onRefresh={updateUserRole}
                     />
                   </CardContent>
                 </Card>
@@ -189,6 +208,7 @@ export default function AdminPage() {
                       users={users} 
                       containerTitle=""
                       UserComponent={UserRoleInfo}
+                      onRefresh={updateUserRole}
                     />
                   </CardContent>
                 </Card>
