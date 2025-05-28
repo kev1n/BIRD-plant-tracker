@@ -25,6 +25,7 @@
     "@radix-ui/react-radio-group": "^1.2.3",
     "@radix-ui/react-select": "^2.1.6",
     "@radix-ui/react-slot": "^1.2.3",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/vite": "^4.0.9",
     "ag-grid-react": "^33.2.4",
     "class-variance-authority": "^0.7.1",
