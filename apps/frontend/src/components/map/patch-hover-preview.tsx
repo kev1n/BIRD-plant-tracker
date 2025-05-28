@@ -93,10 +93,6 @@ export default function PatchHoverPreview({ hoverData, position }: PatchHoverPre
                   No plants recorded
                 </div>
               )}
-              
-              <div className="text-xs text-blue-600 font-medium">
-                Click to view full details
-              </div>
             </div>
           )}
           
