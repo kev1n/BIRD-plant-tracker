@@ -197,7 +197,7 @@ export default function ObservationForm({
                       />
                       <NewPlantFormDialog newPlant={true} />
                       <CommandList>
-                        <CommandEmpty>No framework found.</CommandEmpty>
+                        <CommandEmpty>No plants found.</CommandEmpty>
                         <CommandGroup>
                           {plants.map(plant => (
                             <CommandItem

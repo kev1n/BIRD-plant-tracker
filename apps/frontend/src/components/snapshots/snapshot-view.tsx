@@ -1,4 +1,6 @@
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -6,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { AlertCircle, Calendar, Camera, FileText, History, User } from 'lucide-react';
 import { JSX, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Observation, Snapshot } from 'types/database_types';
@@ -151,71 +154,124 @@ export default function SnapshotView({
       <>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>{triggerTitle}</Button>
+            <Button>
+              {triggerTitle}
+            </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <DialogHeader className="pb-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                    <Camera className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-2xl">
+                      Patch {patch}
+                    </DialogTitle>
+                    <p className="text-muted-foreground">
+                      {historicalSnapshotID ? 'Historical Snapshot' : 'Current Status'}
+                    </p>
+                  </div>
+                </div>
+                
+                {patch_found && (
+                  <div className="text-right text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Calendar className="w-4 h-4"/>
+                      <span>
+                        {current_snapshot.dateCreated.toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true,
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <User className="w-4 h-4" />
+                      <span>By: {author}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </DialogHeader>
+
+            {/* Error State */}
             {!patch_found && (
-              <div className="text-red-500">
-                <h1>
-                  There are no snapshots for Patch {patch}. Create one by clicking New Snapshot{' '}
-                </h1>
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  There are no snapshots for Patch {patch}. Create one by clicking "New Snapshot" below.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {patch_found && (
+              <div className="space-y-6">
+                {/* Plant Observations Section */}
+                <ObservationsSection observations={observations} editing={false} />
+
+                {/* Soil Composition Section - Only show for current snapshots */}
+                {historicalSnapshotID === undefined && (
+                  <PatchSoil patchID={patch} />
+                )}
+
+                {/* Notes Section */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3">
+                      <FileText className="w-5 h-5 text-slate-600" />
+                      Notes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground leading-relaxed">
+                      {current_snapshot.notes || 'No notes available for this patch.'}
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
-            <DialogHeader>
-              <div className="flex flex-row justify-between">
-                <div className="flex-1 text-left">
-                  <DialogTitle>Patch {patch}</DialogTitle>
-                </div>
-                <div className="flex-1 text-right">
-                  <div className="mr-5">
-                    <h1>
-                      Accurate as of:
-                      {current_snapshot.dateCreated.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
-                    </h1>
-                    <h1>By: {author}</h1>
-                  </div>
-                </div>
-              </div>
-            </DialogHeader>
-            <ObservationsSection observations={observations} editing={false} />
-
-            {historicalSnapshotID === undefined && <PatchSoil patchID={patch} />}
-
-            <div>
-              <h1>Notes</h1>
-              <div className="border border-gray-300 rounded-lg p-4">
-                <p>{current_snapshot.notes || 'No notes available for this patch.'}</p>
-              </div>
-            </div>
-
+            {/* Action Buttons - Show for current snapshots regardless of patch_found status */}
             {historicalSnapshotID === undefined && (
-              <div className="flex flex-row justify-between">
-                <div className="flex-1 text-left">
-                  <PermissionRestrictedDialog actionName="create new snapshots">
-                    <SnapshotForm
-                      newSnapshot={true}
-                      patchID={patch}
-                      snapshotTemplate={current_snapshot}
-                      observationsTemplate={observations}
-                    />
-                  </PermissionRestrictedDialog>
-                </div>
-                <div>
-                  <PatchSnapshotHistory patch={patch} />
-                </div>
+              <div className="flex items-center justify-between pt-4 border-t">
+                <PermissionRestrictedDialog actionName="create new snapshots">
+                  <SnapshotForm
+                    newSnapshot={true}
+                    patchID={patch}
+                    snapshotTemplate={current_snapshot}
+                    observationsTemplate={observations}
+                    trigger={
+                      <Button>
+                        <Camera className="w-4 h-4 mr-2" />
+                        New Snapshot
+                      </Button>
+                    }
+                  />
+                </PermissionRestrictedDialog>
+                
+                {patch_found && (
+                  <PatchSnapshotHistory 
+                    patch={patch}
+                    trigger={
+                      <Button variant="outline">
+                        <History className="w-4 h-4 mr-2 text-slate-600" />
+                        View History
+                      </Button>
+                    }
+                  />
+                )}
               </div>
             )}
           </DialogContent>
         </Dialog>
 
+        {/* Edit Button for Historical Snapshots */}
         {historicalSnapshotID !== undefined && (
           <PermissionRestrictedDialog actionName="edit snapshots">
             <SnapshotForm
