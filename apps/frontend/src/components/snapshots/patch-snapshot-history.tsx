@@ -6,9 +6,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useState, useEffect } from 'react';
-import SnapshotRecord from './snapshot-record';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import HistoricalSnapshotContext from './historical-snapshot-context';
+import SnapshotRecord from './snapshot-record';
 
 interface DateIDPair {
   snapshotID: number;
@@ -44,13 +45,12 @@ export default function PatchSnapshotHistory({ patch }: { patch: string }) {
       } else {
         setHistoricalSnapshots([]);
       }
-    } catch (error) {
-      console.error('Error fetching historical snapshots:', error);
+    } catch (error) { 
+      toast.error('Error fetching historical snapshots: ' + error);
     }
   };
 
   useEffect(() => {
-    console.log(`Fetching historical snapshots for patch: ${patch}`);
     fetchHistoricalSnapshotMetadata(patch);
   }, [patch]);
 

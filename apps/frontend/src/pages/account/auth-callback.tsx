@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useUser } from '../../hooks/useUser';
 
 export default function AuthCallback() {
@@ -46,7 +47,7 @@ export default function AuthCallback() {
           throw new Error('Authentication verification failed');
         }
       } catch (error) {
-        console.error('Auth callback error:', error);
+        toast.error('Auth callback error: ' + error);
         navigate('/login', {
           state: { error: error instanceof Error ? error.message : 'Authentication failed' },
           replace: true,

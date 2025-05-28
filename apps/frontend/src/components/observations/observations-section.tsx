@@ -27,7 +27,6 @@ export default function ObservationsSection({
           if (!obs.isNew) {
             return { ...obs, deletedOn: new Date() };
           } else {
-            console.log('Removing new observation with tempKey:', tempKey);
             return null;
           }
         }
@@ -45,12 +44,10 @@ export default function ObservationsSection({
   };
 
   const addObservation = (newObservation: Observation) => {
-    console.log('Adding new observation:', newObservation, observations);
     const lastTempKey =
       observations.length > 0 && observations[observations.length - 1].tempKey !== undefined
         ? observations[observations.length - 1].tempKey
         : -1;
-    console.log('Last tempKey found in observations:', lastTempKey);
     const updatedObservations = [
       ...observations,
       { ...newObservation, tempKey: lastTempKey + 1, isNew: true },
@@ -59,7 +56,6 @@ export default function ObservationsSection({
   };
 
   useEffect(() => {
-    console.log('ObservationsSection useEffect called with observations:', observations);
     const trees = observations.filter(
       obs => obs.PlantInfo.subcategory?.toLowerCase() === 'tree' && !obs.deletedOn
     );

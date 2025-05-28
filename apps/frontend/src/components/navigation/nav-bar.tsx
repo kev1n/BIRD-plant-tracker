@@ -21,10 +21,10 @@ export default function NavBar() {
         setUser(null);
         navigate('/login');
       } else {
-        console.error('Logout failed:', response.statusText);
+        toast.error('Logout failed: ' + response.statusText);
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      toast.error('Logout error: ' + error);
     }
   };
 

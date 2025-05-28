@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import type { User } from '../../../types/auth';
 
 export default function UsersList() {
@@ -27,7 +28,7 @@ export default function UsersList() {
         setUsers(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error fetching users');
-        console.error('Error fetching users:', err);
+        toast.error('Error fetching users: ' + err);
       } finally {
         setLoading(false);
       }

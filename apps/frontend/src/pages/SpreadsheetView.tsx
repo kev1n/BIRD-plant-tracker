@@ -827,12 +827,12 @@ export default function SpreadSheetView() {
       const { plants } = await plant_response.json();
       
       if (!plants || plants.length === 0) {
-        alert(`No plant found matching "${plantName}"`);
+        toast.error(`No plant found matching "${plantName}"`);
         return;
       }
 
       if (plants.length > 1){
-        alert(`Please enter a more specific plant name. "${plantName}" is not specific enough.`);
+        toast.error(`Please enter a more specific plant name. "${plantName}" is not specific enough.`);
         return;
       }
 
@@ -930,7 +930,7 @@ export default function SpreadSheetView() {
       const { plant } = await plant_response.json();
       
       if (!plant) {
-        alert(`No plant found matching "${plantName}"`);
+        toast.error(`No plant found matching "${plantName}"`);
         return;
       }
       const plantID = plant.plantID;
@@ -1042,7 +1042,7 @@ export default function SpreadSheetView() {
       const { plant } = await plant_response.json();
       
       if (!plant) {
-        alert(`No plant found matching "${plantName}"`);
+        toast.error(`No plant found matching "${plantName}"`);
         return;
       }
       const plantID = plant.plantID;
