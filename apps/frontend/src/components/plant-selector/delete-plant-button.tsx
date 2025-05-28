@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dialog';
 
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function DeletePlantButton({
   plantCommonName,
@@ -30,8 +31,7 @@ export default function DeletePlantButton({
       },
     });
     if (!response.ok) {
-      console.error('Error deleting plant:', response.statusText);
-      alert('Failed to delete plant. Please try again.');
+      toast.error('Failed to delete plant. Please try again.');
       return;
     }
     callBack();

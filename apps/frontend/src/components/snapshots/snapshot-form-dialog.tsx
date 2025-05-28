@@ -8,6 +8,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Observation, Snapshot } from 'types/database_types';
 import { z } from 'zod';
 import { useUser } from '../../hooks/useUser';
@@ -76,16 +77,15 @@ export default function SnapshotForm({
 
   async function onSubmit() {
     if (!date) {
-      alert('Please select a date for the snapshot.');
+      toast.error('Please select a date for the snapshot.');
       return;
     }
     if (notes.trim() === '') {
-      alert('Please enter notes for the snapshot.');
+      toast.error('Please enter notes for the snapshot.');
       return;
     }
     if (!user || !user.id) {
-      console.error('User is not authenticated or missing user ID.');
-      alert('You must be logged in to submit a snapshot. Please log in and try again.');
+      toast.error('You must be logged in to submit a snapshot. Please log in and try again.');
       return;
     }
     const newSnapshotData: Snapshot = {
@@ -98,10 +98,7 @@ export default function SnapshotForm({
     console.log('Submitting snapshot data:', newSnapshotData);
     const validation = snapshotSchema.safeParse(newSnapshotData);
     if (!validation.success) {
-      console.error('Snapshot validation failed:', validation.error);
-      alert(
-        'Failed to submit snapshot data due to validation errors. Please check the input and try again.'
-      );
+      toast.error('Failed to submit snapshot data due to validation errors. Please check the input and try again.');
       return;
     }
 
@@ -132,10 +129,8 @@ export default function SnapshotForm({
         const responseData = await response.json();
         if (responseData && responseData.snapshotID && responseData.snapshotID.snapshotID) {
           newSnapshotID = responseData.snapshotID.snapshotID;
-          console.log('New snapshot created with ID:', newSnapshotID);
         } else {
-          console.error('Failed to retrieve new snapshot ID from response:', responseData);
-          alert('Failed to create a new snapshot. Please try again later or contact support.');
+          toast.error('Failed to create a new snapshot. Please try again later or contact support.');
           return;
         }
       }
@@ -195,10 +190,7 @@ export default function SnapshotForm({
           });
         })
         .catch(err => {
-          console.error('Error submitting observations:', err);
-          alert(
-            'Failed to submit one or more observations. Please check your input and try again.'
-          );
+          toast.error('Failed to submit one or more observations. Please check your input and try again. ' + err);
           return;
         });
 
