@@ -1,9 +1,10 @@
 import { Toaster } from "@/components/ui/sonner";
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 import { PrivateRoute, PublicOnlyRoute } from './components/protected-routes';
 import { UserProvider } from './contexts/user-provider';
 import NavLayout from './layouts/nav-layouts';
+import AboutUs from "./pages/AboutUs";
 import AuthCallback from './pages/account/auth-callback';
 import EmailVerification from './pages/account/email-verifcation';
 import Login from './pages/account/login';
@@ -11,12 +12,10 @@ import RequestPasswordReset from './pages/account/request-password-reset';
 import ResetPassword from './pages/account/reset-password';
 import AdminPage from './pages/admin';
 import ExamplePage from './pages/example';
-import Home from './pages/home';
 import MapView from './pages/MapView';
 import NotFound from './pages/not-found';
 import SignUp from './pages/signup';
 import SpreadsheetView from './pages/SpreadsheetView';
-import AboutUs from "./pages/AboutUs";
 
 function App() {
   return (
@@ -26,9 +25,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<NavLayout />}>
-            <Route element={<PrivateRoute />}>
-              <Route index element={<Home />} />
-            </Route>
+            <Route index element={<Navigate to="/map" replace />} />
             <Route element={<PublicOnlyRoute />}>
               <Route path="login" element={<Login />} />
               <Route path="signup" element={<SignUp />} />
