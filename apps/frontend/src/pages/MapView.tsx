@@ -315,7 +315,7 @@ export default function MapView() {
 
       {/* Map container */}
       <div className="flex-1 h-full z-10">
-        <MapContainer center={CENTER} zoom={19} scrollWheelZoom={true} className="h-full">
+        <MapContainer center={CENTER} zoom={19} scrollWheelZoom={true} zoomSnap={0.5} className="h-full">
           <TileLayer
             maxNativeZoom={20}
             maxZoom={20}
