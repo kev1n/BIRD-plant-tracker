@@ -66,7 +66,7 @@ After both filtering fields are filled in, more filtering options appear, allowi
 The spreadsheet contains multiple ways to interact with rows in the spreadsheet, including ways to edit, duplicate, and delete entries. Functionality can be found by clicking on the **ellipses** on the very left of the table.
 
 ![data manipulation buttons](./spreadsheet-images/spreadsheet_manipulation.png)
-![data manipulation menu](./spreadsheet-images/spreadsheet_action_menu.png)
+![data manipulation menu](./spreadsheet-images/Spreadsheet_Action_Menu.png)
 
 ---
 ### Editing Entries
@@ -78,7 +78,7 @@ I would recommend talking about all the constraints on editing and why we chose 
 
 When the duplicate dropdown is hovered over, three options are present for the user to choose from.
 
-![data manipulation menu](./spreadsheet-images/spreadsheet_duplicate_actions.png)
+![data manipulation menu](./spreadsheet-images/Spreadsheet_Duplicate_Actions.png)
 
 For any option the user selects, they will be presented with a dialog to **cancel** or **confirm** the action, as seen below. This also applies to delete functionality. 
 
@@ -99,7 +99,7 @@ If the user selects **Duplicate Snapshot**, the entire snapshot associated with 
 
 --- 
 ### Deleting Entries
-![data manipulation menu](./spreadsheet-images/spreadsheet_delete_actions.png)
+![data manipulation menu](./spreadsheet-images/Spreadsheet_Delete_Actions.png)
 
 #### Delete Observation
 If the user selects **Delete Observation**, the observation is removed from the current snapshot, and is no longer accessible to the user. 

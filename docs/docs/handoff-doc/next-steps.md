@@ -1,4 +1,3 @@
 # What's next?
-- {FILL THIS OUT}
-- {FILL THIS OUT}
-- {FILL THIS OUT}
+
+- Have a system in place to remove patches/expand the width of the sanctuary
