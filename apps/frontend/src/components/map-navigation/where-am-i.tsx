@@ -1,21 +1,31 @@
 import { Button } from '@/components/ui/button';
+import { LocationPermissionStatus } from '@/hooks/useLocationPermission';
 import { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
-import { useGeolocated } from "react-geolocated";
 import { numCols, numRows, patchSizeLat, patchSizeLng, TOP_LEFT } from './constants';
 
-export default function WhereAmI() {
-  const [patchName, setPatchName] = useState<string>("Detecting your location...");
-  
-  const { coords } = useGeolocated({
-    positionOptions: {
-      enableHighAccuracy: true,
-    },
-    userDecisionTimeout: 5000,
-    watchPosition: true,
-  });
+interface WhereAmIProps {
+  coords?: {
+    latitude: number;
+    longitude: number;
+  } | null;
+  locationPermissionStatus: LocationPermissionStatus;
+}
 
+export default function WhereAmI({ coords, locationPermissionStatus }: WhereAmIProps) {
+  const [patchName, setPatchName] = useState<string>("Location access not enabled");
+  
   useEffect(() => {
+    if (locationPermissionStatus === 'pending') {
+      setPatchName("Waiting for location permission...");
+      return;
+    }
+    
+    if (locationPermissionStatus === 'denied') {
+      setPatchName("Location access denied");
+      return;
+    }
+
     if (coords?.latitude && coords?.longitude) {
       let matchedPatchLabel: string | null = null;
 
@@ -44,15 +54,13 @@ export default function WhereAmI() {
 
       if (matchedPatchLabel) {
         setPatchName(`You are on the ${matchedPatchLabel} patch`);
-          }
-      else if (coords?.latitude && coords?.longitude) {
+      } else {
         setPatchName("You are not on a patch right now");
       }
-      else {
-        setPatchName("Detecting your location...");
-      }
+    } else if (locationPermissionStatus === 'granted') {
+      setPatchName("Detecting your location...");
     }
-  }, [coords]);
+  }, [coords, locationPermissionStatus]);
 
   return (
     <div className="p-4 bg-white rounded shadow-md z-12 border border-gray-300">

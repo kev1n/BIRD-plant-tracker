@@ -56,8 +56,7 @@ export function UserProvider({ children }: UserProviderProps): React.ReactElemen
       setIsAuthenticated(true);
       return true;
 
-    } catch (error) {
-      toast.error('Auth check error: ' + error);
+    } catch {
       setUser(null);
       setIsAuthenticated(false);
       return false;
