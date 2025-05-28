@@ -11,6 +11,7 @@
 
 import { Crown, MoreHorizontal, Shield, ShieldCheck, User as UserIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,16 +23,19 @@ import { updateAdmin, updateRole } from "../../lib/admin-utils";
 import RoleConfirmationDialog from "./role-confirmation-dialog";
 import UserPopup from './user-popup';
 
-export default function UserRoleInfo(props: User) {
+interface UserRoleInfoProps extends User {
+  onUpdateUser?: (email: string, newRole: string, wasRoleRequest?: boolean) => void;
+}
+
+export default function UserRoleInfo(props: UserRoleInfoProps) {
+  const { user: currentUser } = useUser();
   const [showDetails, setShowDetails] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showAdminDialog, setShowAdminDialog] = useState(false);
-
-  const userContext = useUser();
-  const currentUser = userContext.user;
-  const isCurrentUser = currentUser && props.email === currentUser.email;
-  const isOwner = currentUser?.role === "owner";
-  const canManageUser = currentUser && !isCurrentUser;
+  
+  const isCurrentUser = currentUser?.email === props.email;
+  const canManageUser = !isCurrentUser && (currentUser?.role === 'admin' || currentUser?.role === 'owner');
+  const isOwner = currentUser?.role === 'owner';
 
   // Generate user initials for avatar
   const getInitials = (firstname?: string, lastname?: string, username?: string) => {
@@ -42,6 +46,39 @@ export default function UserRoleInfo(props: User) {
       return username.charAt(0).toUpperCase();
     }
     return "U";
+  };
+
+  const handleRoleUpdate = async (email: string, approved: boolean, isAdminRole: boolean = false) => {
+    try {
+      const updateFunc = isAdminRole ? updateAdmin : updateRole;
+      const success = await updateFunc(email, approved);
+      
+      if (success) {
+        const roleType = isAdminRole ? 'Admin' : 'Editor';
+        const action = approved ? 'granted' : 'revoked';
+        
+        // Calculate the new role based on the update
+        let newRole: string;
+        if (isAdminRole) {
+          newRole = approved ? 'admin' : 'editor';
+        } else {
+          newRole = approved ? 'editor' : 'user';
+        }
+        
+        toast.success(`${roleType} permissions ${action} for ${props.username}`);
+        
+        // Update the specific user
+        if (props.onUpdateUser) {
+          props.onUpdateUser(email, newRole, false);
+        }
+      } else {
+        const roleType = isAdminRole ? 'admin' : 'editor';
+        const action = approved ? 'grant' : 'revoke';
+        toast.error(`Failed to ${action} ${roleType} permissions`);
+      }
+    } catch (error) {
+      toast.error(`Error updating role: ${error}`);
+    }
   };
 
   // Get role-specific styling and icons
@@ -230,7 +267,7 @@ export default function UserRoleInfo(props: User) {
             ? "Are you sure you want to grant editing permissions to this user?" 
             : "Are you sure you want to revoke editing permissions from this user?"
         }
-        onConfirm={() => updateRole(props.email, props.role === 'user')}
+        onConfirm={() => handleRoleUpdate(props.email, props.role === 'user', false)}
       />
 
       <RoleConfirmationDialog
@@ -241,7 +278,7 @@ export default function UserRoleInfo(props: User) {
             ? "Are you sure you want to revoke admin permissions from this user?"
             : "Are you sure you want to grant admin permissions to this user?"
         }
-        onConfirm={() => updateAdmin(props.email, props.role !== 'admin')}
+        onConfirm={() => handleRoleUpdate(props.email, props.role !== 'admin', true)}
       />
     </div>
   );

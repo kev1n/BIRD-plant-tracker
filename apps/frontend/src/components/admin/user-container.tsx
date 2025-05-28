@@ -14,10 +14,11 @@ import type { User } from '../../../types/auth';
 interface UserContainerProps {
     users: User[];
     containerTitle: string;
-    UserComponent: React.ComponentType<User>;
+    UserComponent: React.ComponentType<User & { onUpdateUser?: (email: string, newRole: string, wasRoleRequest?: boolean) => void }>;
+    onRefresh?: (email: string, newRole: string, wasRoleRequest?: boolean) => void;
 }
 
-export default function UserContainer({ users, containerTitle, UserComponent }: UserContainerProps) {
+export default function UserContainer({ users, containerTitle, UserComponent, onRefresh }: UserContainerProps) {
     const isEmpty = users.length === 0;
 
     return (
@@ -52,7 +53,7 @@ export default function UserContainer({ users, containerTitle, UserComponent }: 
                     >
                         {users.map((user) => (
                             <div key={user.email} role="listitem" className="p-4 hover:bg-muted/50 transition-colors">
-                                <UserComponent {...user} />
+                                <UserComponent {...user} onUpdateUser={onRefresh} />
                             </div>
                         ))}
                     </div>

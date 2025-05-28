@@ -10,6 +10,7 @@
 
 import { AlertTriangle, Check, MoreHorizontal, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,11 @@ import RoleConfirmationDialog from "./role-confirmation-dialog";
 import UserPopup from "./user-popup";
 
 // card for granting RoleRequests for a particular user
-export default function RoleRequest(props: User) {
+interface RoleRequestProps extends User {
+  onUpdateUser?: (email: string, newRole: string, wasRoleRequest?: boolean) => void;
+}
+
+export default function RoleRequest(props: RoleRequestProps) {
   const [showDetails, setShowDetails] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showDenyDialog, setShowDenyDialog] = useState(false);
@@ -39,6 +44,30 @@ export default function RoleRequest(props: User) {
       return username.charAt(0).toUpperCase();
     }
     return "U";
+  };
+
+  const handleRoleUpdate = async (approved: boolean) => {
+    try {
+      const success = await updateFunc(props.email, approved);
+      
+      if (success) {
+        const action = approved ? 'approved' : 'denied';
+        const newRole = approved 
+          ? (props.roleRequested === "admin" ? 'admin' : 'editor')
+          : props.role; // Keep current role if denied
+        
+        toast.success(`${roleMessage} request ${action} for ${props.username}`);
+        
+        // Update the specific user
+        if (props.onUpdateUser) {
+          props.onUpdateUser(props.email, newRole, true);
+        }
+      } else {
+        toast.error(`Failed to ${approved ? 'approve' : 'deny'} ${roleMessage} request`);
+      }
+    } catch (error) {
+      toast.error(`Error updating role: ${error}`);
+    }
   };
 
   return (
@@ -126,14 +155,14 @@ export default function RoleRequest(props: User) {
         open={showConfirmDialog}
         onOpenChange={setShowConfirmDialog}
         message={`Are you sure you want to grant ${roleMessage} permissions to ${props.username}?`}
-        onConfirm={() => updateFunc(props.email, true)}
+        onConfirm={() => handleRoleUpdate(true)}
       />
 
       <RoleConfirmationDialog
         open={showDenyDialog}
         onOpenChange={setShowDenyDialog}
         message={`Are you sure you want to deny the ${roleMessage} request from ${props.username}?`}
-        onConfirm={() => updateFunc(props.email, false)}
+        onConfirm={() => handleRoleUpdate(false)}
       />
     </div>
   );
