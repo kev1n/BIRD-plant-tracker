@@ -213,7 +213,7 @@ export default function SnapshotForm({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{newSnapshot ? 'New Snapshot' : 'Edit'}</Button>
+        <Button>{newSnapshot ? 'New Snapshot' : 'Edit'}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -222,7 +222,7 @@ export default function SnapshotForm({
               <DialogTitle>Patch {patchID}</DialogTitle>
               <span>{newSnapshot ? 'New Snapshot' : 'Editing Snapshot'}</span>
               {newSnapshot && (
-                <Button className="px-2 text-sm" onClick={duplicateLatestData}>
+                <Button className="px-2 text-sm" onClick={duplicateLatestData} variant="secondary">
                   Duplicate Latest Data
                 </Button>
               )}
