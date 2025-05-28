@@ -9,7 +9,6 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeafletAssets from '../components/LeafletAssets';
 
-
 // Sidebar component to display grid patch information
 interface SidebarProps {
   patchInfo: {
@@ -24,14 +23,16 @@ function Sidebar({ patchInfo }: SidebarProps) {
   return (
     <div className="w-full md:w-50 p-5 bg-gray-50 h-full overflow-y-auto shadow-md">
       <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
-        Grid patch: {patchInfo?patchInfo.label:'Not Selected'}
+        Grid patch: {patchInfo ? patchInfo.label : 'Not Selected'}
       </h2>
       <div className="mt-4">
-        <p className="mb-2">Row: {patchInfo? patchInfo.row : "Not Selected"}</p>
-        <p className="mb-2">Column: {patchInfo?String.fromCharCode(65 + patchInfo.col):"Not Selected"}</p>
+        <p className="mb-2">Row: {patchInfo ? patchInfo.row : 'Not Selected'}</p>
+        <p className="mb-2">
+          Column: {patchInfo ? String.fromCharCode(65 + patchInfo.col) : 'Not Selected'}
+        </p>
       </div>
-      
-      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle='View Latest Snapshot' />}
+
+      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle="View Latest Snapshot" />}
     </div>
   );
 }
@@ -181,6 +182,7 @@ export default function MapView() {
     const col = colChar.charCodeAt(0) - 65; // A=0, B=1, etc.
     patchInfo = { row: row + 1, col, label: patch };
   }
+
 
   return (
     <div className="flex flex-col md:flex-row h-full w-full relative py-4">

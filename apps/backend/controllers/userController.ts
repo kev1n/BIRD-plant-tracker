@@ -68,7 +68,7 @@ export async function getUserByEmail(req: Request, res: Response): Promise<void>
 export async function updateUserPersonalInfo(req: Request, res: Response): Promise<void> {
     try {
         // make sure appropriate headers are present
-        const { username, email, firstname, lastname } = req.body;
+        const { username, email, firstname, lastname, roleRequested } = req.body;
 
         const updates: UpdateUserBody = {};
 
@@ -76,7 +76,8 @@ export async function updateUserPersonalInfo(req: Request, res: Response): Promi
         if (email !== undefined) updates.email = email;
         if (firstname !== undefined) updates.firstname = firstname;
         if (lastname !== undefined) updates.lastname = lastname;
-
+        if (roleRequested !== undefined) updates.roleRequested = roleRequested;
+        
         if (Object.keys(updates).length === 0) {
             res.status(400).json({ error: 'No fields provided to update' });
             return;
