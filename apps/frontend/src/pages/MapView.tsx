@@ -1,12 +1,17 @@
 import FiltersList from '@/components/filters/filters-list';
 import { CENTER, LABEL_OFFSET_LAT, LABEL_OFFSET_LNG, numCols, numRows, patchSizeLat, patchSizeLng, TOP_LEFT } from '@/components/map-navigation/constants';
 import WhereAmI from '@/components/map-navigation/where-am-i';
+import PatchHoverPreview from '@/components/map/patch-hover-preview';
+import PolygonOverlay from '@/components/map/polygon-overlay';
 import SnapshotView from '@/components/snapshots/snapshot-view';
+import { usePatchHover } from '@/hooks/usePatchHover';
+import { usePolygonData } from '@/hooks/usePolygonData';
 import { divIcon, LatLngTuple, LayerGroup, Marker, Rectangle } from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
 import { useGeolocated } from "react-geolocated";
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { PatchPolygonOverlap } from '../../types/polygon.types';
 import LeafletAssets from '../components/LeafletAssets';
 
 // Sidebar component to display grid patch information
@@ -37,7 +42,15 @@ function Sidebar({ patchInfo }: SidebarProps) {
   );
 }
 
-function GridOverlay() {
+function GridOverlay({ 
+  patchOverlaps, 
+  onPatchHover, 
+  onPatchLeave 
+}: { 
+  patchOverlaps: PatchPolygonOverlap[]; 
+  onPatchHover?: (patchId: string, polygonId: string) => void;
+  onPatchLeave?: () => void;
+}) {
 
   // find coordinates with geolocation
   const { coords } =
@@ -92,13 +105,33 @@ function GridOverlay() {
           userOnValidPatch = true;
         }
 
+        // Check if patch overlaps with any polygon
+        const patchOverlap = patchOverlaps.find(overlap => overlap.patchId === label);
+        const isInPolygon = !!patchOverlap;
+        const polygonId = patchOverlap?.polygonIds[0];
+
+        // Determine fill color based on polygon membership
+        let fillColor = '#000000'; // Default
+        let fillOpacity = 0;
+
+        if (isUserHere) {
+          fillColor = '#4CAF50';
+          fillOpacity = 0.9;
+        } else if (isSelected) {
+          fillColor = '#4a90e2';
+          fillOpacity = 0.9;
+        } else if (isInPolygon) {
+          // Use different colors based on polygon
+          fillColor = polygonId === 'northern-section' ? '#4CAF50' : '#FF9800';
+          fillOpacity = 0.3;
+        }
+
         // Create rectangle for grid patch
-        // TODO: Match with color variables from project
         const rect = new Rectangle([topLeft, bottomRight], {
           color: '#000000',
           weight: 1,
-          fillColor: isUserHere ? '#4CAF50' : isSelected ? '#4a90e2' : '#000000',
-          fillOpacity: isUserHere ? 0.9 : isSelected ? 0.9 : 0,
+          fillColor,
+          fillOpacity,
         });
 
         // Make patchs clickable
@@ -106,8 +139,20 @@ function GridOverlay() {
           navigate(`/map/${label}`, { replace: true });
         });
 
+        // Add hover events for patches within polygons
+        if (isInPolygon && onPatchHover && onPatchLeave && polygonId) {
+          rect.on('mouseover', () => {
+            onPatchHover(label, polygonId);
+            rect.setStyle({ weight: 2 });
+          });
+
+          rect.on('mouseout', () => {
+            onPatchLeave();
+            rect.setStyle({ weight: 1 });
+          });
+        }
+
         rect.addTo(gridRef.current);
-        // make the rectangle
       }
     }
 
@@ -165,7 +210,7 @@ function GridOverlay() {
         map.removeLayer(gridRef.current);
       }
     };
-  }, [map, navigate, patch, location, coords]);
+  }, [map, navigate, patch, location, coords, patchOverlaps, onPatchHover, onPatchLeave]);
 
   return null;
 }
@@ -173,6 +218,23 @@ function GridOverlay() {
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
   const [showTools, setShowTools] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Polygon data and hover management
+  const { polygons, patchOverlaps, isLoading: polygonLoading } = usePolygonData();
+  const { hoveredPatch, handlePatchHover, handlePatchLeave } = usePatchHover();
+
+  // Handle mouse movement for hover preview positioning
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      setMousePosition({ x: event.clientX, y: event.clientY });
+    };
+
+    if (hoveredPatch) {
+      document.addEventListener('mousemove', handleMouseMove);
+      return () => document.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, [hoveredPatch]);
 
   // Parse patch into row and column if patch is defined
   let patchInfo = null;
@@ -228,9 +290,31 @@ export default function MapView() {
             attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
             url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
           />
-          <GridOverlay />
+          {!polygonLoading && (
+            <>
+              <PolygonOverlay 
+                polygons={polygons} 
+                patchOverlaps={patchOverlaps}
+                onPatchHover={handlePatchHover}
+                onPatchLeave={handlePatchLeave}
+              />
+              <GridOverlay 
+                patchOverlaps={patchOverlaps}
+                onPatchHover={handlePatchHover}
+                onPatchLeave={handlePatchLeave}
+              />
+            </>
+          )}
         </MapContainer>
       </div>
+
+      {/* Hover preview */}
+      {hoveredPatch && (
+        <PatchHoverPreview 
+          hoverData={hoveredPatch} 
+          position={mousePosition}
+        />
+      )}
 
       <div className="w-full md:w-auto">
         <Sidebar patchInfo={patchInfo} />
