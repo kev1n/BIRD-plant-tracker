@@ -1,4 +1,6 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DatePicker from '@/components/ui/datepicker';
 import {
   Dialog,
@@ -7,7 +9,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useContext, useEffect, useState } from 'react';
+import { Calendar, Copy, FileText } from 'lucide-react';
+import { ReactNode, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Observation, Snapshot } from 'types/database_types';
 import { z } from 'zod';
@@ -29,11 +32,13 @@ export default function SnapshotForm({
   patchID,
   snapshotTemplate,
   observationsTemplate,
+  trigger,
 }: {
   newSnapshot: boolean;
   patchID: string;
   snapshotTemplate?: Snapshot | null;
   observationsTemplate?: Observation[] | null;
+  trigger?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState<string>('');
@@ -213,48 +218,82 @@ export default function SnapshotForm({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>{newSnapshot ? 'New Snapshot' : 'Edit'}</Button>
+        {trigger || <Button variant={newSnapshot ? 'default' : 'outline'}>{newSnapshot ? 'New Snapshot' : 'Edit'}</Button>}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <div className="flex flex-row justify-between">
-            <div className="flex-1 text-left">
-              <DialogTitle>Patch {patchID}</DialogTitle>
-              <span>{newSnapshot ? 'New Snapshot' : 'Editing Snapshot'}</span>
-              {newSnapshot && (
-                <Button className="px-2 text-sm" onClick={duplicateLatestData} variant="secondary">
-                  Duplicate Latest Data
-                </Button>
-              )}
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-xl">{newSnapshot ? 'New Snapshot' : 'Edit Snapshot'}</DialogTitle>
+              <p className="text-muted-foreground">Patch {patchID}</p>
             </div>
-            <div className="flex-1 text-right">
-              <span className="text-red-500 font-bold">*</span>Snapshot Date:
-              <DatePicker date={date} setDate={d => setDate(d)} pickerName="Select Date" />
-            </div>
+            {newSnapshot && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={duplicateLatestData}
+                className="flex items-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                Duplicate Latest Data
+              </Button>
+            )}
           </div>
         </DialogHeader>
 
-        <ObservationsSection
-          observations={observations}
-          editing={true}
-          setObservations={setObservations}
-        />
-        <div className="border border-gray-300 rounded-lg p-4">
-          <textarea
-            className="w-full h-24"
-            placeholder={'Notes about this snapshot...'}
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
+        <div className="space-y-6">
+          {/* Date Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base justify-between">
+                <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Snapshot Date
+                </div>
+                <Badge className="text-xs">Required</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DatePicker date={date} setDate={d => setDate(d)} pickerName="Select Date" />
+            </CardContent>
+          </Card>
+
+          {/* Plant Observations */}
+          <ObservationsSection
+            observations={observations}
+            editing={true}
+            setObservations={setObservations}
           />
-        </div>
-        <div className="flex flex-row justify-between">
-          <div className="flex-1 text-left">
+
+          {/* Notes Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Notes
+                </div>  
+                <Badge className="text-xs">Required</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <textarea
+                className="w-full min-h-24 p-3 border border-border rounded-md resize-vertical"
+                placeholder="Enter notes about this snapshot..."
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex justify-between pt-4 border-t">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-          </div>
-          <div className="flex-1 text-right">
-            <Button onClick={onSubmit}>Submit</Button>
+            <Button onClick={onSubmit}>
+              {newSnapshot ? 'Create Snapshot' : 'Save Changes'}
+            </Button>
           </div>
         </div>
       </DialogContent>

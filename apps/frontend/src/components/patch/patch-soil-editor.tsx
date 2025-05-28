@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
@@ -37,9 +37,11 @@ type FormValues = z.infer<typeof patchSoilSchema>;
 export default function PatchSoilEditor({
   patchID,
   updateCallback,
+  trigger,
 }: {
   patchID: string;
   updateCallback: (soilType: string) => void;
+  trigger?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -78,12 +80,16 @@ export default function PatchSoilEditor({
     }
   }
 
+  const defaultTrigger = (
+    <Button variant="outline" className="ml-3 p-2 h-full">
+      <img src="/icons/pen.svg" alt="Edit" className="w-4 h-4" />
+    </Button>
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="ml-3 p-2 h-full">
-          <img src="/icons/pen.svg" alt="Edit" className="w-4 h-4" />
-        </Button>
+        {trigger || defaultTrigger}
       </DialogTrigger>
 
       <DialogContent>
