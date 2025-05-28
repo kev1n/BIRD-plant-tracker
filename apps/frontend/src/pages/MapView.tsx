@@ -24,9 +24,10 @@ interface SidebarProps {
   } | null;
   coords?: { latitude: number; longitude: number } | null;
   locationPermissionStatus: LocationPermissionStatus;
+  onPanToLocation?: (coords: { latitude: number; longitude: number }) => void;
 }
 
-function Sidebar({ patchInfo, coords, locationPermissionStatus }: SidebarProps) {
+function Sidebar({ patchInfo, coords, locationPermissionStatus, onPanToLocation }: SidebarProps) {
   return (
     <div className="w-full md:w-80 bg-gray-50 h-full overflow-y-auto shadow-md flex flex-col">
       {/* WhereAmI and FiltersList - always shown */}
@@ -34,6 +35,7 @@ function Sidebar({ patchInfo, coords, locationPermissionStatus }: SidebarProps) 
         <WhereAmI 
           coords={coords} 
           locationPermissionStatus={locationPermissionStatus}
+          onPanToLocation={onPanToLocation}
         />
         <FiltersList />
       </div>
@@ -223,10 +225,31 @@ function GridOverlay({
   return null;
 }
 
+// Component to handle map panning functionality
+function MapPanHandler({ 
+  panToCoords, 
+  setPanToCoords 
+}: { 
+  panToCoords: { latitude: number; longitude: number } | null;
+  setPanToCoords: (coords: { latitude: number; longitude: number } | null) => void;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (panToCoords && map) {
+      map.setView([panToCoords.latitude, panToCoords.longitude], 19);
+      setPanToCoords(null); // Reset after panning
+    }
+  }, [panToCoords, map, setPanToCoords]);
+
+  return null;
+}
+
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
   const [showSidebar, setShowSidebar] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [panToCoords, setPanToCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   
   // Use the custom location permission hook
   const {
@@ -241,6 +264,11 @@ export default function MapView() {
   // Polygon data and hover management
   const { polygons, patchOverlaps, isLoading: polygonLoading } = usePolygonData();
   const { hoveredPatch, handlePatchHover, handlePatchLeave } = usePatchHover();
+
+  // Handle panning to user location
+  const handlePanToLocation = (coords: { latitude: number; longitude: number }) => {
+    setPanToCoords(coords);
+  };
 
   // Handle mouse movement for hover preview positioning
   useEffect(() => {
@@ -293,6 +321,7 @@ export default function MapView() {
           patchInfo={patchInfo} 
           coords={coords} 
           locationPermissionStatus={locationPermissionStatus}
+          onPanToLocation={handlePanToLocation}
         />
       </div>
       
@@ -310,6 +339,7 @@ export default function MapView() {
             patchInfo={patchInfo} 
             coords={coords} 
             locationPermissionStatus={locationPermissionStatus}
+            onPanToLocation={handlePanToLocation}
           />
         </div>
       )}
@@ -322,6 +352,10 @@ export default function MapView() {
             maxZoom={20}
             attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
             url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+          />
+          <MapPanHandler 
+            panToCoords={panToCoords}
+            setPanToCoords={setPanToCoords}
           />
           {!polygonLoading && (
             <>

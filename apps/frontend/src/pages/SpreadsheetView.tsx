@@ -13,8 +13,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, D
 import PermissionRestrictedDialog from '@/components/utils/PermissionRestrictedDialog';
 import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams, ValueSetterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
-import { EllipsisVertical, Plus, Save, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Download, EllipsisVertical, Plus, Save, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from "sonner";
 import { Observation, Snapshot, updatedObservation } from 'types/database_types';
 import { useUser } from '../hooks/useUser';
@@ -29,6 +29,7 @@ export default function SpreadSheetView() {
   const [isNewObs, setIsNewObs] = useState<number|null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { user } = useUser();
+  const gridRef = useRef<AgGridReact>(null);
   
   // Unsaved changes warning effect
   useEffect(() => {
@@ -1421,6 +1422,29 @@ export default function SpreadSheetView() {
       headerFontSize: 14
     });
 
+  // CSV Export function
+  const exportToCsv = () => {
+    if (gridRef.current && gridRef.current.api) {
+      const params = {
+        fileName: `plant-observations-${new Date().toISOString().split('T')[0]}.csv`,
+        columnSeparator: ',',
+        suppressQuotes: false,
+        skipColumnHeaders: false,
+        skipColumnGroupHeaders: false,
+        skipRowGroups: false,
+        skipPinnedTop: false,
+        skipPinnedBottom: false,
+        allColumns: false,
+        onlySelected: false,
+        onlySelectedAllPages: false
+      };
+      gridRef.current.api.exportDataAsCsv(params);
+      toast.success("Data exported to CSV successfully!");
+    } else {
+      toast.error("Export failed: Grid not ready");
+    }
+  };
+
   return (
     <div className="flex flex-col h-full py-4">
       {/* Unsaved Changes Alert & Save Actions Bar */}
@@ -1560,16 +1584,20 @@ export default function SpreadSheetView() {
         </div>
       )}
 
-      {/* Add New Observation Button */}
+      {/* Add New Observation Button and Export */}
       {!isNewObs && editingRowId === null && (
-        <PermissionRestrictedDialog actionName="add new observations">
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex justify-end gap-2">
+          <Button onClick={exportToCsv} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+          <PermissionRestrictedDialog actionName="add new observations">
             <Button onClick={handleAddRow} variant="default">
               <Plus className="h-4 w-4 mr-2" />
               New Observation
             </Button>
+          </PermissionRestrictedDialog>
         </div>
-        </PermissionRestrictedDialog>
       )}
 
       {/* Data Grid */}
@@ -1580,6 +1608,7 @@ export default function SpreadSheetView() {
           pagination={true}
           paginationAutoPageSize={true}
           theme={myTheme}
+          ref={gridRef}
         />
       </div>
     </div>
