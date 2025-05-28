@@ -5,7 +5,7 @@ import WhereAmI from '@/components/map-navigation/where-am-i';
 import PatchHoverPreview from '@/components/map/patch-hover-preview';
 import PolygonOverlay from '@/components/map/polygon-overlay';
 import SnapshotView from '@/components/snapshots/snapshot-view';
-import { useLocationPermission } from '@/hooks/useLocationPermission';
+import { LocationPermissionStatus, useLocationPermission } from '@/hooks/useLocationPermission';
 import { usePatchHover } from '@/hooks/usePatchHover';
 import { usePolygonData } from '@/hooks/usePolygonData';
 import { divIcon, LatLngTuple, LayerGroup, Marker, Rectangle } from 'leaflet';
@@ -15,30 +15,45 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PatchPolygonOverlap } from '../../types/polygon.types';
 import LeafletAssets from '../components/LeafletAssets';
 
-// Sidebar component to display grid patch information
+// Sidebar component to display tools and patch information
 interface SidebarProps {
   patchInfo: {
     row: number;
     col: number;
     label: string;
   } | null;
+  coords?: { latitude: number; longitude: number } | null;
+  locationPermissionStatus: LocationPermissionStatus;
 }
 
-// TODO: Move into seperate component, call it inspection details
-function Sidebar({ patchInfo }: SidebarProps) {
+function Sidebar({ patchInfo, coords, locationPermissionStatus }: SidebarProps) {
   return (
-    <div className="w-full md:w-50 p-5 bg-gray-50 h-full overflow-y-auto shadow-md">
-      <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
-        Grid patch: {patchInfo ? patchInfo.label : 'Not Selected'}
-      </h2>
-      <div className="mt-4">
-        <p className="mb-2">Row: {patchInfo ? patchInfo.row : 'Not Selected'}</p>
-        <p className="mb-2">
-          Column: {patchInfo ? String.fromCharCode(65 + patchInfo.col) : 'Not Selected'}
-        </p>
+    <div className="w-full md:w-80 bg-gray-50 h-full overflow-y-auto shadow-md flex flex-col">
+      {/* WhereAmI and FiltersList - always shown */}
+      <div className="p-4 space-y-4">
+        <WhereAmI 
+          coords={coords} 
+          locationPermissionStatus={locationPermissionStatus}
+        />
+        <FiltersList />
       </div>
-
-      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle="View Latest Snapshot" />}
+      
+      {/* Patch info - only shown on mobile when a patch is selected, but without the snapshot view */}
+      <div className="md:hidden flex-1">
+        {patchInfo && (
+          <div className="p-4 border-t border-gray-200">
+            <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
+              Grid patch: {patchInfo.label}
+            </h2>
+            <div className="mt-4">
+              <p className="mb-2">Row: {patchInfo.row}</p>
+              <p className="mb-2">
+                Column: {String.fromCharCode(65 + patchInfo.col)}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -210,7 +225,7 @@ function GridOverlay({
 
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
-  const [showTools, setShowTools] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   
   // Use the custom location permission hook
@@ -249,10 +264,10 @@ export default function MapView() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-full w-full relative py-4">
+    <div className="flex h-full w-full relative py-4">
       <LeafletAssets />
 
-      {/* Location Permission Dialog - only show if we've checked permissions and need to show it */}
+      {/* Location Permission Dialog */}
       {hasCheckedPermissions && (
         <LocationPermissionDialog 
           open={showLocationDialog}
@@ -261,43 +276,49 @@ export default function MapView() {
         />
       )}
 
-      {/* Tools toggle button - visible only on mobile */}
+      {/* Mobile sidebar toggle button */}
       <button 
         className="md:hidden absolute top-2 left-2 z-20 bg-white p-2 rounded-full shadow-md"
-        onClick={() => setShowTools(!showTools)}
+        onClick={() => setShowSidebar(!showSidebar)}
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showTools ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showSidebar ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
         </svg>
       </button>
 
-      {/* Desktop tools panel */}
-      <div className='hidden md:block absolute top-12 left-0 p-4 z-12'>
-        <WhereAmI coords={coords} locationPermissionStatus={locationPermissionStatus} />
-        <FiltersList />
+      {/* Desktop sidebar - always visible */}
+      <div className="hidden md:block">
+        <Sidebar 
+          patchInfo={patchInfo} 
+          coords={coords} 
+          locationPermissionStatus={locationPermissionStatus}
+        />
       </div>
       
-      {/* Mobile tools panel - slides in from bottom */}
-      {showTools && (
-        <div className='md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white shadow-lg rounded-t-lg max-h-[80vh] overflow-y-auto'>
+      {/* Mobile sidebar - slides in from left */}
+      {showSidebar && (
+        <div className="md:hidden fixed inset-y-0 left-0 z-20 bg-white shadow-lg max-w-[90vw] w-80">
           <div className="flex justify-end p-2">
-            <button onClick={() => setShowTools(false)} className="p-1">
+            <button onClick={() => setShowSidebar(false)} className="p-1">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div className="flex flex-col gap-2 p-2">
-            <WhereAmI coords={coords} locationPermissionStatus={locationPermissionStatus} />
-            <FiltersList />
-          </div>
+          <Sidebar 
+            patchInfo={patchInfo} 
+            coords={coords} 
+            locationPermissionStatus={locationPermissionStatus}
+          />
         </div>
       )}
 
+      {/* Map container */}
       <div className="flex-1 h-full z-10">
-        <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
+        <MapContainer center={CENTER} zoom={19} scrollWheelZoom={true} zoomSnap={0.5} className="h-full">
           <TileLayer
-            maxNativeZoom={30}
+            maxNativeZoom={20}
+            maxZoom={20}
             attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
             url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
           />
@@ -320,17 +341,34 @@ export default function MapView() {
         </MapContainer>
       </div>
 
-      {/* Hover preview */}
+      {/* Hover preview - only on desktop since mobile doesn't have hover */}
       {hoveredPatch && (
-        <PatchHoverPreview 
-          hoverData={hoveredPatch} 
-          position={mousePosition}
-        />
+        <div className="hidden md:block">
+          <PatchHoverPreview 
+            hoverData={hoveredPatch} 
+            position={mousePosition}
+          />
+        </div>
       )}
 
-      <div className="w-full md:w-auto">
-        <Sidebar patchInfo={patchInfo} />
-      </div>
+      {/* Mobile bottom snapshot view - auto-shows when patch is selected on mobile */}
+      {patchInfo && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-300 shadow-lg">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold">Patch {patchInfo.label} Selected</h3>
+              <span className="text-sm text-gray-500">
+                Row {patchInfo.row}, Column {String.fromCharCode(65 + patchInfo.col)}
+              </span>
+            </div>
+            <SnapshotView 
+              patch={patchInfo.label} 
+              triggerTitle="View Latest Snapshot" 
+              autoOpen={false}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

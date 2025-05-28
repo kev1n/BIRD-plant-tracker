@@ -30,12 +30,15 @@ export default function SnapshotView({
   patch,
   historicalSnapshotID,
   triggerTitle,
+  autoOpen = false,
 }: {
   patch: string;
   historicalSnapshotID?: number;
   triggerTitle: string;
+  autoOpen?: boolean;
 }) {
   const [patch_found, setPatchFound] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [current_snapshot, setCurrentSnapshot] = useState<Snapshot>({
     snapshotID: -1,
     dateCreated: new Date(),
@@ -45,6 +48,13 @@ export default function SnapshotView({
   });
   const [observations, setObservations] = useState<Observation[]>([]);
   const [author, setAuthor] = useState<string>('Not available');
+
+  // Auto-open effect - only opens, never closes
+  useEffect(() => {
+    if (autoOpen) {
+      setDialogOpen(true);
+    }
+  }, [autoOpen, patch]); // Also trigger when patch changes
 
   const fetchCompleteSnapshot = async (patch: string, snapshotID: number | null) => {
     try {
@@ -139,7 +149,7 @@ export default function SnapshotView({
       )}
     >
       <>
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>{triggerTitle}</Button>
           </DialogTrigger>
