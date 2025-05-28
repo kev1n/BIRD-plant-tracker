@@ -1,14 +1,15 @@
 import FiltersList from '@/components/filters/filters-list';
 import { CENTER, LABEL_OFFSET_LAT, LABEL_OFFSET_LNG, numCols, numRows, patchSizeLat, patchSizeLng, TOP_LEFT } from '@/components/map-navigation/constants';
+import LocationPermissionDialog from '@/components/map-navigation/location-permission-dialog';
 import WhereAmI from '@/components/map-navigation/where-am-i';
 import PatchHoverPreview from '@/components/map/patch-hover-preview';
 import PolygonOverlay from '@/components/map/polygon-overlay';
 import SnapshotView from '@/components/snapshots/snapshot-view';
+import { useLocationPermission } from '@/hooks/useLocationPermission';
 import { usePatchHover } from '@/hooks/usePatchHover';
 import { usePolygonData } from '@/hooks/usePolygonData';
 import { divIcon, LatLngTuple, LayerGroup, Marker, Rectangle } from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
-import { useGeolocated } from "react-geolocated";
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PatchPolygonOverlap } from '../../types/polygon.types';
@@ -45,22 +46,14 @@ function Sidebar({ patchInfo }: SidebarProps) {
 function GridOverlay({ 
   patchOverlaps, 
   onPatchHover, 
-  onPatchLeave 
+  onPatchLeave,
+  coords
 }: { 
   patchOverlaps: PatchPolygonOverlap[]; 
   onPatchHover?: (patchId: string, polygonId: string) => void;
   onPatchLeave?: () => void;
+  coords?: { latitude: number; longitude: number } | null;
 }) {
-
-  // find coordinates with geolocation
-  const { coords } =
-    useGeolocated({
-      positionOptions: {
-          enableHighAccuracy: true,
-      },
-      userDecisionTimeout: 5000,
-      watchPosition: true,
-  });
 
   // initialize variables
   const map = useMap();
@@ -219,6 +212,16 @@ export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
   const [showTools, setShowTools] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  // Use the custom location permission hook
+  const {
+    coords,
+    locationPermissionStatus,
+    showLocationDialog,
+    hasCheckedPermissions,
+    handleLocationAccept,
+    handleLocationDecline,
+  } = useLocationPermission();
 
   // Polygon data and hover management
   const { polygons, patchOverlaps, isLoading: polygonLoading } = usePolygonData();
@@ -245,10 +248,18 @@ export default function MapView() {
     patchInfo = { row: row + 1, col, label: patch };
   }
 
-
   return (
     <div className="flex flex-col md:flex-row h-full w-full relative py-4">
       <LeafletAssets />
+
+      {/* Location Permission Dialog - only show if we've checked permissions and need to show it */}
+      {hasCheckedPermissions && (
+        <LocationPermissionDialog 
+          open={showLocationDialog}
+          onAccept={handleLocationAccept}
+          onDecline={handleLocationDecline}
+        />
+      )}
 
       {/* Tools toggle button - visible only on mobile */}
       <button 
@@ -262,7 +273,7 @@ export default function MapView() {
 
       {/* Desktop tools panel */}
       <div className='hidden md:block absolute top-12 left-0 p-4 z-12'>
-        <WhereAmI />
+        <WhereAmI coords={coords} locationPermissionStatus={locationPermissionStatus} />
         <FiltersList />
       </div>
       
@@ -277,7 +288,7 @@ export default function MapView() {
             </button>
           </div>
           <div className="flex flex-col gap-2 p-2">
-            <WhereAmI />
+            <WhereAmI coords={coords} locationPermissionStatus={locationPermissionStatus} />
             <FiltersList />
           </div>
         </div>
@@ -302,6 +313,7 @@ export default function MapView() {
                 patchOverlaps={patchOverlaps}
                 onPatchHover={handlePatchHover}
                 onPatchLeave={handlePatchLeave}
+                coords={coords}
               />
             </>
           )}
@@ -322,3 +334,4 @@ export default function MapView() {
     </div>
   );
 }
+
