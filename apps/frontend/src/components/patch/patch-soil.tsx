@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import PermissionRestrictedDialog from '../utils/PermissionRestrictedDialog';
 import PatchSoilEditor from './patch-soil-editor';
+
 export default function PatchSoil({ patchID }: { patchID: string }) {
   const [soilType, setSoilType] = useState<string>('');
 
@@ -33,7 +35,9 @@ export default function PatchSoil({ patchID }: { patchID: string }) {
     <div>
       <h3>Soil Type: {soilType} 
         <span>
-          <PatchSoilEditor patchID={patchID} updateCallback={setSoilType} />
+          <PermissionRestrictedDialog actionName="edit soil type">
+            <PatchSoilEditor patchID={patchID} updateCallback={setSoilType} />
+          </PermissionRestrictedDialog>
         </span>
       </h3>
     </div>

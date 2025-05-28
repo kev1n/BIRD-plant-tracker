@@ -9,10 +9,11 @@ import {
 import { JSX, useEffect, useState } from 'react';
 import { Observation, Snapshot } from 'types/database_types';
 import ObservationsSection from '../observations/observations-section';
+import PatchSoil from '../patch/patch-soil';
+import PermissionRestrictedDialog from '../utils/PermissionRestrictedDialog';
 import LatestSnapshotContext from './latest-snapshot-context';
 import PatchSnapshotHistory from './patch-snapshot-history';
 import SnapshotForm from './snapshot-form-dialog';
-import PatchSoil from '../patch/patch-soil';
 
 const ConditionalWrapper = ({
   condition,
@@ -187,12 +188,14 @@ export default function SnapshotView({
             {historicalSnapshotID === undefined && (
               <div className="flex flex-row justify-between">
                 <div className="flex-1 text-left">
-                  <SnapshotForm
-                    newSnapshot={true}
-                    patchID={patch}
-                    snapshotTemplate={current_snapshot}
-                    observationsTemplate={observations}
-                  />
+                  <PermissionRestrictedDialog actionName="create new snapshots">
+                    <SnapshotForm
+                      newSnapshot={true}
+                      patchID={patch}
+                      snapshotTemplate={current_snapshot}
+                      observationsTemplate={observations}
+                    />
+                  </PermissionRestrictedDialog>
                 </div>
                 <div>
                   <PatchSnapshotHistory patch={patch} />
@@ -203,12 +206,14 @@ export default function SnapshotView({
         </Dialog>
 
         {historicalSnapshotID !== undefined && (
-          <SnapshotForm
-            newSnapshot={false}
-            patchID={patch}
-            snapshotTemplate={current_snapshot}
-            observationsTemplate={observations}
-          />
+          <PermissionRestrictedDialog actionName="edit snapshots">
+            <SnapshotForm
+              newSnapshot={false}
+              patchID={patch}
+              snapshotTemplate={current_snapshot}
+              observationsTemplate={observations}
+            />
+          </PermissionRestrictedDialog>
         )}
       </>
     </ConditionalWrapper>

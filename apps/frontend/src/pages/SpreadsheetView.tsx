@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import PermissionRestrictedDialog from '@/components/utils/PermissionRestrictedDialog';
 import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams, ValueSetterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { EllipsisVertical, Plus, Save, X } from 'lucide-react';
@@ -125,7 +126,7 @@ export default function SpreadSheetView() {
   // Delete an observation from a newly duplicated snapshot. This is for situations where
   // an observation *was* accurate for a time, and is not representative anymore. This preserves the
   // integrity of all other observations that are still in the snapshot.
-  async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: number) {
+  async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: number) {    
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
@@ -775,17 +776,17 @@ export default function SpreadSheetView() {
     const plantQuantity = newRow.plantQuantity;
 
     if (patchID === 'REQUIRED'){
-      alert('Please enter the patch ID for the new observation.');
+      toast.error('Please enter the patch ID for the new observation.');  
       return;
     }
 
     if (plantName === 'REQUIRED'){
-      alert('Please enter the plant common name for the new observation.');
+      toast.error('Please enter the plant common name for the new observation.');
       return;
     }
 
     if (plantQuantity === 0){
-      alert('Please enter plant quantity greater than 0 for the new observation.');
+      toast.error('Please enter plant quantity greater than 0 for the new observation.');
       return;
     }
 
@@ -881,17 +882,17 @@ export default function SpreadSheetView() {
     const plantQuantity = newRow.plantQuantity;
 
     if (patchID === 'REQUIRED'){
-      alert('Please enter the patch ID for the new observation.');
+      toast.error('Please enter the patch ID for the new observation.');
       return;
     }
 
     if (plantName === 'REQUIRED'){
-      alert('Please enter the plant common name for the new observation.');
+      toast.error('Please enter the plant common name for the new observation.');
       return;
     }
 
     if (plantQuantity === 0){
-      alert('Please enter plant quantity greater than 0 for the new observation.');
+      toast.error('Please enter plant quantity greater than 0 for the new observation.');
       return;
     }
     try {
@@ -980,22 +981,22 @@ export default function SpreadSheetView() {
     const plantQuantity = newRow.plantQuantity;
 
     if (patchID === 'REQUIRED'){
-      alert('Please enter the patch ID for the new observation.');
+      toast.error('Please enter the patch ID for the new observation.');
       return;
     }
 
     if (plantName === 'REQUIRED'){
-      alert('Please enter the plant common name for the new observation.');
+      toast.error('Please enter the plant common name for the new observation.');
       return;
     }
 
     if (plantQuantity === 0){
-      alert('Please enter plant quantity greater than 0 for the new observation.');
+      toast.error('Please enter plant quantity greater than 0 for the new observation.');
       return;
     }
 
     if (!user) {
-      alert('Please log in to access this feature');
+      toast.error('Please log in to access this feature');
       return;
     }
 
@@ -1101,11 +1102,13 @@ export default function SpreadSheetView() {
       resizable: false,
       cellRenderer: (params: ValueGetterParams<Observation>) => 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <div className="flex w-full h-full justify-center items-center">
-            <EllipsisVertical />
-            </div>
-        </DropdownMenuTrigger>
+        <PermissionRestrictedDialog actionName="open actions menu">
+          <DropdownMenuTrigger asChild>
+              <div className="flex w-full h-full justify-center items-center">
+              <EllipsisVertical />
+              </div>
+          </DropdownMenuTrigger>
+        </PermissionRestrictedDialog>
 
         <DropdownMenuContent>
           <DropdownMenuItem >
@@ -1559,12 +1562,14 @@ export default function SpreadSheetView() {
 
       {/* Add New Observation Button */}
       {!isNewObs && editingRowId === null && (
+        <PermissionRestrictedDialog actionName="add new observations">
         <div className="mb-4 flex justify-end">
-          <Button onClick={handleAddRow} variant="default">
-            <Plus className="h-4 w-4 mr-2" />
-            New Observation
-          </Button>
+            <Button onClick={handleAddRow} variant="default">
+              <Plus className="h-4 w-4 mr-2" />
+              New Observation
+            </Button>
         </div>
+        </PermissionRestrictedDialog>
       )}
 
       {/* Data Grid */}
