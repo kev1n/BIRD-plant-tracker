@@ -19,7 +19,7 @@ export async function newObservation(req: AuthRequest, res: Response) {
           snapshotID,
           plantQuantity,
           plantID: plantID,
-          hasBloomed: hasBloomed || null,
+          hasBloomed: hasBloomed === undefined ? null : hasBloomed,
           datePlanted: datePlanted || null,
         },
       ])
@@ -27,7 +27,7 @@ export async function newObservation(req: AuthRequest, res: Response) {
       .single();
 
     if (obsError) {
-      res.status(400).json({ error: obsError.message });
+      res.status(500).json({ error: obsError.message });
       return;
     }
 

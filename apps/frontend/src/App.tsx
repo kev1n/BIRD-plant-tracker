@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import { PrivateRoute, PublicOnlyRoute } from './components/protected-routes';
@@ -8,16 +9,19 @@ import EmailVerification from './pages/account/email-verifcation';
 import Login from './pages/account/login';
 import RequestPasswordReset from './pages/account/request-password-reset';
 import ResetPassword from './pages/account/reset-password';
+import AdminPage from './pages/admin';
 import ExamplePage from './pages/example';
 import Home from './pages/home';
 import MapView from './pages/MapView';
 import NotFound from './pages/not-found';
 import SignUp from './pages/signup';
-import AdminPage from './pages/admin';
 import SpreadsheetView from './pages/SpreadsheetView';
+import AboutUs from "./pages/AboutUs";
 
 function App() {
   return (
+    <>
+    <Toaster />
     <UserProvider>
       <BrowserRouter>
         <Routes>
@@ -33,7 +37,7 @@ function App() {
             <Route path="auth/callback" element={<AuthCallback />} />
             <Route path="auth/reset-password" element={<ResetPassword />} />
             <Route path="auth/verify-email" element={<EmailVerification />} />
-
+            <Route path="about" element={<AboutUs />} />
             <Route path="map" element={<MapView />} />
             <Route path="map/:patch" element={<MapView />} />
             <Route path="spreadsheet" element={<SpreadsheetView />} />
@@ -47,6 +51,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </UserProvider>
+    </>
   );
 }
 

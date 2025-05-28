@@ -2,7 +2,6 @@ import { ChangeEvent, FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Form } from '../../components/form/form';
 import { Input } from '../../components/form/input';
-import { LocationDemo } from '../../components/ui/location';
 import { useUser } from '../../hooks/useUser';
 
 interface LoginState {
@@ -100,10 +99,6 @@ export default function Login() {
           </Link>
         </div>
       </Form>
-      <Link to="/map" className="text-primary hover:underline">
-        Map
-      </Link>
-      <LocationDemo />
     </div>
   );
 }

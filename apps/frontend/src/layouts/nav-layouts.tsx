@@ -1,17 +1,15 @@
-import { Toaster } from "@/components/ui/sonner";
 import { Outlet } from 'react-router-dom';
 import Footer from '../components/navigation/footer';
 import NavBar from '../components/navigation/nav-bar';
 
 export default function NavLayout() {
   return (
-    <>
-      <Toaster />
-      <div className="flex flex-col h-screen">
-        <NavBar />
+    <div className="flex flex-col h-[calc(100vh-2rem)]">
+      <NavBar />
+      <main className="flex-1 overflow-auto">
         <Outlet />
-        <Footer />
-      </div>
-    </>
+      </main>
+      <Footer />
+    </div>
   );
 }
