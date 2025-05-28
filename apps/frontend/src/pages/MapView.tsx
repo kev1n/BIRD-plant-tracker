@@ -137,7 +137,7 @@ function GridOverlay({
         // Create rectangle for grid patch
         const rect = new Rectangle([topLeft, bottomRight], {
           color: '#000000',
-          weight: 1,
+          weight: 0.5,
           fillColor,
           fillOpacity,
         });
@@ -191,7 +191,7 @@ function GridOverlay({
       const marker = new Marker(labelPos, {
         icon: divIcon({
           className: 'text-xs font-bold text-center',
-          html: String.fromCharCode(65 + col),
+          html: `<div style="color: white; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 1px -1px 2px black, -1px 1px 2px black;">${String.fromCharCode(65 + col)}</div>`,
         }),
       });
       marker.addTo(gridRef.current);
@@ -206,7 +206,7 @@ function GridOverlay({
       const marker = new Marker(labelPos, {
         icon: divIcon({
           className: 'text-xs font-bold text-center',
-          html: (row + 1).toString(),
+          html: `<div style="color: white; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 1px -1px 2px black, -1px 1px 2px black;">${(row + 1).toString()}</div>`,
         }),
       });
       marker.addTo(gridRef.current);
@@ -273,6 +273,7 @@ export default function MapView() {
           open={showLocationDialog}
           onAccept={handleLocationAccept}
           onDecline={handleLocationDecline}
+          onClose={handleLocationDecline}
         />
       )}
 
@@ -347,6 +348,17 @@ export default function MapView() {
           <PatchHoverPreview 
             hoverData={hoveredPatch} 
             position={mousePosition}
+          />
+        </div>
+      )}
+
+      {/* Hidden desktop auto-opening snapshot view - triggers when patch is selected */}
+      {patchInfo && (
+        <div className="hidden md:block" style={{ position: 'absolute', left: '-9999px' }}>
+          <SnapshotView 
+            patch={patchInfo.label} 
+            triggerTitle="View Latest Snapshot" 
+            autoOpen={true}
           />
         </div>
       )}

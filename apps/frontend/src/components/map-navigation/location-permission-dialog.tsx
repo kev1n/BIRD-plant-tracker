@@ -12,15 +12,17 @@ interface LocationPermissionDialogProps {
   open: boolean;
   onAccept: () => void;
   onDecline: () => void;
+  onClose: () => void;
 }
 
 export default function LocationPermissionDialog({ 
   open, 
   onAccept, 
-  onDecline 
+  onDecline,
+  onClose
 }: LocationPermissionDialogProps) {
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
