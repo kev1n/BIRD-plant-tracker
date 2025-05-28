@@ -1,6 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,15 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -26,6 +15,18 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
 
 const patchSoilSchema = z.object({
   soilType: z.enum(["sand", "sandy loam", "pond"]),
@@ -68,8 +69,9 @@ export default function PatchSoilEditor({
       if (response.ok) {
         updateCallback(values.soilType);
         setOpen(false);
+        toast.success('Soil type updated successfully');
       } else {
-        alert('Error updating soil type');
+        toast.error('Error updating soil type');
       }
     } catch (error) {
       console.error('Error:', error);
