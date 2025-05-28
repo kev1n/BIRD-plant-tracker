@@ -66,12 +66,35 @@ After both filtering fields are filled in, more filtering options appear, allowi
 The spreadsheet contains multiple ways to interact with rows in the spreadsheet, including ways to edit, duplicate, and delete entries. Functionality can be found by clicking on the **ellipses** on the very left of the table.
 
 ![data manipulation buttons](./spreadsheet-images/spreadsheet_manipulation.png)
-![data manipulation menu](./spreadsheet-images/Spreadsheet_Action_Menu.png)
 
+![data manipulation menu](./spreadsheet-images/Spreadsheet_Action_Menu.png)
+---
+### New Entries
+To make a new observation, click the black "New Observation" button to the top right of the spreadsheet.
+
+![New Observation button](./spreadsheet-images/Spreadsheet_New_Entry.png)
+
+This will create a new template row at the top of the spreadsheet. The require input fields are Patch ID and Plant Common Name. It is also required that Plant Quantity be set to number higher than 0. Editable cells are highlighted in blue.
+
+![New row](./spreadsheet-images/Spreadsheet_New_Row.png)
+
+Other editable fields include "Date Planted", "Has Bloomed", and "notes. depending on the options you choose (explained below), these fields will be treated differently.
+
+#### Saving a new observation
+Pressing the "New Observation" button will cause 4 buttons to take its place. The first button is "Cancel", which will delete the template observation created when you clicked "New Observation". "New Snapshot" will generate a new, blank snapshot with just the new observation in it. This is the only case in which the "Notes" field will NOT be overwritten. "Duplicate Snapshot" will copy the snapshot informationg \(including all associated observation\) from the latest snapshot assossiated with the specified "Patch ID" and add the new observation to the copy. "Add to current snapshot" will simply add the new observation to the latest snapshot for the specified patch. In the latter two cases, the "Notes" field is overwritten to that of the latest snapshot used, since "Notes" is associated with a snapshot.
+
+![Options](./spreadsheet-images/Spreadsheet_New_Options.png)
 ---
 ### Editing Entries
-*Daniel here*
-I would recommend talking about all the constraints on editing and why we chose those. (include reasoning about needing to keep information in separate tables in our DB).
+To access editing, start by clicking the three dots under the "Options" column in the row which you would like to edit. From there, select "Edit Observation" from the dropdown menu. 
+
+![Edit Observation](./spreadsheet-images/Spreadsheet_Action_Menu.png)
+
+Once you click that, Editable fields will become highllighted in blue. These are the only fields strictly associated with observations. To save your edits, you have three options shown below.
+
+![Edit Options](./spreadsheet-images/Spreadsheet_Edit_Options.png)
+
+Clicking "Save" will save your edits in place, changing the actual observation you have edited. "Duplicate Snapshot" will duplicate the *ENTIRE* snapshot associated with the observation you are editing \(including other associated observations\) and enforce the edit in this new snapshot. "New Snapshot" will create a blank snapshot containing just the edited observation. Alternatively, "Cancel" will discard any edits you haven't save yet and will take you out of editing mode.
 
 ---
 ### Duplicating Entries
