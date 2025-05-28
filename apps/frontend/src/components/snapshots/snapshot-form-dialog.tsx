@@ -63,11 +63,11 @@ export default function SnapshotForm({
 
   const duplicateLatestData = () => {
     if (!snapshotTemplate) {
-      console.error('No snapshot template to duplicate from');
+      toast.error('No snapshot template to duplicate from');
       return;
     }
     if (!observationsTemplate) {
-      console.error('No observations template to duplicate from');
+      toast.error('No observations template to duplicate from');
       return;
     }
     setNotes(snapshotTemplate.notes || '');
@@ -181,7 +181,7 @@ export default function SnapshotForm({
         .then(responses => {
           responses.forEach(response => {
             if (!response) {
-              console.error('One of the observation requests failed to return a response');
+              toast.error('One of the observation requests failed to return a response');
               return;
             }
             if (!response.ok) {
@@ -204,8 +204,7 @@ export default function SnapshotForm({
         fetchHistoricalSnapshotMetadata(patchID);
       }
     } catch (error) {
-      console.error('Error submitting snapshot data:', error);
-      alert('Failed to submit snapshot data. Please try again.');
+      toast.error('Failed to submit snapshot data. Please try again: ' + error);
       return;
     }
     setOpen(false);

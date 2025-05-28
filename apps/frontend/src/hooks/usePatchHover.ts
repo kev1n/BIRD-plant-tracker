@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Observation, Snapshot } from '../../types/database_types';
 import { PolygonHoverData } from '../../types/polygon.types';
 
@@ -87,7 +88,7 @@ export function usePatchHover(): PatchHoverReturn {
       
       return result;
     } catch (error) {
-      console.error('Error fetching snapshot data:', error);
+      toast.error('Error fetching snapshot data: ' + error);
       throw error;
     }
   }, []);

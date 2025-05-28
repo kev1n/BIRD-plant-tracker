@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import PermissionRestrictedDialog from '../utils/PermissionRestrictedDialog';
 import PatchSoilEditor from './patch-soil-editor';
-
 export default function PatchSoil({ patchID }: { patchID: string }) {
   const [soilType, setSoilType] = useState<string>('');
 
@@ -19,8 +19,7 @@ export default function PatchSoil({ patchID }: { patchID: string }) {
         },
       });
       if (!response.ok) {
-        console.error('Error fetching patch soil data:', response.statusText);
-        alert('Failed to fetch patch soil data. Please try again.');
+        toast.error('Failed to fetch patch soil data. Please try again.');
         return;
       }
       const data = await response.json();

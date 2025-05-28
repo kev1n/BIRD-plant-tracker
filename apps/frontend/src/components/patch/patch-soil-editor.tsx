@@ -74,7 +74,7 @@ export default function PatchSoilEditor({
         toast.error('Error updating soil type');
       }
     } catch (error) {
-      console.error('Error:', error);
+      toast.error('Error updating soil type: ' + error);
     }
   }
 

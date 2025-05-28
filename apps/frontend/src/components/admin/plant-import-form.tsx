@@ -70,8 +70,7 @@ export default function ImportContainer() {
       toast.success(`Successfully imported ${response.imported} rows!`);
       setSelectedFile(null);
     } catch (error) {
-      console.error('Import failed:', error);
-      toast.error('Import failed. Please check your file format and try again.');
+      toast.error('Import failed. Please check your file format and try again. ' + error);
     } finally {
       setUploading(false);
     }

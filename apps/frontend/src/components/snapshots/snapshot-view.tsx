@@ -7,6 +7,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { JSX, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Observation, Snapshot } from 'types/database_types';
 import ObservationsSection from '../observations/observations-section';
 import PatchSoil from '../patch/patch-soil';
@@ -110,7 +111,7 @@ export default function SnapshotView({
       );
       setObservations(observations_with_tempKey);
     } catch (err) {
-      console.error('Error fetching complete snapshot:', err);
+      toast.error('Error fetching complete snapshot: ' + err);
       setPatchFound(false);
       setCurrentSnapshot({
         snapshotID: -1,

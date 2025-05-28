@@ -9,6 +9,7 @@ import UserRoleInfo from '@/components/admin/user-role-info';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import type { User } from '../../types/auth';
 
 export default function AdminPage() {
@@ -41,7 +42,7 @@ export default function AdminPage() {
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error fetching users');
-        console.error('Error fetching users:', err);
+        toast.error('Error fetching users: ' + err);
       } finally {
         setIsLoading(false);
       }

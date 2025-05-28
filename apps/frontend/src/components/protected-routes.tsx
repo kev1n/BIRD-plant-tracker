@@ -4,7 +4,6 @@ import { useUser } from '../hooks/useUser';
 export function PrivateRoute({ allowedRoles }: { allowedRoles?: string[]}) {
   const { user, isLoading } = useUser();
 
-  console.log('user: ', user);
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
