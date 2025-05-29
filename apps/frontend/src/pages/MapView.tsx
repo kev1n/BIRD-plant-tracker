@@ -1,4 +1,3 @@
-
 import FiltersList from '@/components/filters/filters-list';
 import { CENTER, LABEL_OFFSET_LAT, LABEL_OFFSET_LNG, numCols, numRows, patchSizeLat, patchSizeLng, TOP_LEFT } from '@/components/map-navigation/constants';
 import LocationPermissionDialog from '@/components/map-navigation/location-permission-dialog';
@@ -11,12 +10,13 @@ import { usePatchHover } from '@/hooks/usePatchHover';
 import { usePolygonData } from '@/hooks/usePolygonData';
 import { divIcon, LatLngTuple, LayerGroup, Marker, Rectangle } from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
-import { useGeolocated } from 'react-geolocated';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PatchPolygonOverlap } from '../../types/polygon.types';
 import LeafletAssets from '../components/LeafletAssets';
 import chroma from 'chroma-js';
+
+// Sidebar component to display tools and patch information
 interface SidebarProps {
   patchInfo: {
     row: number;
@@ -26,9 +26,17 @@ interface SidebarProps {
   coords?: { latitude: number; longitude: number } | null;
   locationPermissionStatus: LocationPermissionStatus;
   onPanToLocation?: (coords: { latitude: number; longitude: number }) => void;
+  filtersOn: boolean;
+  setFiltersOn: (on: boolean) => void;
+  plantToColor: Map<number, string>;
+  setPlantToColor: (map: Map<number, string>) => void;
+  patchesToColors: Map<string, string[]>;
+  setPatchesToColors: (map: Map<string, string[]>) => void;
 }
 
-function Sidebar({ patchInfo, coords, locationPermissionStatus, onPanToLocation }: SidebarProps) {
+function Sidebar({ patchInfo, coords, locationPermissionStatus, onPanToLocation , filtersOn, 
+  setFiltersOn, plantToColor, setPlantToColor, patchesToColors, setPatchesToColors
+}: SidebarProps) {
   return (
     <div className="w-full md:w-80 bg-gray-50 h-full overflow-y-auto shadow-md flex flex-col">
       {/* WhereAmI and FiltersList - always shown */}
@@ -38,7 +46,14 @@ function Sidebar({ patchInfo, coords, locationPermissionStatus, onPanToLocation 
           locationPermissionStatus={locationPermissionStatus}
           onPanToLocation={onPanToLocation}
         />
-        <FiltersList />
+        <FiltersList 
+          filtersOn={filtersOn}
+          setFiltersOn={setFiltersOn}
+          plantToColor={plantToColor}
+          setPlantToColor={setPlantToColor}
+          patchesToColors={patchesToColors}
+          setPatchesToColors={setPatchesToColors}
+        />
       </div>
       
       {/* Patch info - only shown on mobile when a patch is selected, but without the snapshot view */}
@@ -77,17 +92,18 @@ function GridOverlay({
   filtersOn: boolean;
 }) {
 
-
+  // initialize variables
   const map = useMap();
   const navigate = useNavigate();
   const location = useLocation();
   const gridRef = useRef<LayerGroup | null>(null);
+
+  // Extract grid patch from URL params
   const { patch } = useParams<{ patch?: string }>();
-  const patchRectangleRefs = useRef<Map<string, Rectangle>>(new Map());
-  const [userLocationPatch, setUserLocationPatch] = useState<string | null>(null);
 
   useEffect(() => {
     if (!map) return;
+
     // Create a new LayerGroup
     gridRef.current = new LayerGroup();
     map.addLayer(gridRef.current);
@@ -117,10 +133,7 @@ function GridOverlay({
 
         if (isUserHere) {
           userOnValidPatch = true;
-          setUserLocationPatch(label);
-          console.log(`User is on patch: ${label}`);
         }
-       
 
         // Check if patch overlaps with any polygon
         const patchOverlap = patchOverlaps.find(overlap => overlap.patchId === label);
@@ -141,8 +154,17 @@ function GridOverlay({
           // Use different colors based on polygon
           fillColor = polygonId === 'northern-section' ? '#4CAF50' : '#FF9800';
           fillOpacity = 0.3;
+        }else if (filtersOn && patchesToColors.has(label)) {
+          const colors = patchesToColors?.get(label) || [];
+          if (colors.length > 0) {
+            fillColor = colors.length > 0 ? chroma.average(colors, 'rgb') : '#000000';
+            fillOpacity = colors.length > 10 ? 1 : 0.3 * colors.length;
+            if (colors[0] === '#FFFF00') {
+              fillColor = '#FFFF00'; // Special case for yellow
+              fillOpacity = 0.5; // Adjust opacity for yellow
+            }
+          }
         }
-
         // Create rectangle for grid patch
         const rect = new Rectangle([topLeft, bottomRight], {
           color: '#000000',
@@ -150,9 +172,6 @@ function GridOverlay({
           fillColor,
           fillOpacity,
         });
-
-        // Store the rectangle in the ref for later access
-        patchRectangleRefs.current.set(label, rect);
 
         // Make patchs clickable
         rect.on('click', () => {
@@ -224,12 +243,13 @@ function GridOverlay({
       marker.addTo(gridRef.current);
     }
 
+    // Cleanup function
     return () => {
       if (gridRef.current) {
         map.removeLayer(gridRef.current);
       }
     };
-  }, [map, navigate, patch, location, coords, patchOverlaps, onPatchHover, onPatchLeave]);
+  }, [map, navigate, patch, location, coords, patchOverlaps, onPatchHover, onPatchLeave, filtersOn, patchesToColors]);
 
   return null;
 }
@@ -251,69 +271,18 @@ function MapPanHandler({
     }
   }, [panToCoords, map, setPanToCoords]);
 
-  useEffect(() => {
-    if (!gridRef.current || !patchRectangleRefs.current) return;
-    patchRectangleRefs.current.forEach((rect, label) => {
-      if (!filtersOn) {
-        rect.setStyle({
-          fillColor: '#000000',
-          color: '#000000',
-          fillOpacity: 0,
-        });
-        if (label === patch) {
-          rect.setStyle({
-            fillColor: '#4a90e2',
-            color: '#4a90e2',
-            fillOpacity: 0.7,
-          });
-        }
-        if (label === userLocationPatch) {
-          rect.setStyle({
-            fillColor: '#4CAF50',
-            color: '#4CAF50',
-            fillOpacity: 0.9,
-          });
-        }
-        return;
-      }
-      const colors = patchesToColors?.get(label) || [];
-      if (colors.length === 0) {
-        return;
-      }
-      const color = colors.length > 0 ? chroma.average(colors, 'rgb') : '#000000';
-      let opacity = colors.length > 10 ? 1 : 0.3 * colors.length;
-      if (colors[0] === '#FFFF00') {
-        opacity = 0.5;
-      }
-      rect.setStyle({
-        fillColor: color,
-        color: '#000000',
-        fillOpacity: opacity,
-      });
-
-      if (label === patch) {
-        rect.setStyle({
-          fillColor: '#4a90e2',
-          color: '#4a90e2',
-          fillOpacity: 0.7,
-        });
-      }
-    });
-  }, [patchesToColors, patch, filtersOn]);
-
   return null;
 }
 
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
-
-  const [showTools, setShowTools] = useState(false);
-  const [plantToColor, setPlantToColor] = useState<Map<number, string>>(new Map());
-  const [patchesToColors, setPatchesToColors] = useState<Map<string, string[]>>(new Map());
-  const [filtersOn, setFiltersOn] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [panToCoords, setPanToCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  const [plantToColor, setPlantToColor] = useState<Map<number, string>>(new Map());
+  const [patchesToColors, setPatchesToColors] = useState<Map<string, string[]>>(new Map());
+  const [filtersOn, setFiltersOn] = useState(false);
   
   // Use the custom location permission hook
   const {
@@ -346,6 +315,7 @@ export default function MapView() {
     }
   }, [hoveredPatch]);
 
+  // Parse patch into row and column if patch is defined
   let patchInfo = null;
   if (patch) {
     const colChar = patch.charAt(0);
@@ -385,6 +355,12 @@ export default function MapView() {
           coords={coords} 
           locationPermissionStatus={locationPermissionStatus}
           onPanToLocation={handlePanToLocation}
+          filtersOn={filtersOn}
+          setFiltersOn={setFiltersOn}
+          plantToColor={plantToColor}
+          setPlantToColor={setPlantToColor}
+          patchesToColors={patchesToColors}
+          setPatchesToColors={setPatchesToColors}
         />
       </div>
       
@@ -416,7 +392,6 @@ export default function MapView() {
             attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
             url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
           />
-          
           <MapPanHandler 
             panToCoords={panToCoords}
             setPanToCoords={setPanToCoords}
@@ -434,8 +409,8 @@ export default function MapView() {
                 onPatchHover={handlePatchHover}
                 onPatchLeave={handlePatchLeave}
                 coords={coords}
-                filtersOn={filtersOn} 
                 patchesToColors={patchesToColors}
+                filtersOn={filtersOn}
               />
             </>
           )}
@@ -484,4 +459,3 @@ export default function MapView() {
     </div>
   );
 }
-
