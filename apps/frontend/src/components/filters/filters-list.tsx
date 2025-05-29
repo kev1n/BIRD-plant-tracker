@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import randomColor from 'randomcolor';
 import {
   Command,
-  CommandInput,
-  CommandList,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
+  CommandList,
 } from '@/components/ui/command';
-import { PlantInfo } from 'types/database_types';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover';
 import { CalendarIcon, Check, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { PlantInfo } from 'types/database_types';
 
 export default function FiltersList({
   filtersOn,

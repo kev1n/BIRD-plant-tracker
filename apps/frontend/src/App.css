@@ -1,8 +1,21 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   text-align: center;
+}
+
+/* Full width container for spreadsheet view */
+.spreadsheet-container {
+  max-width: 100% !important;
+  margin: 0 !important;
+  width: 100vw !important;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw !important;
+  margin-right: -50vw !important;
 }
 
 .map {
