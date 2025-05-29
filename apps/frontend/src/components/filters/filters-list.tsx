@@ -158,20 +158,35 @@ export default function FiltersList({
     <div className="p-4 bg-secondary rounded shadow-md z-12 overflow-y-auto">
       <h2 className="text-lg font-semibold">Filter Patches for Snapshots</h2>
 
-      <Button onClick={() => setFiltersOn(!filtersOn)} className="w-full">
-        {filtersOn ? 'Turn Off Filters' : 'Turn On Filters'}
+      <Button onClick={() => setFiltersOn(!filtersOn)} className="w-full mt-3">
+        {filtersOn ? 'Disable Filtering' : 'Enable Filtering'}
       </Button>
+
+      
 
       {filtersOn && (
         <div>
-          <div className="flex items-center justify-between mt-4">
-            <p>Patches found: {patchesToColors.size}</p>
-            {filtersOn && (
-              <Button onClick={clearFilters} variant="outline">
-                Clear Filters
-              </Button>
-            )}
+          <div className="flex items-center justify-between mt-4 mb-2">
+            <h3>Patches Found: {patchesToColors.size}</h3>
+            
+            <Button onClick={clearFilters} variant="outline" className="p-2">
+              Clear Filters
+            </Button>
+            
           </div>
+          {selectedPlants.length === 0 && (
+              <div className="flex items-center justify-between border-b border-t border-gray-300 py-2 mb-4">
+                <div>Non-plant Matching Patches</div>
+                <div
+                  className="h-4 w-4"
+                  style={{
+                    backgroundColor: 'yellow',
+                  }}
+                ></div>
+              </div>
+            )}
+
+
           <div className="border border-gray-300 rounded-lg p-4 bg-white mb-4">
             <h3 className="text-left mb-3"> Dates Filtering</h3>
 
@@ -303,18 +318,6 @@ export default function FiltersList({
                 </Command>
               </PopoverContent>
             </Popover>
-
-            {selectedPlants.length === 0 && (
-              <div className="flex items-center justify-between border-b border-gray-300 py-2">
-                <div>Non-plant Matching Patches</div>
-                <div
-                  className="h-4 w-4"
-                  style={{
-                    backgroundColor: 'yellow',
-                  }}
-                ></div>
-              </div>
-            )}
 
             {selectedPlants.length > 0 && (
               <div className="max-h-[200px] overflow-y-auto border border-gray-300 rounded-lg p-4 bg-white">
