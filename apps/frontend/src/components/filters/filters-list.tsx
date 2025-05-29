@@ -1,7 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { Label } from '@/components/ui/label';
 import randomColor from 'randomcolor';
 import {
@@ -14,10 +12,11 @@ import {
 } from '@/components/ui/command';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover';
-import { CalendarIcon, Check, X } from 'lucide-react';
+import { Check, X, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { PlantInfo } from 'types/database_types';
 import { toast } from 'sonner';
+import DatePicker from '@/components/ui/datepicker';
 
 export default function FiltersList({
   filtersOn,
@@ -36,8 +35,8 @@ export default function FiltersList({
 }) {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [possiblePlants, setPossiblePlants] = useState<PlantInfo[]>([]);
-  const [beginDate, setBeginDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [beginDate, setBeginDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectedPlants, setSelectedPlants] = useState<PlantInfo[]>([]);
   const [latest, setLatest] = useState(true);
   const [soilList, setSoilList] = useState<string[]>(['Sand', 'Pond', 'Sandy Loam']);
@@ -93,10 +92,10 @@ export default function FiltersList({
         });
         if (response.ok) {
           const data = await response.json();
-          const newPlantToColor = new Map<number, string>();
-          plantToColor.forEach((color, plantID) => {
-            newPlantToColor.set(plantID, color);
-          });
+          // const newPlantToColor = new Map<number, string>();
+          // plantToColor.forEach((color, plantID) => {
+          //   newPlantToColor.set(plantID, color);
+          // });
           const newPlantToFilteredPatches = new Map<number, string[]>();
           const otherMatchPatches = new Set<string>();
           data.data.forEach((pair: { plantid: number; patchid: string }) => {
@@ -105,12 +104,12 @@ export default function FiltersList({
               return;
             }
 
-            if (!newPlantToColor.has(pair.plantid)) {
+            if (!plantToColor.has(pair.plantid)) {
               const color = randomColor({
                 luminosity: 'bright',
                 hue: 'random',
               });
-              newPlantToColor.set(pair.plantid, color);
+              plantToColor.set(pair.plantid, color);
             }
             if (!newPlantToFilteredPatches.has(pair.plantid)) {
               newPlantToFilteredPatches.set(pair.plantid, []);
@@ -120,7 +119,7 @@ export default function FiltersList({
 
           const newPatchesToColors = new Map<string, string[]>();
           newPlantToFilteredPatches.forEach((patches, plantID) => {
-            const color = newPlantToColor.get(plantID);
+            const color = plantToColor.get(plantID);
             if (color) {
               patches.forEach(patch => {
                 if (!newPatchesToColors.has(patch)) {
@@ -137,7 +136,6 @@ export default function FiltersList({
               newPatchesToColors.get(patch)?.push(grayColor);
             }
           });
-          setPlantToColor(newPlantToColor);
           setPatchesToColors(newPatchesToColors);
         } else {
           toast.error('Error: Unable to filter patches');
@@ -156,11 +154,20 @@ export default function FiltersList({
     };
 
     fetchHighlightedPatches();
-  }, [selectedPlants, beginDate, endDate, latest, soilList, setPlantToColor, setPatchesToColors]);
+  }, [
+    selectedPlants,
+    beginDate,
+    endDate,
+    latest,
+    soilList,
+    plantToColor,
+    setPlantToColor,
+    setPatchesToColors,
+  ]);
 
   const clearFilters = () => {
-    setBeginDate(undefined);
-    setEndDate(undefined);
+    setBeginDate(null);
+    setEndDate(null);
     setSelectedPlants([]);
     setLatest(true);
     setSearchTerm('');
@@ -179,24 +186,22 @@ export default function FiltersList({
         <div>
           <div className="flex items-center justify-between mt-4 mb-2">
             <h3>Patches Found: {patchesToColors.size}</h3>
-            
+
             <Button onClick={clearFilters} variant="outline" className="p-2">
               Clear Filters
             </Button>
-            
           </div>
           {selectedPlants.length === 0 && (
-              <div className="flex items-center justify-between border-b border-t border-gray-300 py-2 mb-4">
-                <div>Non-plant Matching Patches</div>
-                <div
-                  className="h-4 w-4"
-                  style={{
-                    backgroundColor: 'yellow',
-                  }}
-                ></div>
-              </div>
-            )}
-
+            <div className="flex items-center justify-between border-b border-t border-gray-300 py-2 mb-4">
+              <div>Non-plant Matching Patches</div>
+              <div
+                className="h-4 w-4"
+                style={{
+                  backgroundColor: 'yellow',
+                }}
+              ></div>
+            </div>
+          )}
 
           <div className="border border-gray-300 rounded-lg p-4 bg-white mb-4">
             <h3 className="text-left mb-3"> Dates Filtering</h3>
@@ -204,64 +209,34 @@ export default function FiltersList({
             <RadioGroup value={String(latest)} onValueChange={value => setLatest(value === 'true')}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="true" id="r1" />
-                <Label className="font-secondary text-primary-dark-grey" htmlFor="r1">
+                <Label className="font-primary text-primary-dark-grey" htmlFor="r1">
                   Find on latest patch state
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="false" id="r2" />
-                <Label className="font-secondary text-primary-dark-grey" htmlFor="r2">
+                <Label className="font-primary text-primary-dark-grey" htmlFor="r2">
                   Find from date range
                 </Label>
               </div>
             </RadioGroup>
             {!latest && (
-              <div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        'pl-3 text-left font-normal',
-                        beginDate && 'text-muted-foreground'
-                      )}
-                    >
-                      {beginDate ? format(beginDate, 'MM/dd/yyyy') : <span>From</span>}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white" align="start">
-                    <Calendar
-                      mode="single"
-                      required={false}
-                      selected={beginDate ? beginDate : undefined}
-                      onSelect={setBeginDate}
-                    />
-                  </PopoverContent>
-                </Popover>
+              <div className="mt-3">
+                <DatePicker
+                  date={beginDate}
+                  setDate={setBeginDate}
+                  pickerName="From"
+                  className="p-2 w-[100px] h-[28px]"
+                  displayFormat="MM/dd/yyyy"
+                />
                 -
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        'pl-3 text-left font-normal',
-                        endDate && 'text-muted-foreground'
-                      )}
-                    >
-                      {endDate ? format(endDate, 'MM/dd/yyyy') : <span>To</span>}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white" align="start">
-                    <Calendar
-                      mode="single"
-                      required={false}
-                      selected={endDate ? endDate : undefined}
-                      onSelect={setEndDate}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  date={endDate}
+                  setDate={setEndDate}
+                  pickerName="To"
+                  className="p-2 w-[100px] h-[28px]"
+                  displayFormat="MM/dd/yyyy"
+                />
               </div>
             )}
           </div>
@@ -337,20 +312,34 @@ export default function FiltersList({
                     className="flex items-center justify-between border-b border-gray-300 py-2"
                     key={plant.plantID}
                   >
-                    <div>{plant.plantCommonName}</div>
                     <div
                       className="h-4 w-4"
                       style={{
                         backgroundColor: plantToColor.get(plant.plantID) || 'white',
                       }}
                     ></div>
+                    <div>{plant.plantCommonName}</div>
+                    
+                    <div>
+                      <button
+                      onClick={() => {
+                        const newColor = randomColor({
+                          luminosity: 'bright',
+                          hue: 'random',
+                        });
+                        setPlantToColor(new Map(plantToColor.set(plant.plantID, newColor)));
+                      }}
+                    >
+                      <RefreshCw className="h-4 w-4 text-blue-500 hover:text-blue-700" />
+                    </button>
                     <button
                       onClick={() =>
                         setSelectedPlants(selectedPlants.filter(p => p.plantID !== plant.plantID))
                       }
                     >
-                      <X className="h-4 w-4 text-red-500 hover:text-red-700" />
+                      <X className="h-4 w-4 ml-1 text-red-500 hover:text-red-700" />
                     </button>
+                    </div>
                   </div>
                 ))}
               </div>

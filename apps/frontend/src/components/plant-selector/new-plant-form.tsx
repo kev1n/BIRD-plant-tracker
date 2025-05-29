@@ -174,7 +174,7 @@ export default function PlantForm({ setDialogOpen }: { setDialogOpen: (val: bool
                     <SelectItem value="Shrub">Shrub</SelectItem>
                     <SelectItem value="Tree">Tree</SelectItem>
                     <SelectItem value="Grass">Grass</SelectItem>
-                    <SelectItem value="Forbs">Forb</SelectItem>
+                    <SelectItem value="Forb">Forb</SelectItem>
                     <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
