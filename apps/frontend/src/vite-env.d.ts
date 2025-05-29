@@ -10,11 +10,3 @@ declare module 'randomcolor' {
     }
   ): string;
 }
-
-declare module 'chroma-js' {
-  export function average(
-    colors: string[],
-    mode?: 'rgb' | 'lab' | 'hsl' | 'hsv',
-    weights?: number[]
-  ): string;
-}

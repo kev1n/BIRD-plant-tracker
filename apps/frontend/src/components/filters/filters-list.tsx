@@ -94,6 +94,9 @@ export default function FiltersList({
         if (response.ok) {
           const data = await response.json();
           const newPlantToColor = new Map<number, string>();
+          plantToColor.forEach((color, plantID) => {
+            newPlantToColor.set(plantID, color);
+          });
           const newPlantToFilteredPatches = new Map<number, string[]>();
           const otherMatchPatches = new Set<string>();
           data.data.forEach((pair: { plantid: number; patchid: string }) => {
@@ -104,7 +107,7 @@ export default function FiltersList({
 
             if (!newPlantToColor.has(pair.plantid)) {
               const color = randomColor({
-                luminosity: 'dark',
+                luminosity: 'bright',
                 hue: 'random',
               });
               newPlantToColor.set(pair.plantid, color);
@@ -115,7 +118,6 @@ export default function FiltersList({
             newPlantToFilteredPatches.get(pair.plantid)?.push(pair.patchid);
           });
 
-          setPlantToColor(newPlantToColor);
           const newPatchesToColors = new Map<string, string[]>();
           newPlantToFilteredPatches.forEach((patches, plantID) => {
             const color = newPlantToColor.get(plantID);
@@ -135,6 +137,7 @@ export default function FiltersList({
               newPatchesToColors.get(patch)?.push(grayColor);
             }
           });
+          setPlantToColor(newPlantToColor);
           setPatchesToColors(newPatchesToColors);
         } else {
           toast.error('Error: Unable to filter patches');

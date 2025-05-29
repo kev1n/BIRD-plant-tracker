@@ -14,7 +14,6 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PatchPolygonOverlap } from '../../types/polygon.types';
 import LeafletAssets from '../components/LeafletAssets';
-import chroma from 'chroma-js';
 
 // Sidebar component to display tools and patch information
 interface SidebarProps {
@@ -101,6 +100,31 @@ function GridOverlay({
   // Extract grid patch from URL params
   const { patch } = useParams<{ patch?: string }>();
 
+  const make_rectangle_stripes = (
+    colors: string[],
+    topLeft: LatLngTuple,
+    bottomRight: LatLngTuple
+  ) => {
+    if (colors.length === 0) return [];
+    const [lat1, lng1] = topLeft;
+    const [lat2, lng2] = bottomRight;
+    const lngStep = (lng2 - lng1) / colors.length;
+    const rects: Rectangle[] = [];
+
+    colors.forEach((color, i) => {
+      const rectTopLeft: LatLngTuple = [lat1, lng1 + i * lngStep];
+      const rectBottomRight: LatLngTuple = [lat2, lng1 + (i + 1) * lngStep];
+      const rect = new Rectangle([rectTopLeft, rectBottomRight], {
+        color: '#000000',
+        weight: 0.5,
+        fillColor: color,
+        fillOpacity: 0.5,
+      });
+      rects.push(rect);
+    });
+    return rects;
+  };
+
   useEffect(() => {
     if (!map) return;
 
@@ -144,54 +168,64 @@ function GridOverlay({
         let fillColor = '#000000'; // Default
         let fillOpacity = 0;
 
+        let striping = false;
+        let filtering_colors:string[] = [];
+
         if (isUserHere) {
           fillColor = '#4CAF50';
           fillOpacity = 0.9;
         } else if (isSelected) {
           fillColor = '#4a90e2';
           fillOpacity = 0.9;
-        } else if (isInPolygon) {
+        } 
+        else if (filtersOn && patchesToColors.has(label) && patchesToColors.get(label)?.length) {
+          filtering_colors = patchesToColors?.get(label) || [];
+          striping = true;
+        }
+        else if (isInPolygon) {
           // Use different colors based on polygon
           fillColor = polygonId === 'northern-section' ? '#4CAF50' : '#FF9800';
           fillOpacity = 0.3;
-        }else if (filtersOn && patchesToColors.has(label)) {
-          const colors = patchesToColors?.get(label) || [];
-          if (colors.length > 0) {
-            fillColor = colors.length > 0 ? chroma.average(colors, 'rgb') : '#000000';
-            fillOpacity = colors.length > 10 ? 1 : 0.3 * colors.length;
-            if (colors[0] === '#FFFF00') {
-              fillColor = '#FFFF00'; // Special case for yellow
-              fillOpacity = 0.5; // Adjust opacity for yellow
-            }
-          }
         }
         // Create rectangle for grid patch
-        const rect = new Rectangle([topLeft, bottomRight], {
+        const base_rect = new Rectangle([topLeft, bottomRight], {
           color: '#000000',
           weight: 0.5,
           fillColor,
           fillOpacity,
         });
-
-        // Make patchs clickable
-        rect.on('click', () => {
-          navigate(`/map/${label}`, { replace: true });
-        });
-
-        // Add hover events for patches within polygons
-        if (isInPolygon && onPatchHover && onPatchLeave && polygonId) {
-          rect.on('mouseover', () => {
-            onPatchHover(label, polygonId);
-            rect.setStyle({ weight: 2 });
-          });
-
-          rect.on('mouseout', () => {
-            onPatchLeave();
-            rect.setStyle({ weight: 1 });
-          });
+        
+        let rects_list:Rectangle[] = [];
+        if (striping && filtering_colors) {
+          rects_list = make_rectangle_stripes(filtering_colors, topLeft, bottomRight);
         }
 
-        rect.addTo(gridRef.current);
+        // Add each rectangle to the grid layer
+        for (const rect of rects_list) {
+          rect.addTo(gridRef.current);
+        }
+
+        // Make patchs clickable
+          base_rect.on('click', () => {
+            navigate(`/map/${label}`, { replace: true });
+          });
+
+          // Add hover events for patches within polygons
+          if (isInPolygon && onPatchHover && onPatchLeave && polygonId) {
+            base_rect.on('mouseover', () => {
+              onPatchHover(label, polygonId);
+              base_rect.setStyle({ weight: 2 });
+            });
+
+            base_rect.on('mouseout', () => {
+              onPatchLeave();
+              base_rect.setStyle({ weight: 1 });
+            });
+          }
+
+          base_rect.addTo(gridRef.current);
+
+        
       }
     }
 
@@ -379,6 +413,12 @@ export default function MapView() {
             coords={coords} 
             locationPermissionStatus={locationPermissionStatus}
             onPanToLocation={handlePanToLocation}
+            filtersOn={filtersOn}
+            setFiltersOn={setFiltersOn}
+            plantToColor={plantToColor}
+            setPlantToColor={setPlantToColor}
+            patchesToColors={patchesToColors}
+            setPatchesToColors={setPatchesToColors}
           />
         </div>
       )}
