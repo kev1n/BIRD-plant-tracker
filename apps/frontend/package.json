@@ -22,6 +22,7 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@tailwindcss/vite": "^4.0.9",
     "ag-grid-react": "^33.2.4",
+    "chroma-js": "^3.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -29,6 +30,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.477.0",
     "next-themes": "^0.4.6",
+    "randomcolor": "^0.6.2",
     "react": "^19.0.0-rc.1",
     "react-day-picker": "9.2.1",
     "react-dom": "^19.0.0-rc.1",
@@ -60,8 +62,8 @@
     "vite": "^6.2.0"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "4.9.5",
     "@esbuild/linux-x64": "0.25.4",
+    "@rollup/rollup-linux-x64-gnu": "4.9.5",
     "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
     "lightningcss-linux-x64-gnu": "^1.29.1"
   }

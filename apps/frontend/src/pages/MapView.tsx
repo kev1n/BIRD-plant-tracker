@@ -6,7 +6,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeafletAssets from '../components/LeafletAssets';
 import FiltersList from '@/components/filters/filters-list';
 import WhereAmI from '@/components/map-navigation/where-am-i';
-import { PlantInfo } from 'types/database_types';
+import chroma from 'chroma-js';
 
 // Constants for the grid
 const GRID_SIZE_FEET = 15;
@@ -67,15 +67,11 @@ function Sidebar({ patchInfo }: SidebarProps) {
 }
 
 function GridOverlay({
-  filteredStartDate,
-  filteredEndDate,
-  filteredLatest,
-  filteredPlants,
+  patchesToColors,
+  filtersOn,
 }: {
-  filteredStartDate?: Date;
-  filteredEndDate?: Date;
-  filteredLatest?: boolean;
-  filteredPlants?: PlantInfo[];
+  patchesToColors: Map<string, string[]>;
+  filtersOn: boolean;
 }) {
   const map = useMap();
   const navigate = useNavigate();
@@ -168,83 +164,49 @@ function GridOverlay({
 
   useEffect(() => {
     if (!gridRef.current || !patchRectangleRefs.current) return;
-
-    async function fetchHighlightedPatches() {
-      try {
-        const token = localStorage.getItem('authToken');
-        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-
-        const encodedPlantIDsJson = JSON.stringify(
-          filteredPlants ? filteredPlants.map(plant => plant.plantID) : []
-        );
-        console.log('Encoded Plant IDs JSON:', encodedPlantIDsJson);
-        const plantList = encodeURIComponent(encodedPlantIDsJson);
-
-        if (!filteredLatest && (!filteredStartDate || !filteredEndDate)) {
-          return;
-        }
-
-        const url =
-          baseUrl +
-          (filteredLatest ? '/filter/latest-plant?plants=' : '/filter/date-range-plant?plants=') +
-          plantList +
-          ('&startDate=' +
-            (filteredStartDate ? filteredStartDate.toISOString() : '') +
-            '&endDate=' +
-            (filteredEndDate ? filteredEndDate.toISOString() : ''));
-        console.log('Fetching highlighted patches from:', url);
-        const response = await fetch(`${url}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+    patchRectangleRefs.current.forEach((rect, label) => {
+      if (!filtersOn) {
+        rect.setStyle({
+          fillColor: '#000000',
+          color: '#000000',
+          fillOpacity: 0,
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch highlighted patches');
-        }
-        const data = await response.json();
-        const highlightedPatches: string[] = data.data.map(
-          (value: { patchid: string }) => value.patchid
-        );
-        patchRectangleRefs.current.forEach((rect, label) => {
-          if (label === patch) {
-            rect.setStyle({
-              fillColor: '#4a90e2',
-              fillOpacity: 0.7,
-            });
-          } else if (highlightedPatches.includes(label)) {
-            rect.setStyle({
-              fillColor: '#f1c40f',
-              fillOpacity: 0.5,
-            });
-          } else {
-            rect.setStyle({
-              fillColor: '#000000', // Default color for unhighlighted patches
-              fillOpacity: 0,
-            });
-          }
-        });
-      } catch (error) {
-        console.error('Error fetching highlighted patches:', error);
+        return;
       }
-    }
-    fetchHighlightedPatches().catch(console.error);
-  }, [patch, filteredStartDate, filteredEndDate, filteredLatest, filteredPlants]);
+      const colors = patchesToColors?.get(label) || [];
+      if (colors.length === 0) {
+        return;
+      }
+      const color = colors.length > 0 ? chroma.average(colors, 'rgb') : '#000000';
+      let opacity = colors.length > 10 ? 1 : 0.3 * colors.length;
+      if (colors[0] === '#FFFF00') {
+        opacity = 0.5;
+      }
+      rect.setStyle({
+        fillColor: color,
+        color: '#000000',
+        fillOpacity: opacity,
+      });
+
+      if (label === patch) {
+        rect.setStyle({
+          fillColor: '#4a90e2',
+          color: '#4a90e2',
+          fillOpacity: 0.7,
+        });
+      }
+    });
+  }, [patchesToColors, patch, filtersOn]);
 
   return null;
 }
 
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
+  const [plantToColor, setPlantToColor] = useState<Map<number, string>>(new Map());
+  const [patchesToColors, setPatchesToColors] = useState<Map<string, string[]>>(new Map());
+  const [filtersOn, setFiltersOn] = useState(false);
 
-  const [beginDate, setBeginDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [selectedPlants, setSelectedPlants] = useState<PlantInfo[]>([]);
-  const [latest, setLatest] = useState(false);
-
-  // Parse patch into row and column if patch is defined
   let patchInfo = null;
   if (patch) {
     const colChar = patch.charAt(0);
@@ -260,14 +222,12 @@ export default function MapView() {
       <div className="absolute top-12 left-0 p-4 z-12">
         <WhereAmI />
         <FiltersList
-          beginDate={beginDate}
-          setBeginDate={setBeginDate}
-          endDate={endDate}
-          setEndDate={setEndDate}
-          selectedPlants={selectedPlants}
-          setSelectedPlants={setSelectedPlants}
-          latest={latest}
-          setLatest={setLatest}
+          filtersOn={filtersOn}
+          setFiltersOn={setFiltersOn}
+          plantToColor={plantToColor}
+          setPlantToColor={setPlantToColor}
+          patchesToColors={patchesToColors}
+          setPatchesToColors={setPatchesToColors}
         />
       </div>
 
@@ -278,12 +238,7 @@ export default function MapView() {
             attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
             url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
           />
-          <GridOverlay
-            filteredStartDate={beginDate}
-            filteredEndDate={endDate}
-            filteredLatest={latest}
-            filteredPlants={selectedPlants}
-          />
+          <GridOverlay filtersOn={filtersOn} patchesToColors={patchesToColors} />
         </MapContainer>
       </div>
 

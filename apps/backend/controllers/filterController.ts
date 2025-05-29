@@ -148,92 +148,59 @@ export async function getFromFilter(req: Request, res: Response) {
   }
 }
 
-export async function getPatchesFilteredByLatestPlants(req: Request, res: Response) {
+export async function getHighlightedPatches(req: Request, res: Response) {
   try {
-    const plantIDJson = req.query.plants;
-    if (!plantIDJson) {
-      res.status(400).json({ error: 'Plant IDs are required' });
+    const {plants, soilTypes, latest, beginDate, endDate } = req.query;
+
+    if (typeof plants !== 'string' || typeof soilTypes !== 'string') {
+      res.status(400).json({ error: 'Invalid query parameters' });
       return;
     }
-    if (typeof plantIDJson !== 'string') {
-      res.status(400).json({ error: 'Invalid plant IDs format' });
+    let plantIDs = plants ? JSON.parse(decodeURIComponent(plants)) : [];
+    let soilTypeArray = soilTypes ? JSON.parse(decodeURIComponent(soilTypes)) : [];
+
+    if (!Array.isArray(plantIDs) || !Array.isArray(soilTypeArray)) {
+      res.status(400).json({ error: 'Invalid plant IDs or soil types format' });
       return;
     }
 
-    // convert the plantIDJson to string
+    if (plantIDs.length === 0)
+      plantIDs = null;
+    soilTypeArray = soilTypeArray.map(type => type.toLowerCase());
+    if (soilTypeArray.length === 0 || soilTypeArray.length === 3)
+      soilTypeArray = null;
 
-    const plantIDs = JSON.parse(decodeURIComponent(plantIDJson));
+    const date_latest = latest === 'true';
+    let date_start = null;
+    let date_end = null;
 
+    if (!date_latest){
+      if (beginDate && typeof beginDate === 'string') {
+        date_start = new Date(beginDate);
+        if (isNaN(date_start.getTime())) {
+          date_start = null;
+        }
+      }
 
-    // check if plantids is an empty array, if so , 
-    const functionName = plantIDs.length!=0? 'filter_patches_by_latest_snapshot_and_plants' : 'filter_patches_by_latest_snapshot';
-    const parameters = plantIDs.length > 0 ? { plant_ids: plantIDs } : {};
-    const { data, error } = await supabase.rpc(functionName, parameters);
+      if (endDate && typeof endDate === 'string') {
+        date_end = new Date(endDate);
+        if (isNaN(date_end.getTime())) {
+          date_end = null;
+        }
+      }
+    }
 
-
+    const params = {
+        latest: date_latest,
+        plant_ids: plantIDs,
+        soil_types: soilTypeArray,
+        start_date: date_start,
+        end_date: date_end,
+      }
+    const { data, error } = await supabase
+      .rpc('filter_patches', params);
     if (error) {
-      res.status(400).json({ error: error.message });
-      return;
-    }
-    if (!data || data.length === 0) {
-      res.status(404).json({ error: 'No patches found for the given plant IDs' });
-      return;
-    }
-    res.status(200).json({ data: data });
-  } catch (error) {
-    res.status(500).json({ error: `Internal server error: ${error}` });
-  }
-}
-
-export async function getPatchesFilteredByDateRangePlants(req: Request, res: Response) {
-  try {
-    const plantIDJson = req.query.plants;
-    if (!plantIDJson) {
-      res.status(400).json({ error: 'Plant IDs are required' });
-      return;
-    }
-    if (typeof plantIDJson !== 'string') {
-      res.status(400).json({ error: 'Invalid plant IDs format' });
-      return;
-    }
-
-    const startDate = req.query.startDate;
-    const endDate = req.query.endDate;
-    if (!startDate || !endDate) {
-      res.status(400).json({ error: 'Start date and end date are required' });
-      return;
-    }
-    if (typeof startDate !== 'string' || typeof endDate !== 'string') {
-      res.status(400).json({ error: 'Invalid date format' });
-      return;
-    }
-
-    // startdate and enddate should be in ISO format
-    if (isNaN(Date.parse(startDate)) || isNaN(Date.parse(endDate))) {
-      res.status(400).json({ error: 'Invalid date format' });
-      return;
-    }
-    if (new Date(startDate) > new Date(endDate)) {
-      res.status(400).json({ error: 'Start date cannot be after end date' });
-      return;
-    }
-
-    const start_date = new Date(startDate).toISOString();
-    const end_date = new Date(endDate).toISOString();
-    const plantIDs = JSON.parse(decodeURIComponent(plantIDJson));
-
-
-    // check if plantids is an empty array, if so , 
-    const functionName = plantIDs.length!=0? 'filter_patches_by_date_range_and_plants' : 'filter_patches_by_date_range';
-    const parameters = plantIDs.length > 0 ? { plant_ids: plantIDs, start_date: start_date, end_date:end_date} : { start_date: start_date, end_date:end_date};
-    const { data, error } = await supabase.rpc(functionName, parameters);
-
-    if (error) {
-      res.status(400).json({ error: error.message });
-      return;
-    }
-    if (!data || data.length === 0) {
-      res.status(404).json({ error: 'No patches found for the given plant IDs' });
+      res.status(400).json({ error: `Error fetching highlighted patches: ${error.message}` });
       return;
     }
     res.status(200).json({ data: data });

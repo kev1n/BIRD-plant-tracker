@@ -4,7 +4,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popoverDialog"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 
