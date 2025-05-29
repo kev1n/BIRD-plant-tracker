@@ -118,7 +118,7 @@ function GridOverlay({
         color: '#000000',
         weight: 0.5,
         fillColor: color,
-        fillOpacity: 0.5,
+        fillOpacity: 0.7,
       });
       rects.push(rect);
     });
