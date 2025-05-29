@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover
 import { CalendarIcon, Check, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { PlantInfo } from 'types/database_types';
+import { toast } from 'sonner';
 
 export default function FiltersList({
   filtersOn,
@@ -60,8 +61,9 @@ export default function FiltersList({
         } else {
           setPossiblePlants([]);
         }
-      } catch (error) {
-        console.error('Error fetching plants:', error);
+      } catch {
+        toast.error('Error: Unable to search for plants');
+        setPossiblePlants([]);
       }
     };
     if (searchTerm.length > 0) {
@@ -135,10 +137,18 @@ export default function FiltersList({
           });
           setPatchesToColors(newPatchesToColors);
         } else {
-          console.error('Error fetching highlighted patches:', response.statusText);
+          toast.error('Error: Unable to filter patches');
+          setPatchesToColors(new Map<string, string[]>());
+          setPlantToColor(new Map<number, string>());
+          setSelectedPlants([]);
+          return;
         }
-      } catch (error) {
-        console.error('Error fetching highlighted patches:', error);
+      } catch {
+        toast.error('Error: Unable to filter patches');
+        setPatchesToColors(new Map<string, string[]>());
+        setPlantToColor(new Map<number, string>());
+        setSelectedPlants([]);
+        return;
       }
     };
 
@@ -161,8 +171,6 @@ export default function FiltersList({
       <Button onClick={() => setFiltersOn(!filtersOn)} className="w-full mt-3">
         {filtersOn ? 'Disable Filtering' : 'Enable Filtering'}
       </Button>
-
-      
 
       {filtersOn && (
         <div>

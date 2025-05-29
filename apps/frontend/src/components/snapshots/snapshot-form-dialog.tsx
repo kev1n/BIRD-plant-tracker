@@ -96,7 +96,6 @@ export default function SnapshotForm({
       notes: notes.trim(),
       userID: user.id,
     };
-    console.log('Submitting snapshot data:', newSnapshotData);
     const validation = snapshotSchema.safeParse(newSnapshotData);
     if (!validation.success) {
       toast.error('Failed to submit snapshot data due to validation errors. Please check the input and try again.');
@@ -106,9 +105,6 @@ export default function SnapshotForm({
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-      console.log(
-        `Submitting snapshot data to: ${baseUrl}/snapshot/${newSnapshot ? 'oop' : snapshotTemplate?.snapshotID}`
-      );
       const api_path =
         baseUrl + (newSnapshot ? '/snapshot/' : `/snapshot/${snapshotTemplate?.snapshotID}`); // Use POST for new, PUT for existing
       const response = await fetch(api_path, {
