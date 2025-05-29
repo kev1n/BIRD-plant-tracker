@@ -5,21 +5,7 @@ The Admin Page is a private webpage only accessible to those who have **admin** 
 
 **NAV BAR IMAGE HERE**
 
---- 
-**Note: Role Heirarchy**
-There are four roles built into the website with varying levels of authority. From greatest authority to least:
-- **Owner**
-  - Owners are the highest authority, and cannot be demoted by other users, including other owners. Owners have full **create, edit, and delete permissions** for snapshots, plants, and observations. Owners can **promote and demote admins, editors, and owners.** 
-  - Owners must be determined manually by changing the user's entry in the database, as there was no clear way to reasonably "elect" owners within the website functionality, and the users with owner roles are supposed to almost never change.
-- **Admin**
-  - Admins can **create, edit, and delete** snapshots, plants, and observations. Admins can **promote and demote editors and users**, but not other admins or owners. 
-- **Editor**
-  - The most common level of permissions for volunteers. Editors can **view, create, and edit** information pertaining to snapshots, plants, and observations, through both the map interface and the spreadsheet. Note that editors **cannot delete** data. 
-- **User**
-  - The default for users once they have registered. Users can **view** information from the map and the spreadsheet, but they **cannot make any changes**. 
-
 ---
-
 ### Navigating Through the Admin Page
 Once on the Admin Page, there are three distinct sections to the page. 
 

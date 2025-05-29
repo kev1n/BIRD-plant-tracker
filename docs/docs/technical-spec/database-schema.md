@@ -27,16 +27,16 @@ As we only perform soft deletes, we do not need to define delete policies; soft 
 ### Observations
 Observations store information about specific plants. Every observation belongs to a snapshot; by association, the observation pertains to a particular patch on a particular date. 
 #### Fields 
-**observationID** - `int` | ==primary key==
+**observationID** - `int` | **Primary Key**
   - Unique identifier for each observation. This is generated and provided by Supabase Auth. 
 
-**snapshotID** - `int` | *NOT NULL* | ==foreign key==
+**snapshotID** - `int` | *NOT NULL* | **Foreign Key**
   - References the snapshot which contains this observation. Required field.
-  - foreign key: **snapshotID** in the *Snapshots* table.
+  - **Foreign Key**: **snapshotID** in the *Snapshots* table.
 
-**plantID** - `int` | *NOT NULL* | ==foreign key==
+**plantID** - `int` | *NOT NULL* | **Foreign Key**
   - References the species of plant which this observation is about. Required field.
-  - foreign key: **PlantID** in the *plantID* table.
+  - **Foreign Key**: **PlantID** in the *plantID* table.
 
 **plantQuantity** - `int` | *NOT NULL* | default 1
   - The number of plants being observed. If not specified, defaults to 1.
@@ -61,7 +61,7 @@ Observations store information about specific plants. Every observation belongs 
 ### PatchInfo
 Stores information about patches in the grid dividing the sanctuary, namely latitude, longitude, and soil type (defined in the ValidSoilTypes table).
 #### Fields
-**patchID** - `text` | ==primary key==
+**patchID** - `text` | **Primary Key**
   - Unique identifier for a patch in the grid, of the form [**A-T**][**1-36**]. Letters correspond to columns (West to East) in the grid. Numbers respond to rows (North to South).
 
 **latitude**  - `double precision (float8)`
@@ -70,9 +70,9 @@ Stores information about patches in the grid dividing the sanctuary, namely lati
 **longitude** - `double precision (float8)`
   - self explanatory.
 
-**soilType** - `text` | *NOT NULL* | ==foreign key==
+**soilType** - `text` | *NOT NULL* | **Foreign Key**
   - The soil type of the patch.
-  - foreign key: **soilType** in the *ValidSoilTypes* table.
+  - **Foreign Key**: **soilType** in the *ValidSoilTypes* table.
 
 **deletedOn** - `timestamptz`
 
@@ -89,7 +89,7 @@ Stores information about patches in the grid dividing the sanctuary, namely lati
 ### PlantInfo
 Stores information about plant species, namely common and scientific names, whether the plant is native to the sanctuary, and the subcategory of plant (defined in the ValidSubcategories table).
 #### Fields
-**plantID** - `int` | ==primary key==
+**plantID** - `int` | **Primary Key**
 
 **plantCommonName** - `text` | *NOT NULL* | **UNIQUE**
   - Common name of the plant. Required field, and must be unique. 
@@ -100,9 +100,9 @@ Stores information about plant species, namely common and scientific names, whet
 **isNative** - `boolean`
   - Indicates whether this species of plant is native to the sanctuary. Optional field.
 
-**subcategory** - `text` | ==foreign key==
+**subcategory** - `text` | **Foreign Key**
   - The subcategory of this plant species. optional field.
-  - foreign key: references **subcategory** in the *ValidSubcategories* table.
+  - **Foreign Key**: references **subcategory** in the *ValidSubcategories* table.
 
 **deletedOn** - `timestamptz`
 
@@ -119,12 +119,12 @@ Stores information about plant species, namely common and scientific names, whet
 Snapshots are designed to be collections of observations for a particular patch, created by a particular user. Snapshots assert that any observations within this snapshot were accurate at the time the snapshot was made, up until a new snapshot was made for the same patch. 
 **This means that any observations that you want to remain unchanged across snapshots must be duplicated into the new snapshot. If observations are not in a new snapshot, they no longer apply to that patch as of the date of the new snapshot.**
 #### Fields
-**snapshotID** - `int` | ==primary key==
+**snapshotID** - `int` | **Primary Key**
   - Unique identifier for a snapshot. Entries in the *Observations* table reference this field.
 
-**userID** - `uuid` | *NOT NULL* | ==foreign key==
+**userID** - `uuid` | *NOT NULL* | **Foreign Key**
   - The user who made this snapshot and by extension all of its related observations. Required field.
-  - foreign key: references **userID** in the *users* table. 
+  - **Foreign Key**: references **userID** in the *users* table. 
 
 **notes** - `text`
   - Any additional notes the user wishes to add about any observations or about the snapshot in general. Optional field.
@@ -132,9 +132,9 @@ Snapshots are designed to be collections of observations for a particular patch,
 **dateCreated** - `date` | *NOT NULL*
   - The date the snapshot was created. A snapshot verifies the validity of all observations in this snapshot between the date this snapshot was created and the date of the next most recent snapshot. This is required.
 
-**patchID** - `text` | *NOT NULL* | ==foreign key==
+**patchID** - `text` | *NOT NULL* | **Foreign Key**
   - Identifies the patch this snapshot pertains to. Required field. 
-  - foreign key: references **patchID** in the *PatchInfo* table.
+  - **Foreign Key**: references **patchID** in the *PatchInfo* table.
 
 **deletedOn** - `timestamptz`
 
@@ -150,7 +150,7 @@ Snapshots are designed to be collections of observations for a particular patch,
 ### users
 Stores information about registered users of the app, such as id, email, name, and role (defined in the ValidRoles table). Passwords are not stored here, as Supabase Authentication handles that.
 #### Fields
-**userID** - `uuid` | ==primary key==
+**userID** - `uuid` | **Primary Key**
   - A unique identifier for each registered user, provided by Supabase Auth.
 
 **email** - `text` | *NOT NULL* | **UNIQUE**
@@ -165,13 +165,13 @@ Stores information about registered users of the app, such as id, email, name, a
 **lastName** - `text`
   - user's last name, for ease of identification. Optional field.
 
-**role** - `varchar` | *NOT NULL* | ==foreign key==
+**role** - `varchar` | *NOT NULL* | **Foreign Key**
   - Identifies the level of permissions the user has. Required field.
-  - foreign key: references the **role** column in the *ValidRoles* table.
+  - **Foreign Key**: references the **role** column in the *ValidRoles* table.
 
-**roleRequested** - `varchar` | ==foreign key==
+**roleRequested** - `varchar` | **Foreign Key**
   - If the user is requesting a different role (presumably of higher permissions), that request is shown here. Optional field.
-  - foreign key: references the **role** column in the *ValidRoles* table.
+  - **Foreign Key**: references the **role** column in the *ValidRoles* table.
 
 **created_at** - `timestamptz`
 **updated_at** - `timestamptz`
