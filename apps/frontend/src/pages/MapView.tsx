@@ -1,61 +1,81 @@
 
 import FiltersList from '@/components/filters/filters-list';
 import { CENTER, LABEL_OFFSET_LAT, LABEL_OFFSET_LNG, numCols, numRows, patchSizeLat, patchSizeLng, TOP_LEFT } from '@/components/map-navigation/constants';
+import LocationPermissionDialog from '@/components/map-navigation/location-permission-dialog';
 import WhereAmI from '@/components/map-navigation/where-am-i';
+import PatchHoverPreview from '@/components/map/patch-hover-preview';
+import PolygonOverlay from '@/components/map/polygon-overlay';
 import SnapshotView from '@/components/snapshots/snapshot-view';
+import { LocationPermissionStatus, useLocationPermission } from '@/hooks/useLocationPermission';
+import { usePatchHover } from '@/hooks/usePatchHover';
+import { usePolygonData } from '@/hooks/usePolygonData';
 import { divIcon, LatLngTuple, LayerGroup, Marker, Rectangle } from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
 import { useGeolocated } from 'react-geolocated';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { PatchPolygonOverlap } from '../../types/polygon.types';
 import LeafletAssets from '../components/LeafletAssets';
 import chroma from 'chroma-js';
-
-// Sidebar component to display grid patch information
 interface SidebarProps {
   patchInfo: {
     row: number;
     col: number;
     label: string;
   } | null;
+  coords?: { latitude: number; longitude: number } | null;
+  locationPermissionStatus: LocationPermissionStatus;
+  onPanToLocation?: (coords: { latitude: number; longitude: number }) => void;
 }
 
-// TODO: Move into seperate component, call it inspection details
-function Sidebar({ patchInfo }: SidebarProps) {
+function Sidebar({ patchInfo, coords, locationPermissionStatus, onPanToLocation }: SidebarProps) {
   return (
-    <div className="w-full md:w-50 p-5 bg-gray-50 h-full overflow-y-auto shadow-md">
-      <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
-        Grid patch: {patchInfo ? patchInfo.label : 'Not Selected'}
-      </h2>
-      <div className="mt-4">
-        <p className="mb-2">Row: {patchInfo ? patchInfo.row : 'Not Selected'}</p>
-        <p className="mb-2">
-          Column: {patchInfo ? String.fromCharCode(65 + patchInfo.col) : 'Not Selected'}
-        </p>
+    <div className="w-full md:w-80 bg-gray-50 h-full overflow-y-auto shadow-md flex flex-col">
+      {/* WhereAmI and FiltersList - always shown */}
+      <div className="p-4 space-y-4">
+        <WhereAmI 
+          coords={coords} 
+          locationPermissionStatus={locationPermissionStatus}
+          onPanToLocation={onPanToLocation}
+        />
+        <FiltersList />
       </div>
-
-      {patchInfo && <SnapshotView patch={patchInfo.label} triggerTitle="View Latest Snapshot" />}
+      
+      {/* Patch info - only shown on mobile when a patch is selected, but without the snapshot view */}
+      <div className="md:hidden flex-1">
+        {patchInfo && (
+          <div className="p-4 border-t border-gray-200">
+            <h2 className="mt-0 border-b border-gray-200 pb-2 text-lg font-bold">
+              Grid patch: {patchInfo.label}
+            </h2>
+            <div className="mt-4">
+              <p className="mb-2">Row: {patchInfo.row}</p>
+              <p className="mb-2">
+                Column: {String.fromCharCode(65 + patchInfo.col)}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function GridOverlay({
+function GridOverlay({ 
+  patchOverlaps, 
+  onPatchHover, 
+  onPatchLeave,
+  coords,
   patchesToColors,
   filtersOn,
-}: {
+}: { 
+  patchOverlaps: PatchPolygonOverlap[]; 
+  onPatchHover?: (patchId: string, polygonId: string) => void;
+  onPatchLeave?: () => void;
+  coords?: { latitude: number; longitude: number } | null;
   patchesToColors: Map<string, string[]>;
   filtersOn: boolean;
-}) {  
-
-  // find coordinates with geolocation
-  const { coords } =
-    useGeolocated({
-      positionOptions: {
-          enableHighAccuracy: true,
-      },
-      userDecisionTimeout: 5000,
-      watchPosition: true,
-  });
+}) {
 
 
   const map = useMap();
@@ -102,13 +122,33 @@ function GridOverlay({
         }
        
 
+        // Check if patch overlaps with any polygon
+        const patchOverlap = patchOverlaps.find(overlap => overlap.patchId === label);
+        const isInPolygon = !!patchOverlap;
+        const polygonId = patchOverlap?.polygonIds[0];
+
+        // Determine fill color based on polygon membership
+        let fillColor = '#000000'; // Default
+        let fillOpacity = 0;
+
+        if (isUserHere) {
+          fillColor = '#4CAF50';
+          fillOpacity = 0.9;
+        } else if (isSelected) {
+          fillColor = '#4a90e2';
+          fillOpacity = 0.9;
+        } else if (isInPolygon) {
+          // Use different colors based on polygon
+          fillColor = polygonId === 'northern-section' ? '#4CAF50' : '#FF9800';
+          fillOpacity = 0.3;
+        }
+
         // Create rectangle for grid patch
-        // TODO: Match with color variables from project
         const rect = new Rectangle([topLeft, bottomRight], {
           color: '#000000',
-          weight: 1,
-          fillColor: isUserHere ? '#4CAF50' : isSelected ? '#4a90e2' : '#000000',
-          fillOpacity: isUserHere ? 0.9 : isSelected ? 0.9 : 0,
+          weight: 0.5,
+          fillColor,
+          fillOpacity,
         });
 
         // Store the rectangle in the ref for later access
@@ -119,8 +159,20 @@ function GridOverlay({
           navigate(`/map/${label}`, { replace: true });
         });
 
+        // Add hover events for patches within polygons
+        if (isInPolygon && onPatchHover && onPatchLeave && polygonId) {
+          rect.on('mouseover', () => {
+            onPatchHover(label, polygonId);
+            rect.setStyle({ weight: 2 });
+          });
+
+          rect.on('mouseout', () => {
+            onPatchLeave();
+            rect.setStyle({ weight: 1 });
+          });
+        }
+
         rect.addTo(gridRef.current);
-        // make the rectangle
       }
     }
 
@@ -151,7 +203,7 @@ function GridOverlay({
       const marker = new Marker(labelPos, {
         icon: divIcon({
           className: 'text-xs font-bold text-center',
-          html: String.fromCharCode(65 + col),
+          html: `<div style="color: white; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 1px -1px 2px black, -1px 1px 2px black;">${String.fromCharCode(65 + col)}</div>`,
         }),
       });
       marker.addTo(gridRef.current);
@@ -166,7 +218,7 @@ function GridOverlay({
       const marker = new Marker(labelPos, {
         icon: divIcon({
           className: 'text-xs font-bold text-center',
-          html: (row + 1).toString(),
+          html: `<div style="color: white; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 1px -1px 2px black, -1px 1px 2px black;">${(row + 1).toString()}</div>`,
         }),
       });
       marker.addTo(gridRef.current);
@@ -177,7 +229,27 @@ function GridOverlay({
         map.removeLayer(gridRef.current);
       }
     };
-  }, [map, navigate, patch, location, coords]);
+  }, [map, navigate, patch, location, coords, patchOverlaps, onPatchHover, onPatchLeave]);
+
+  return null;
+}
+
+// Component to handle map panning functionality
+function MapPanHandler({ 
+  panToCoords, 
+  setPanToCoords 
+}: { 
+  panToCoords: { latitude: number; longitude: number } | null;
+  setPanToCoords: (coords: { latitude: number; longitude: number } | null) => void;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (panToCoords && map) {
+      map.setView([panToCoords.latitude, panToCoords.longitude], 19);
+      setPanToCoords(null); // Reset after panning
+    }
+  }, [panToCoords, map, setPanToCoords]);
 
   useEffect(() => {
     if (!gridRef.current || !patchRectangleRefs.current) return;
@@ -234,10 +306,45 @@ function GridOverlay({
 
 export default function MapView() {
   const { patch } = useParams<{ patch?: string }>();
+
   const [showTools, setShowTools] = useState(false);
   const [plantToColor, setPlantToColor] = useState<Map<number, string>>(new Map());
   const [patchesToColors, setPatchesToColors] = useState<Map<string, string[]>>(new Map());
   const [filtersOn, setFiltersOn] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [panToCoords, setPanToCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  
+  // Use the custom location permission hook
+  const {
+    coords,
+    locationPermissionStatus,
+    showLocationDialog,
+    hasCheckedPermissions,
+    handleLocationAccept,
+    handleLocationDecline,
+  } = useLocationPermission();
+
+  // Polygon data and hover management
+  const { polygons, patchOverlaps, isLoading: polygonLoading } = usePolygonData();
+  const { hoveredPatch, handlePatchHover, handlePatchLeave } = usePatchHover();
+
+  // Handle panning to user location
+  const handlePanToLocation = (coords: { latitude: number; longitude: number }) => {
+    setPanToCoords(coords);
+  };
+
+  // Handle mouse movement for hover preview positioning
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      setMousePosition({ x: event.clientX, y: event.clientY });
+    };
+
+    if (hoveredPatch) {
+      document.addEventListener('mousemove', handleMouseMove);
+      return () => document.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, [hoveredPatch]);
 
   let patchInfo = null;
   if (patch) {
@@ -248,70 +355,133 @@ export default function MapView() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-full w-full relative py-4">
+    <div className="flex h-full w-full relative py-4">
       <LeafletAssets />
 
-      {/* Tools toggle button - visible only on mobile */}
+      {/* Location Permission Dialog */}
+      {hasCheckedPermissions && (
+        <LocationPermissionDialog 
+          open={showLocationDialog}
+          onAccept={handleLocationAccept}
+          onDecline={handleLocationDecline}
+          onClose={handleLocationDecline}
+        />
+      )}
+
+      {/* Mobile sidebar toggle button */}
       <button 
         className="md:hidden absolute top-2 left-2 z-20 bg-white p-2 rounded-full shadow-md"
-        onClick={() => setShowTools(!showTools)}
+        onClick={() => setShowSidebar(!showSidebar)}
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showTools ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showSidebar ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
         </svg>
       </button>
 
-      {/* Desktop tools panel */}
-      <div className='hidden md:block absolute top-12 left-0 p-4 z-12'>
-        <WhereAmI />
-        <FiltersList
-          filtersOn={filtersOn}
-          setFiltersOn={setFiltersOn}
-          plantToColor={plantToColor}
-          setPlantToColor={setPlantToColor}
-          patchesToColors={patchesToColors}
-          setPatchesToColors={setPatchesToColors}
+      {/* Desktop sidebar - always visible */}
+      <div className="hidden md:block">
+        <Sidebar 
+          patchInfo={patchInfo} 
+          coords={coords} 
+          locationPermissionStatus={locationPermissionStatus}
+          onPanToLocation={handlePanToLocation}
         />
       </div>
       
-      {/* Mobile tools panel - slides in from bottom */}
-      {showTools && (
-        <div className='md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white shadow-lg rounded-t-lg max-h-[80vh] overflow-y-auto'>
+      {/* Mobile sidebar - slides in from left */}
+      {showSidebar && (
+        <div className="md:hidden fixed inset-y-0 left-0 z-20 bg-white shadow-lg max-w-[90vw] w-80">
           <div className="flex justify-end p-2">
-            <button onClick={() => setShowTools(false)} className="p-1">
+            <button onClick={() => setShowSidebar(false)} className="p-1">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div className="flex flex-col gap-2 p-2">
-            <WhereAmI />
-            <FiltersList
-              filtersOn={filtersOn}
-              setFiltersOn={setFiltersOn}
-              plantToColor={plantToColor}
-              setPlantToColor={setPlantToColor}
-              patchesToColors={patchesToColors}
-              setPatchesToColors={setPatchesToColors}
-        />
-          </div>
+          <Sidebar 
+            patchInfo={patchInfo} 
+            coords={coords} 
+            locationPermissionStatus={locationPermissionStatus}
+            onPanToLocation={handlePanToLocation}
+          />
         </div>
       )}
 
+      {/* Map container */}
       <div className="flex-1 h-full z-10">
-        <MapContainer center={CENTER} zoom={30} scrollWheelZoom={true} className="h-full">
+        <MapContainer center={CENTER} zoom={19} scrollWheelZoom={true} zoomSnap={0.5} className="h-full">
           <TileLayer
-            maxNativeZoom={30}
+            maxNativeZoom={20}
+            maxZoom={20}
             attribution='&copy; <a href="https://www.google.com/permissions/geoguidelines/attr-guide.html">Google</a>'
             url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
           />
-          <GridOverlay filtersOn={filtersOn} patchesToColors={patchesToColors} />
+          
+          <MapPanHandler 
+            panToCoords={panToCoords}
+            setPanToCoords={setPanToCoords}
+          />
+          {!polygonLoading && (
+            <>
+              <PolygonOverlay 
+                polygons={polygons} 
+                patchOverlaps={patchOverlaps}
+                onPatchHover={handlePatchHover}
+                onPatchLeave={handlePatchLeave}
+              />
+              <GridOverlay 
+                patchOverlaps={patchOverlaps}
+                onPatchHover={handlePatchHover}
+                onPatchLeave={handlePatchLeave}
+                coords={coords}
+                filtersOn={filtersOn} 
+                patchesToColors={patchesToColors}
+              />
+            </>
+          )}
         </MapContainer>
       </div>
 
-      <div className="w-full md:w-auto">
-        <Sidebar patchInfo={patchInfo} />
-      </div>
+      {/* Hover preview - only on desktop since mobile doesn't have hover */}
+      {hoveredPatch && (
+        <div className="hidden md:block">
+          <PatchHoverPreview 
+            hoverData={hoveredPatch} 
+            position={mousePosition}
+          />
+        </div>
+      )}
+
+      {/* Hidden desktop auto-opening snapshot view - triggers when patch is selected */}
+      {patchInfo && (
+        <div className="hidden md:block" style={{ position: 'absolute', left: '-9999px' }}>
+          <SnapshotView 
+            patch={patchInfo.label} 
+            triggerTitle="View Latest Snapshot" 
+            autoOpen={true}
+          />
+        </div>
+      )}
+
+      {/* Mobile bottom snapshot view - auto-shows when patch is selected on mobile */}
+      {patchInfo && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-300 shadow-lg">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold">Patch {patchInfo.label} Selected</h3>
+              <span className="text-sm text-gray-500">
+                Row {patchInfo.row}, Column {String.fromCharCode(65 + patchInfo.col)}
+              </span>
+            </div>
+            <SnapshotView 
+              patch={patchInfo.label} 
+              triggerTitle="View Latest Snapshot" 
+              autoOpen={false}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

@@ -18,7 +18,7 @@ export default function DatePicker({
   pickerName?: string
 }) {
   return (
-    <Popover>
+    <Popover modal={true}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}

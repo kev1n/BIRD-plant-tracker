@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Observation } from 'types/database_types';
 import ObservationForm from './observation-form';
 
@@ -14,23 +14,29 @@ export default function ObservationFormDialog({
   newObservation,
   observation,
   submitCallback,
+  trigger,
 }: {
   observation?: Observation;
   newObservation: boolean;
   submitCallback: (observation: Observation) => void;
+  trigger?: ReactNode;
 }) {
   const [open, setopen] = useState(false);
+
+  const defaultTrigger = (
+    <Button variant={newObservation ? 'outline' : 'ghost'}>
+      {newObservation ? (
+        'New Observation'
+      ) : (
+        <img src="/icons/pen.svg" className="w-4 h-4" alt="Edit" />
+      )}
+    </Button>
+  );
 
   return (
     <Dialog open={open} onOpenChange={setopen}>
       <DialogTrigger asChild>
-        <Button variant={newObservation ? 'outline' : 'ghost'}>
-          {newObservation ? (
-            'New Observation'
-          ) : (
-            <img src="/icons/pen.svg" className="w-4 h-4" alt="Edit" />
-          )}
-        </Button>
+        {trigger || defaultTrigger}
       </DialogTrigger>
 
       <DialogContent className="overflow-y-scroll max-h-[80vh]">

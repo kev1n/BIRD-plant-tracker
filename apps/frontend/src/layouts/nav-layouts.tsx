@@ -4,7 +4,7 @@ import NavBar from '../components/navigation/nav-bar';
 
 export default function NavLayout() {
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)]">
+    <div className="flex flex-col responsive-height">
       <NavBar />
       <main className="flex-1 overflow-auto">
         <Outlet />

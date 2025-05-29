@@ -1,8 +1,11 @@
-import { Observation } from 'types/database_types';
-import { useContext } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import ObservationEditorContext from './observations-editor-context';
+import { Card, CardContent } from '@/components/ui/card';
+import { Edit, Leaf, Trash2 } from 'lucide-react';
+import { useContext } from 'react';
+import { Observation } from 'types/database_types';
 import ObservationFormDialog from './observation-form-dialog';
+import ObservationEditorContext from './observations-editor-context';
 
 export default function ObservationItem({
   observation,
@@ -12,51 +15,105 @@ export default function ObservationItem({
   editing?: boolean;
 }) {
   const { deleteObservation, updateObservation } = useContext(ObservationEditorContext);
+  
   return (
-    <div className="flex flex-row">
-      <div className="min-w-[30px]">
-        {editing && (
-          <div>
-            <Button variant="ghost" onClick={() => deleteObservation(observation.tempKey)}>
-              <img src="/icons/trash-can.svg" className="w-4 h-4" alt="Delete" />
-            </Button>
-            <ObservationFormDialog
-              newObservation={false}
-              observation={observation}
-              submitCallback={updatedObservation => {
-                updateObservation(updatedObservation);
-              }}
-            />
+    <Card className="mb-3">
+      <CardContent className="pt-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            {/* Plant Name and Scientific Name */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
+                <Leaf className="w-4 h-4 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">
+                  {observation.PlantInfo.plantCommonName}
+                </h3>
+                {observation.PlantInfo.plantScientificName && (
+                  <p className="text-sm italic text-muted-foreground">
+                    {observation.PlantInfo.plantScientificName}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Native Status Badge */}
+            {observation.PlantInfo.isNative != null && (
+              <div className="mb-3">
+                <Badge 
+                  variant={observation.PlantInfo.isNative ? "default" : "secondary"}
+                  className={observation.PlantInfo.isNative 
+                    ? "bg-green-100 text-green-800 hover:bg-green-200" 
+                    : "bg-orange-100 text-orange-800 hover:bg-orange-200"
+                  }
+                >
+                  {observation.PlantInfo.isNative ? 'Native' : 'Non-native'}
+                </Badge>
+              </div>
+            )}
+
+            <div className="border-t border-border my-3" />
+
+            {/* Plant Details */}
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground min-w-16">Quantity:</span>
+                <span className="font-medium">{observation.plantQuantity}</span>
+              </div>
+
+              {observation.datePlanted && (
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground min-w-16">Planted:</span>
+                  <span className="font-medium">
+                    {new Date(observation.datePlanted).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+
+              {observation.hasBloomed !== null && (
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground min-w-16">Bloomed:</span>
+                  <Badge 
+                    variant={observation.hasBloomed ? "default" : "outline"} 
+                    className={"text-xs"}
+                  >
+                    {observation.hasBloomed ? 'Yes' : 'No'}
+                  </Badge>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-      <div>
-        <div className="flex flex-row items-center gap-2 pl-2">
-          <h3>{observation.PlantInfo.plantCommonName}</h3>
-          {observation.PlantInfo.plantScientificName && (
-            <h3>
-              ({observation.PlantInfo.plantScientificName}){' '}
-              {observation.PlantInfo.isNative != null &&
-                (observation.PlantInfo.isNative === true ? (
-                  <span className="text-green-500">[Native]</span>
-                ) : (
-                  <span className="text-red-500">[Non-native]</span>
-                ))}
-            </h3>
+
+          {/* Action Buttons */}
+          {editing && (
+            <div className="flex gap-1 ml-4">
+              <ObservationFormDialog
+                newObservation={false}
+                observation={observation}
+                submitCallback={updatedObservation => {
+                  updateObservation(updatedObservation);
+                }}
+                trigger={
+                  <Button variant="ghost" size="sm" className="hover:bg-blue-50">
+                    <Edit className="w-4 h-4 text-blue-600" />
+                    <span className="sr-only">Edit observation</span>
+                  </Button>
+                }
+              />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="hover:bg-red-50"
+                onClick={() => deleteObservation(observation.tempKey)}
+              >
+                <Trash2 className="w-4 h-4 text-red-600" />
+                <span className="sr-only">Delete observation</span>
+              </Button>
+            </div>
           )}
         </div>
-        <div className="flex flex-col pl-5">
-          <p className="text-sm">Quantity: {observation.plantQuantity}</p>
-          {observation.datePlanted && (
-            <p className="text-sm">
-              Date Planted: {new Date(observation.datePlanted).toLocaleDateString()}
-            </p>
-          )}
-          {observation.hasBloomed !== null && (
-            <p className="text-sm">Has Bloomed: {observation.hasBloomed ? 'Yes' : 'No'}</p>
-          )}
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

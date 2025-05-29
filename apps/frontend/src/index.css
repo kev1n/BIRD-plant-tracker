@@ -292,3 +292,14 @@
   --font-body-2: 18px;
   --font-body-3: 34px;
 }
+
+/* Custom responsive height class */
+.responsive-height {
+  height: calc(100vh - 2rem);
+}
+
+@media (max-height: 900px) {
+  .responsive-height {
+    height: calc(100vh + 10rem);
+  }
+}
