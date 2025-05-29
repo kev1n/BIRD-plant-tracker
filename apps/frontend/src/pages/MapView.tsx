@@ -8,8 +8,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useGeolocated } from 'react-geolocated';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { PlantInfo } from 'types/database_types';
 import LeafletAssets from '../components/LeafletAssets';
+import chroma from 'chroma-js';
 
 // Sidebar component to display grid patch information
 interface SidebarProps {
@@ -64,6 +64,7 @@ function GridOverlay({
   const gridRef = useRef<LayerGroup | null>(null);
   const { patch } = useParams<{ patch?: string }>();
   const patchRectangleRefs = useRef<Map<string, Rectangle>>(new Map());
+  const [userLocationPatch, setUserLocationPatch] = useState<string | null>(null);
 
   useEffect(() => {
     if (!map) return;
@@ -96,7 +97,10 @@ function GridOverlay({
 
         if (isUserHere) {
           userOnValidPatch = true;
+          setUserLocationPatch(label);
+          console.log(`User is on patch: ${label}`);
         }
+       
 
         // Create rectangle for grid patch
         // TODO: Match with color variables from project
@@ -184,6 +188,20 @@ function GridOverlay({
           color: '#000000',
           fillOpacity: 0,
         });
+        if (label === patch) {
+          rect.setStyle({
+            fillColor: '#4a90e2',
+            color: '#4a90e2',
+            fillOpacity: 0.7,
+          });
+        }
+        if (label === userLocationPatch) {
+          rect.setStyle({
+            fillColor: '#4CAF50',
+            color: '#4CAF50',
+            fillOpacity: 0.9,
+          });
+        }
         return;
       }
       const colors = patchesToColors?.get(label) || [];
