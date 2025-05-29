@@ -175,7 +175,7 @@ export default function FiltersList({
   };
 
   return (
-    <div className="p-4 bg-secondary rounded shadow-md z-12 overflow-y-auto">
+    <div className="p-4 bg-white rounded shadow-md z-12 overflow-y-auto">
       <h2 className="text-lg font-semibold">Filter Patches for Snapshots</h2>
 
       <Button onClick={() => setFiltersOn(!filtersOn)} className="w-full mt-3">
