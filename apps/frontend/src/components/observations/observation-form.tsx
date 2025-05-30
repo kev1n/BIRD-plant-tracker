@@ -1,18 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronsUpDown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button'; // Ensure you have the Button component
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { DateTimePicker } from '@/components/ui/date-time-picker'; // Import DateTimePicker instead of Calendar
 import {
   Form,
@@ -24,15 +14,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popoverDialog'; // Ensure you have the Popover component
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'; // Ensure you have the RadioGroup component
-import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { Observation, PlantInfo } from 'types/database_types'; // Ensure you have the correct type for Observation
-import DeletePlantButton from '../plant-selector/delete-plant-button';
-import NewPlantFormDialog from '../plant-selector/new-plant-form-dialog';
-import { getCategoryIcon } from './category-icon';
+import { useEffect } from 'react';
+import { Observation } from 'types/database_types'; // Ensure you have the correct type for Observation
+import PlantSelector from '../plant-selector/plant-selector';
 
 const PlantInfoSchema = z.object({
   plantID: z.number(),
@@ -64,9 +49,6 @@ export default function ObservationForm({
   observation?: Observation;
   submitCallback?: (values: Observation) => void;
 }) {
-  const [plants, setPlants] = useState<PlantInfo[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [open, setOpen] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(ObservationSchema),
     defaultValues: {
@@ -79,36 +61,6 @@ export default function ObservationForm({
     },
   });
 
-  useEffect(() => {
-    const fetchPlants = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-        // If no search term, get all plants with a limit, otherwise search by name
-        const api_path = searchTerm.length > 0 
-          ? `${baseUrl}/plants?name=${searchTerm}`
-          : `${baseUrl}/plants?limit=20`; // Load first 20 plants by default
-        const response = await fetch(api_path, {
-          credentials: 'include',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setPlants(data.plants);
-        } else {
-          setPlants([]);
-        }
-      } catch (error) {
-        toast.error('Error fetching plants: ' + error);
-      }
-    };
-    
-    // Always fetch plants (either search results or default list)
-    fetchPlants();
-  }, [searchTerm]);
   useEffect(() => {
     if (observation) {
       form.reset({
@@ -170,89 +122,13 @@ export default function ObservationForm({
                 <FormDescription>
                   Search and select a plant from the list or add a new one by clicking "New Plant"
                 </FormDescription>
-                <Popover open={open} onOpenChange={setOpen}>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          'w-[400px] justify-between',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value?.plantCommonName
-                          ? plants.find(
-                              plant => plant.plantCommonName === field.value.plantCommonName
-                            )?.plantCommonName
-                          : 'Select plant'}
-                        <ChevronsUpDown className="opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0">
-                    <Command>
-                      <CommandInput
-                        placeholder="Begin typing to search..."
-                        className="h-9"
-                        onValueChange={value => {
-                          setSearchTerm(value);
-                        }}
-                      />
-                      
-                      <CommandList>
-                        <CommandEmpty>No plants found.</CommandEmpty>
-                        <CommandGroup>
-                          {plants.map(plant => (
-                            <CommandItem
-                              value={plant.plantCommonName}
-                              key={plant.plantID}
-                              onSelect={() => {
-                                field.onChange(plant);
-                                setOpen(false);
-                              }}
-                              className="flex items-start justify-between p-3 cursor-pointer hover:bg-accent"
-                            >
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-medium text-foreground min-w-32">
-                                    {plant.plantCommonName}
-                                  </span>
-                                  {plant.isNative !== null && (
-                                    <Badge 
-                                      variant={plant.isNative ? "native" : "nonnative"}
-                                      className="text-xs"
-                                    >
-                                      {plant.isNative ? 'Native' : 'Non-native'}
-                                    </Badge>
-                                  )}
-                                  {plant.subcategory && getCategoryIcon(plant.subcategory)}
-                                </div>
-                                {plant.plantScientificName && (
-                                  <p className="text-sm text-muted-foreground italic mt-1">
-                                    {plant.plantScientificName}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 ml-4">
-                                <DeletePlantButton
-                                  plantCommonName={plant.plantCommonName}
-                                  plantID={plant.plantID.toString()}
-                                  callBack={() => {
-                                    setSearchTerm('');
-                                    setPlants([]);
-                                  }}
-                                />
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                      <NewPlantFormDialog newPlant={true} />
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-
+                <FormControl>
+                  <PlantSelector
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder="Select plant"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
