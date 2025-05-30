@@ -76,7 +76,8 @@ export default function SnapshotForm({
       return;
     }
     setNotes(snapshotTemplate.notes || '');
-    setDate(new Date(snapshotTemplate.dateCreated));
+    // date should be the current date and time
+    setDate(new Date());
     setObservations(observationsTemplate);
   };
 
@@ -89,14 +90,14 @@ export default function SnapshotForm({
       toast.error('You must be logged in to submit a snapshot. Please log in and try again.');
       return;
     }
-    const newSnapshotData: Snapshot = {
-      snapshotID: snapshotTemplate && snapshotTemplate.snapshotID!=-1 ? snapshotTemplate.snapshotID : undefined,
+    const snapshotData = {
+      snapshotID: snapshotTemplate && snapshotTemplate.snapshotID !== -1 ? snapshotTemplate.snapshotID : undefined,
       dateCreated: date,
       patchID: patchID,
       notes: notes.trim(),
       userID: user.id,
     };
-    const validation = snapshotSchema.safeParse(newSnapshotData);
+    const validation = snapshotSchema.safeParse(snapshotData);
     if (!validation.success) {
       toast.error('Failed to submit snapshot data due to validation errors. Please check the input and try again.');
       return;
@@ -105,92 +106,30 @@ export default function SnapshotForm({
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-      const api_path =
-        baseUrl + (newSnapshot ? '/snapshot/' : `/snapshot/${snapshotTemplate?.snapshotID}`); // Use POST for new, PUT for existing
-      const response = await fetch(api_path, {
-        method: newSnapshot ? 'POST' : 'PUT',
+      
+      // Use the new atomic endpoint
+      const response = await fetch(`${baseUrl}/snapshot/with-observations`, {
+        method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newSnapshotData),
+        body: JSON.stringify({
+          snapshot: snapshotData,
+          observations: observations,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit snapshot data');
+        const errorText = await response.text();
+        throw new Error(`Failed to submit snapshot and observations: ${errorText}`);
       }
 
-      let newSnapshotID: number | undefined = undefined;
-      if (newSnapshot) {
-        const responseData = await response.json();
-        if (responseData && responseData.snapshotID && responseData.snapshotID.snapshotID) {
-          newSnapshotID = responseData.snapshotID.snapshotID;
-        } else {
-          toast.error('Failed to create a new snapshot. Please try again later or contact support.');
-          return;
-        }
-      }
-      const obsPromises = observations.map(obs => {
-        if (obs.isNew) {
-          return fetch(`${baseUrl}/observation`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              snapshotID: newSnapshot ? newSnapshotID : snapshotTemplate?.snapshotID, // Use the new snapshot ID if creating a new snapshot
-              plantQuantity: obs.plantQuantity,
-              plantID: obs.PlantInfo.plantID,
-              datePlanted: obs.datePlanted || null,
-              hasBloomed: obs.hasBloomed !== undefined ? obs.hasBloomed : null, // Ensure this is sent if available
-            }),
-          });
-        } else if (obs.modified) {
-          return fetch(`${baseUrl}/observation/${obs.observationID}`, {
-            method: 'PUT',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              plantQuantity: obs.plantQuantity,
-              plantID: obs.PlantInfo.plantID,
-              datePlanted: obs.datePlanted || null,
-              hasBloomed: obs.hasBloomed !== undefined ? obs.hasBloomed : null,
-            }),
-          });
-        } else if (obs.deletedOn) {
-          return fetch(`${baseUrl}/observation/${obs.observationID}`, {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-        }
-      });
+      const responseData = await response.json();
+      toast.success(responseData.message);
 
-      await Promise.all(obsPromises)
-        .then(responses => {
-          responses.forEach(response => {
-            if (!response) {
-              toast.error('One of the observation requests failed to return a response');
-              return;
-            }
-            if (!response.ok) {
-              throw new Error('Failed to submit one or more observations');
-            }
-          });
-        })
-        .catch(err => {
-          toast.error('Failed to submit one or more observations. Please check your input and try again. ' + err);
-          return;
-        });
-
+      // Reset form and refresh data
       if (newSnapshot) {
         fetchLatestSnapshot(patchID, null);
         setNotes('');

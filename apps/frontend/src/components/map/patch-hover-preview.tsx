@@ -56,14 +56,7 @@ export default function PatchHoverPreview({ hoverData, position }: PatchHoverPre
           {!isLoading && !error && snapshot && (
             <div className="space-y-2">
               <div className="text-xs text-gray-500">
-                Last updated: {snapshot.dateCreated.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true,
-                })}
+                Last updated: {snapshot.dateCreated.toLocaleString()}
               </div>
               
               {plantSummary && Object.keys(plantSummary).length > 0 ? (

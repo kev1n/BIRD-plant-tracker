@@ -34,7 +34,6 @@ export default function PermissionRestrictedDialog({ children, actionName }: { c
   if (!user) {
     return <></>;
   }
-  console.log("user", user);
 
   // If user has 'user' role, show permission dialog
   if (user.role === 'user') {
