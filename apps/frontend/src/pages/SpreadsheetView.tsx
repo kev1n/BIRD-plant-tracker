@@ -1688,11 +1688,30 @@ export default function SpreadSheetView() {
               </div>
             </div>
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
-              <Button variant="default" size="sm" onClick={() => saveEdit()} className="w-full sm:w-auto">
-                <Save className="h-4 w-4 mr-1" />
-                <span className="hidden xs:inline">Save to Current Snapshot</span>
-                <span className="xs:hidden">Save Current</span>
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="default" size="sm" className="w-full sm:w-auto">
+                    <Save className="h-4 w-4 mr-1" />
+                    <span className="hidden xs:inline">Save to Current Snapshot</span>
+                    <span className="xs:hidden">Save Current</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                  <AlertDialogHeader>
+                    <h2 className="text-lg font-semibold">Save to Current Snapshot</h2>
+                    <p className="text-sm text-gray-600">
+                      This will save your changes directly to the current snapshot. 
+                      This action will modify the existing snapshot data.
+                    </p>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => saveEdit()} className="w-full sm:w-auto">
+                      Save Changes
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="secondary" size="sm" className="w-full sm:w-auto">
@@ -1760,11 +1779,30 @@ export default function SpreadSheetView() {
               </div>
             </div>
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
-              <Button variant="default" size="sm" onClick={() => addNewToRecentSnapshot()} className="w-full sm:w-auto">
-                <Save className="h-4 w-4 mr-1" />
-                <span className="hidden xs:inline">Add to Recent Snapshot</span>
-                <span className="xs:hidden">Add Recent</span>
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="default" size="sm" className="w-full sm:w-auto">
+                    <Save className="h-4 w-4 mr-1" />
+                    <span className="hidden xs:inline">Add to Recent Snapshot</span>
+                    <span className="xs:hidden">Add Recent</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                  <AlertDialogHeader>
+                    <h2 className="text-lg font-semibold">Add to Recent Snapshot</h2>
+                    <p className="text-sm text-gray-600">
+                      This will add your new observation to the most recent snapshot for this patch.
+                      The observation will be part of the existing snapshot data.
+                    </p>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => addNewToRecentSnapshot()} className="w-full sm:w-auto">
+                      Add to Recent
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="secondary" size="sm" className="w-full sm:w-auto">
