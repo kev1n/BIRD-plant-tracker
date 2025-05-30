@@ -1,3 +1,4 @@
+import PageHead from '@/components/PageHead';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { SignupRequest } from '../../types/auth.ts';
@@ -66,65 +67,71 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] p-8">
-      <Form
-        onSubmit={handleSubmit}
-        title="Create an Account"
-        subtitle="Join us to access exclusive features"
-        submitText="Sign Up"
-        isSubmitting={isLoading}
-      >
-        {error && <p className="text-destructive text-center mb-2">{error}</p>}
+    <>
+      <PageHead 
+        title="Sign Up" 
+        description="Create a new account for BIRD Plant Tracker" 
+      />
+      <div className="flex flex-col items-center justify-center min-h-[80vh] p-8">
+        <Form
+          onSubmit={handleSubmit}
+          title="Create an Account"
+          subtitle="Join us to access exclusive features"
+          submitText="Sign Up"
+          isSubmitting={isLoading}
+        >
+          {error && <p className="text-destructive text-center mb-2">{error}</p>}
 
-        <Input.Text
-          title="Email"
-          name="email"
-          placeholder="example@domain.com"
-          value={formState.email}
-          onChange={handleChange}
-          required
-        />
+          <Input.Text
+            title="Email"
+            name="email"
+            placeholder="example@domain.com"
+            value={formState.email}
+            onChange={handleChange}
+            required
+          />
 
-        <Input.Text
-          title="Username"
-          name="username"
-          placeholder="johnsmith"
-          value={formState.username || ''}
-          onChange={handleChange}
-          required
-        />
+          <Input.Text
+            title="Username"
+            name="username"
+            placeholder="johnsmith"
+            value={formState.username || ''}
+            onChange={handleChange}
+            required
+          />
 
-        <Input.Text
-          title="First Name"
-          name="firstname"
-          placeholder="John"
-          value={formState.firstname || ''}
-          onChange={handleChange}
-        />
+          <Input.Text
+            title="First Name"
+            name="firstname"
+            placeholder="John"
+            value={formState.firstname || ''}
+            onChange={handleChange}
+          />
 
-        <Input.Text
-          title="Last Name"
-          name="lastname"
-          placeholder="Smith"
-          value={formState.lastname || ''}
-          onChange={handleChange}
-        />
+          <Input.Text
+            title="Last Name"
+            name="lastname"
+            placeholder="Smith"
+            value={formState.lastname || ''}
+            onChange={handleChange}
+          />
 
-        <Input.Password
-          title="Password"
-          name="password"
-          value={formState.password}
-          onChange={handleChange}
-          required
-        />
+          <Input.Password
+            title="Password"
+            name="password"
+            value={formState.password}
+            onChange={handleChange}
+            required
+          />
 
-        <div className="mt-4 text-center">
-          Already have an account?{' '}
-          <Link to="/login" className="text-primary hover:underline">
-            Log in
-          </Link>
-        </div>
-      </Form>
-    </div>
+          <div className="mt-4 text-center">
+            Already have an account?{' '}
+            <Link to="/login" className="text-primary hover:underline">
+              Log in
+            </Link>
+          </div>
+        </Form>
+      </div>
+    </>
   );
 }

@@ -1,3 +1,4 @@
+import PageHead from '@/components/PageHead';
 import { AlertCircle, Upload, UserCheck, Users } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -93,148 +94,154 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Page Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6 md:py-8">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              Admin Dashboard
-            </h1>
-            <p className="text-muted-foreground text-base md:text-lg">
-              Manage users, roles, and system configurations
-            </p>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 md:py-8">
-        {error ? (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : (
-          <div className="space-y-6">
-            {/* Stats Overview */}
-            <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" aria-labelledby="stats-heading">
-              <h2 id="stats-heading" className="sr-only">User Statistics</h2>
-              
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{users.length}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
-                  <UserCheck className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{pendingRoleRequests.length}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Admins/Owners</CardTitle>
-                  <UserCheck className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {users.filter(user => user.role === 'admin' || user.role === 'owner').length}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Users/Editors</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {users.filter(user => user.role === 'user').length} / {users.filter(user => user.role === 'editor').length}
-                  </div>
-                </CardContent>
-              </Card>
-            </section>
-
-            {/* Management Sections */}
-            <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-              {/* Role Requests Section */}
-              <section className="lg:col-span-1" aria-labelledby="role-requests-heading">
-                <Card>
-                  <CardHeader>
-                    <CardTitle id="role-requests-heading" className="flex items-center gap-2">
-                      <UserCheck className="h-5 w-5" />
-                      Role Requests
-                    </CardTitle>
-                    <CardDescription>
-                      Review and approve user role change requests
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <UserContainer 
-                      users={pendingRoleRequests} 
-                      containerTitle=""
-                      UserComponent={RoleRequest}
-                      onRefresh={updateUserRole}
-                    />
-                  </CardContent>
-                </Card>
-              </section>
-
-              {/* All Users Section */}
-              <section className="lg:col-span-1" aria-labelledby="all-users-heading">
-                <Card>
-                  <CardHeader>
-                    <CardTitle id="all-users-heading" className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      User Management
-                    </CardTitle>
-                    <CardDescription>
-                      Search and manage all registered users
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <AllUsers 
-                      users={users} 
-                      containerTitle=""
-                      UserComponent={UserRoleInfo}
-                      onRefresh={updateUserRole}
-                    />
-                  </CardContent>
-                </Card>
-              </section>
-
-              {/* Import Section */}
-              <section className="lg:col-span-2 xl:col-span-1" aria-labelledby="import-heading">
-                <Card>
-                  <CardHeader>
-                    <CardTitle id="import-heading" className="flex items-center gap-2">
-                      <Upload className="h-5 w-5" />
-                      Data Import
-                    </CardTitle>
-                    <CardDescription>
-                      Import plant data and manage bulk operations
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <ImportContainer />
-                  </CardContent>
-                </Card>
-              </section>
+    <>
+      <PageHead 
+        title="Admin Dashboard" 
+        description="Manage users, roles, and system configurations" 
+      />
+      <div className="min-h-screen bg-background">
+        {/* Page Header */}
+        <header className="border-b bg-card">
+          <div className="container mx-auto px-4 py-6 md:py-8">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+                Admin Dashboard
+              </h1>
+              <p className="text-muted-foreground text-base md:text-lg">
+                Manage users, roles, and system configurations
+              </p>
             </div>
           </div>
-        )}
-      </main>
-    </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="container mx-auto px-4 py-6 md:py-8">
+          {error ? (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-6">
+              {/* Stats Overview */}
+              <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" aria-labelledby="stats-heading">
+                <h2 id="stats-heading" className="sr-only">User Statistics</h2>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{users.length}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
+                    <UserCheck className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{pendingRoleRequests.length}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Admins/Owners</CardTitle>
+                    <UserCheck className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {users.filter(user => user.role === 'admin' || user.role === 'owner').length}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Users/Editors</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {users.filter(user => user.role === 'user').length} / {users.filter(user => user.role === 'editor').length}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* Management Sections */}
+              <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+                {/* Role Requests Section */}
+                <section className="lg:col-span-1" aria-labelledby="role-requests-heading">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle id="role-requests-heading" className="flex items-center gap-2">
+                        <UserCheck className="h-5 w-5" />
+                        Role Requests
+                      </CardTitle>
+                      <CardDescription>
+                        Review and approve user role change requests
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <UserContainer 
+                        users={pendingRoleRequests} 
+                        containerTitle=""
+                        UserComponent={RoleRequest}
+                        onRefresh={updateUserRole}
+                      />
+                    </CardContent>
+                  </Card>
+                </section>
+
+                {/* All Users Section */}
+                <section className="lg:col-span-1" aria-labelledby="all-users-heading">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle id="all-users-heading" className="flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        User Management
+                      </CardTitle>
+                      <CardDescription>
+                        Search and manage all registered users
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <AllUsers 
+                        users={users} 
+                        containerTitle=""
+                        UserComponent={UserRoleInfo}
+                        onRefresh={updateUserRole}
+                      />
+                    </CardContent>
+                  </Card>
+                </section>
+
+                {/* Import Section */}
+                <section className="lg:col-span-2 xl:col-span-1" aria-labelledby="import-heading">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle id="import-heading" className="flex items-center gap-2">
+                        <Upload className="h-5 w-5" />
+                        Data Import
+                      </CardTitle>
+                      <CardDescription>
+                        Import plant data and manage bulk operations
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <ImportContainer />
+                    </CardContent>
+                  </Card>
+                </section>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    </>
   );
 }

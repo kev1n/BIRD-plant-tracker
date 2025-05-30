@@ -1,3 +1,4 @@
+import PageHead from '@/components/PageHead';
 import { Calendar } from "@/components/ui/calendar";
 import DatePicker from "@/components/ui/datepicker";
 import { useState } from "react";
@@ -9,14 +10,20 @@ import { LocationDemo } from "../components/ui/location";
 
 export default function ExamplePage() {
   return (
-    <div className="space-y-8 p-4">
-      <ButtonExample />
-      <CardExample />
-      <AlertExample />
-      <FormExample />
-      <LocationDemo />
-      <DatePicker date={new Date()} setDate={() => {}} pickerName="Select Date" />
-    </div>
+    <>
+      <PageHead 
+        title="Example Components" 
+        description="Example page showcasing UI components and functionality" 
+      />
+      <div className="space-y-8 p-4">
+        <ButtonExample />
+        <CardExample />
+        <AlertExample />
+        <FormExample />
+        <LocationDemo />
+        <DatePicker date={new Date()} setDate={() => {}} pickerName="Select Date" />
+      </div>
+    </>
   );
 }
 

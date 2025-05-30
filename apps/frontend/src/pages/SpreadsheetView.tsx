@@ -1,4 +1,5 @@
 import { getCategoryIcon } from '@/components/observations/category-icon';
+import PageHead from '@/components/PageHead';
 import DateTimePickerCellEditor from '@/components/spreadsheet/date-time-picker-cell-editor';
 import PlantSelectorCellEditor from '@/components/spreadsheet/plant-selector-cell-editor';
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
@@ -1651,248 +1652,254 @@ export default function SpreadSheetView() {
   };
 
   return (
-    <div className="flex flex-col h-full py-4">
-      {/* Custom CSS for row styling */}
-      <style>{`
-        .editing-row {
-          background-color: #dbeafe !important;
-          border: 2px solid #3b82f6 !important;
-        }
-        .new-row {
-          background-color: #dcfce7 !important;
-          border: 2px solid #16a34a !important;
-        }
-        .ag-floating-filter-input {
-          font-size: 12px;
-        }
-        .ag-header-cell-menu-button {
-          opacity: 0.7;
-        }
-        .ag-header-cell-menu-button:hover {
-          opacity: 1;
-        }
-      `}</style>
+    <>
+      <PageHead 
+        title="Spreadsheet View" 
+        description="Tabular view for editing and managing plant observations data" 
+      />
+      <div className="flex flex-col h-full py-4">
+        {/* Custom CSS for row styling */}
+        <style>{`
+          .editing-row {
+            background-color: #dbeafe !important;
+            border: 2px solid #3b82f6 !important;
+          }
+          .new-row {
+            background-color: #dcfce7 !important;
+            border: 2px solid #16a34a !important;
+          }
+          .ag-floating-filter-input {
+            font-size: 12px;
+          }
+          .ag-header-cell-menu-button {
+            opacity: 0.7;
+          }
+          .ag-header-cell-menu-button:hover {
+            opacity: 1;
+          }
+        `}</style>
 
-      {/* Unsaved Changes Alert & Save Actions Bar */}
-      
+        {/* Unsaved Changes Alert & Save Actions Bar */}
+        
 
-      {/* Save Actions for Editing */}
-      {editingRowId != null && (
-        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
-          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-            <div className="flex items-center gap-2">
-              <Save className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
-              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                <h3 className="text-sm font-medium text-blue-800">Editing Observation</h3>
-                <span className="text-xs sm:text-sm text-blue-700">Choose how to save your changes:</span>
+        {/* Save Actions for Editing */}
+        {editingRowId != null && (
+          <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div className="flex items-center gap-2">
+                <Save className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                  <h3 className="text-sm font-medium text-blue-800">Editing Observation</h3>
+                  <span className="text-xs sm:text-sm text-blue-700">Choose how to save your changes:</span>
+                </div>
+              </div>
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="default" size="sm" className="w-full sm:w-auto">
+                      <Save className="h-4 w-4 mr-1" />
+                      <span className="hidden xs:inline">Save to Current Snapshot</span>
+                      <span className="xs:hidden">Save Current</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Save to Current Snapshot</h2>
+                      <p className="text-sm text-gray-600">
+                        This will save your changes directly to the current snapshot. 
+                        This action will modify the existing snapshot data.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => saveEdit()} className="w-full sm:w-auto">
+                        Save Changes
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                      <span className="hidden xs:inline">Save with Snapshot Copy</span>
+                      <span className="xs:hidden">Save Copy</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Duplicate Snapshot & Save</h2>
+                      <p className="text-sm text-gray-600">
+                        This will create a copy of the entire snapshot with your changes. 
+                        The original snapshot remains unchanged, preserving historical data.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => duplicateSnapshotWithEdited()} className="w-full sm:w-auto">
+                        Create Copy & Save
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                      <span className="hidden xs:inline">Save to New Snapshot</span>
+                      <span className="xs:hidden">New Snapshot</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Create New Snapshot</h2>
+                      <p className="text-sm text-gray-600">
+                        This will create a completely new snapshot containing only your edited observation.
+                        Use this when the change represents a new state, not a correction.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => newSnapshotWithEdited()} className="w-full sm:w-auto">
+                        Create New Snapshot
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Button variant="outline" size="sm" onClick={() => cancelEdit()} className="w-full sm:w-auto">
+                  <X className="h-4 w-4 mr-1" />
+                  Cancel
+                </Button>
               </div>
             </div>
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="default" size="sm" className="w-full sm:w-auto">
-                    <Save className="h-4 w-4 mr-1" />
-                    <span className="hidden xs:inline">Save to Current Snapshot</span>
-                    <span className="xs:hidden">Save Current</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Save to Current Snapshot</h2>
-                    <p className="text-sm text-gray-600">
-                      This will save your changes directly to the current snapshot. 
-                      This action will modify the existing snapshot data.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => saveEdit()} className="w-full sm:w-auto">
-                      Save Changes
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm" className="w-full sm:w-auto">
-                    <span className="hidden xs:inline">Save with Snapshot Copy</span>
-                    <span className="xs:hidden">Save Copy</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Duplicate Snapshot & Save</h2>
-                    <p className="text-sm text-gray-600">
-                      This will create a copy of the entire snapshot with your changes. 
-                      The original snapshot remains unchanged, preserving historical data.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => duplicateSnapshotWithEdited()} className="w-full sm:w-auto">
-                      Create Copy & Save
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm" className="w-full sm:w-auto">
-                    <span className="hidden xs:inline">Save to New Snapshot</span>
-                    <span className="xs:hidden">New Snapshot</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Create New Snapshot</h2>
-                    <p className="text-sm text-gray-600">
-                      This will create a completely new snapshot containing only your edited observation.
-                      Use this when the change represents a new state, not a correction.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => newSnapshotWithEdited()} className="w-full sm:w-auto">
-                      Create New Snapshot
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <Button variant="outline" size="sm" onClick={() => cancelEdit()} className="w-full sm:w-auto">
-                <X className="h-4 w-4 mr-1" />
-                Cancel
-              </Button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Save Actions for New Observation */}
-      {isNewObs != null && (
-        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
-          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-            <div className="flex items-center gap-2">
-              <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
-              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                <h3 className="text-sm font-medium text-green-800">Adding New Observation</h3>
-                <span className="text-xs sm:text-sm text-green-700">Choose where to save this observation:</span>
+        {/* Save Actions for New Observation */}
+        {isNewObs != null && (
+          <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div className="flex items-center gap-2">
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                  <h3 className="text-sm font-medium text-green-800">Adding New Observation</h3>
+                  <span className="text-xs sm:text-sm text-green-700">Choose where to save this observation:</span>
+                </div>
+              </div>
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="default" size="sm" className="w-full sm:w-auto">
+                      <Save className="h-4 w-4 mr-1" />
+                      <span className="hidden xs:inline">Add to Recent Snapshot</span>
+                      <span className="xs:hidden">Add Recent</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Add to Recent Snapshot</h2>
+                      <p className="text-sm text-gray-600">
+                        This will add your new observation to the most recent snapshot for this patch.
+                        The observation will be part of the existing snapshot data.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => addNewToRecentSnapshot()} className="w-full sm:w-auto">
+                        Add to Recent
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                      <span className="hidden xs:inline">Add to Snapshot Copy</span>
+                      <span className="xs:hidden">Add Copy</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Duplicate Snapshot & Add</h2>
+                      <p className="text-sm text-gray-600">
+                        This will copy the latest snapshot for this patch and add your new observation.
+                        The original snapshot remains unchanged.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => duplicateSnapshotWithNew()} className="w-full sm:w-auto">
+                        Create Copy & Add
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                      <span className="hidden xs:inline">Create New Snapshot</span>
+                      <span className="xs:hidden">New Snapshot</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Create New Snapshot</h2>
+                      <p className="text-sm text-gray-600">
+                        This will create a completely new snapshot containing only your new observation.
+                        Use this when starting a fresh observation session.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => newSnapshotWithNewObs()} className="w-full sm:w-auto">
+                        Create New Snapshot
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Button variant="outline" size="sm" onClick={() => cancelAdd()} className="w-full sm:w-auto">
+                  <X className="h-4 w-4 mr-1" />
+                  Cancel
+                </Button>
               </div>
             </div>
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="default" size="sm" className="w-full sm:w-auto">
-                    <Save className="h-4 w-4 mr-1" />
-                    <span className="hidden xs:inline">Add to Recent Snapshot</span>
-                    <span className="xs:hidden">Add Recent</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Add to Recent Snapshot</h2>
-                    <p className="text-sm text-gray-600">
-                      This will add your new observation to the most recent snapshot for this patch.
-                      The observation will be part of the existing snapshot data.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => addNewToRecentSnapshot()} className="w-full sm:w-auto">
-                      Add to Recent
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm" className="w-full sm:w-auto">
-                    <span className="hidden xs:inline">Add to Snapshot Copy</span>
-                    <span className="xs:hidden">Add Copy</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Duplicate Snapshot & Add</h2>
-                    <p className="text-sm text-gray-600">
-                      This will copy the latest snapshot for this patch and add your new observation.
-                      The original snapshot remains unchanged.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => duplicateSnapshotWithNew()} className="w-full sm:w-auto">
-                      Create Copy & Add
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm" className="w-full sm:w-auto">
-                    <span className="hidden xs:inline">Create New Snapshot</span>
-                    <span className="xs:hidden">New Snapshot</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Create New Snapshot</h2>
-                    <p className="text-sm text-gray-600">
-                      This will create a completely new snapshot containing only your new observation.
-                      Use this when starting a fresh observation session.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => newSnapshotWithNewObs()} className="w-full sm:w-auto">
-                      Create New Snapshot
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <Button variant="outline" size="sm" onClick={() => cancelAdd()} className="w-full sm:w-auto">
-                <X className="h-4 w-4 mr-1" />
-                Cancel
-              </Button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Add New Observation Button and Export */}
-      {!isNewObs && editingRowId === null && (
-        <div className="mb-4 flex justify-end gap-2">
-          <Button onClick={exportToCsv} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
-          <PermissionRestrictedDialog actionName="add new observations">
-            <Button onClick={handleAddRow} variant="default">
-              <Plus className="h-4 w-4 mr-2" />
-              New Observation
+        {/* Add New Observation Button and Export */}
+        {!isNewObs && editingRowId === null && (
+          <div className="mb-4 flex justify-end gap-2">
+            <Button onClick={exportToCsv} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
             </Button>
-          </PermissionRestrictedDialog>
-        </div>
-      )}
+            <PermissionRestrictedDialog actionName="add new observations">
+              <Button onClick={handleAddRow} variant="default">
+                <Plus className="h-4 w-4 mr-2" />
+                New Observation
+              </Button>
+            </PermissionRestrictedDialog>
+          </div>
+        )}
 
-      {/* Data Grid */}
-      <div className="flex-1">
-        <AgGridReact
-          rowData={rowData}
-          columnDefs={colDefs}
-          {...gridOptions}
-          theme={myTheme}
-          ref={gridRef}
-          pagination={true}
-          paginationAutoPageSize={true}
-          paginationPageSizeSelector={[10, 25, 50, 100]}
-          suppressRowHoverHighlight={false}
-          suppressColumnMoveAnimation={false}
-          suppressAnimationFrame={false}
-          enableBrowserTooltips={true}
-          tooltipShowDelay={500}
-          tooltipHideDelay={2000}
-        />
+        {/* Data Grid */}
+        <div className="flex-1">
+          <AgGridReact
+            rowData={rowData}
+            columnDefs={colDefs}
+            {...gridOptions}
+            theme={myTheme}
+            ref={gridRef}
+            pagination={true}
+            paginationAutoPageSize={true}
+            paginationPageSizeSelector={[10, 25, 50, 100]}
+            suppressRowHoverHighlight={false}
+            suppressColumnMoveAnimation={false}
+            suppressAnimationFrame={false}
+            enableBrowserTooltips={true}
+            tooltipShowDelay={500}
+            tooltipHideDelay={2000}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
