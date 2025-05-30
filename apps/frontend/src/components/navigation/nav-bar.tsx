@@ -40,7 +40,7 @@ export default function NavBar() {
       },
     });
     if (response.status >= 200 && response.status < 300) {
-      toast.success('Editing requested');
+      toast.success('Editing requested. Ask an admin to approve your request.');
     } else {
       toast.error('Failed to request editing');
     }
