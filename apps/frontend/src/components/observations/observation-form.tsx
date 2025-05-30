@@ -71,7 +71,7 @@ export default function ObservationForm({
       modified: false,
       observationID: 0,
       snapshotID: -1,
-      datePlanted: new Date(), // Default to current date and time
+      datePlanted: undefined, // Don't default to current date and time
     },
   });
 
@@ -120,13 +120,10 @@ export default function ObservationForm({
           subcategory: observation.PlantInfo.subcategory,
         },
         plantQuantity: observation.plantQuantity,
-        datePlanted: observation.datePlanted ? new Date(observation.datePlanted) : new Date(), // Default to current time if no existing date
+        datePlanted: observation.datePlanted ? new Date(observation.datePlanted) : undefined,
         hasBloomed: observation.hasBloomed !== null ? observation.hasBloomed : undefined,
         deletedOn: observation.deletedOn ? new Date(observation.deletedOn) : undefined,
       });
-    } else {
-      // For new observations, ensure default current date and time
-      form.setValue('datePlanted', new Date());
     }
   }, [observation, form]);
 
