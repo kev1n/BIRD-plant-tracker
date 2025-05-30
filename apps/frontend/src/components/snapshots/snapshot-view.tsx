@@ -91,7 +91,7 @@ export default function SnapshotView({
       const snapshot_data = await snapshot_response.json();
       setCurrentSnapshot({
         snapshotID: snapshot_data.data.snapshotID,
-        dateCreated: new Date(snapshot_data.data.dateCreated + 'T00:00:00'),
+        dateCreated: new Date(snapshot_data.data.dateCreated),
         patchID: snapshot_data.data.patchID,
         notes: snapshot_data.data.notes || 'No notes available for this patch.',
         userID: snapshot_data.data.userID,

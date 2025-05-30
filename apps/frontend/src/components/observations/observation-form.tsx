@@ -1,10 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button'; // Ensure you have the Button component
-import { Calendar } from '@/components/ui/calendar'; // Ensure you have the Calendar component
 import {
   Command,
   CommandEmpty,
@@ -13,6 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { DateTimePicker } from '@/components/ui/date-time-picker'; // Import DateTimePicker instead of Calendar
 import {
   Form,
   FormControl,
@@ -26,7 +26,6 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popoverDialog'; // Ensure you have the Popover component
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'; // Ensure you have the RadioGroup component
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Observation, PlantInfo } from 'types/database_types'; // Ensure you have the correct type for Observation
@@ -72,6 +71,7 @@ export default function ObservationForm({
       modified: false,
       observationID: 0,
       snapshotID: -1,
+      datePlanted: new Date(), // Default to current date and time
     },
   });
 
@@ -120,10 +120,13 @@ export default function ObservationForm({
           subcategory: observation.PlantInfo.subcategory,
         },
         plantQuantity: observation.plantQuantity,
-        datePlanted: observation.datePlanted ? new Date(observation.datePlanted) : undefined,
+        datePlanted: observation.datePlanted ? new Date(observation.datePlanted) : new Date(), // Default to current time if no existing date
         hasBloomed: observation.hasBloomed !== null ? observation.hasBloomed : undefined,
         deletedOn: observation.deletedOn ? new Date(observation.deletedOn) : undefined,
       });
+    } else {
+      // For new observations, ensure default current date and time
+      form.setValue('datePlanted', new Date());
     }
   }, [observation, form]);
 
@@ -314,26 +317,15 @@ export default function ObservationForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-base font-bold">Date Planted</FormLabel>
-                <FormDescription>Select the date the plant was planted</FormDescription>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          'w-full pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? format(field.value, 'PPP') : <span>Select a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
-                  </PopoverContent>
-                </Popover>
+                <FormDescription>Select the date and time the plant was planted</FormDescription>
+                <FormControl>
+                  <DateTimePicker
+                    date={field.value || null}
+                    setDate={(date) => field.onChange(date)}
+                    placeholder="Select date and time"
+                    displayFormat="MM/dd/yyyy hh:mm aa"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

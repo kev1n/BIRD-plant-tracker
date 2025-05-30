@@ -59,7 +59,10 @@ export default function PatchHoverPreview({ hoverData, position }: PatchHoverPre
                 Last updated: {snapshot.dateCreated.toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
-                  year: 'numeric'
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
                 })}
               </div>
               
