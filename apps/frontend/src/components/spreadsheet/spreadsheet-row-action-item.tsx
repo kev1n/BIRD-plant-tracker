@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 interface ActionItemProps {
-  actionName: string
+  actionName: string,
+  title: string,
   prompt: string,
   color: string,
   onConfirm: () => void
@@ -34,7 +35,10 @@ export default function SpreadsheetRowActionItem(props: ActionItemProps) {
 
         <AlertDialogContent>
           <AlertDialogHeader>
-            {props.prompt}
+            <h2 className="text-lg font-semibold">{props.title}</h2>
+            <p className="text-sm text-gray-600">
+              {props.prompt}
+            </p>
           </AlertDialogHeader>
 
           <AlertDialogFooter>

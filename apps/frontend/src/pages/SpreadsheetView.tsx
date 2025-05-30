@@ -1145,21 +1145,24 @@ export default function SpreadSheetView() {
             <DropdownMenuSubContent>
               <SpreadsheetRowActionItem
                 actionName="Duplicate Observation"
-                prompt="Are you sure you want to DUPLICATE this observation?"
+                title="Duplicate Observation"
+                prompt="This will create a copy of the observation in the same snapshot as the original observation."
                 color=""
                 onConfirm={() => {if (params.data) { duplicateObservation(params.data); }}}
               />
 
               <SpreadsheetRowActionItem
                 actionName="Duplicate into New Empty Snapshot"
-                prompt="Are you sure you want to DUPLICATE this observation into an EMPTY SNAPSHOT?"
+                title="Duplicate Observation into Empty Snapshot"
+                prompt="This will create a snapshot containing only this observation. The snapshot can then be edited. Use this when most observations in a snapshot have changed, and you want to capture the new state of the patch."
                 color=""
                 onConfirm={() => { if (params.data) { duplicateObservationEmptySnapshot(params.data); }}}
               />
 
               <SpreadsheetRowActionItem
                 actionName="Duplicate Entire Snapshot"
-                prompt="Are you sure you want to DUPLICATE the ENTIRE SNAPSHOT?"
+                title="Duplicate Entire Snapshot"
+                prompt="This will create a copy of the snapshot and all of the observations associated with it. By default, the new snapshot will be set to today's date. The original snapshot remains unchanged. "
                 color=""
                 onConfirm={() => { 
                   if (params.data?.snapshotID) { 
@@ -1177,7 +1180,8 @@ export default function SpreadSheetView() {
             <DropdownMenuSubContent>
               <SpreadsheetRowActionItem
                 actionName="Delete Observation"
-                prompt="Are you sure you want to DELETE this observation?" 
+                title="Delete Observation from Snapshot"
+                prompt="This will delete the observation from its snapshot, and cannot be recovered. Only use this when you need to change an observation that was incorrectly recorded. Do not use this if the observation was accurate at some point, but is no longer." 
                 color="red"
                 onConfirm={() => {
                   const obsID = params.data?.observationID || -1;
@@ -1188,7 +1192,8 @@ export default function SpreadSheetView() {
 
               <SpreadsheetRowActionItem
                 actionName="Remove from Snapshot Copy"
-                prompt="Are you sure you want to DUPLICATE the snapshot WITHOUT THIS OBSERVATION?"
+                title="Copy snapshot and Delete Observation"
+                prompt="This will copy the snapshot containing this observation, without this observation. Use this when a particular observation is no longer accurate, but other observations in the snapshot are still accurate."
                 color="red"
                 onConfirm={() => {
                   const obsID = params.data?.observationID || -1;
