@@ -7,7 +7,8 @@ interface PatchHoverPreviewProps {
 }
 
 export default function PatchHoverPreview({ hoverData, position }: PatchHoverPreviewProps) {
-  if (!hoverData) return null;
+  // Multiple safety checks to prevent rendering with invalid data
+  if (!hoverData || !hoverData.patchId || !position) return null;
 
   const { patchId, isLoading, snapshot, observations, error } = hoverData;
 

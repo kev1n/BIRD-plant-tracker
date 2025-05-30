@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Observation, Snapshot } from '../../types/database_types';
 import { PolygonHoverData } from '../../types/polygon.types';
@@ -20,6 +20,16 @@ export function usePatchHover(): PatchHoverReturn {
   const [hoveredPatch, setHoveredPatch] = useState<PolygonHoverData | null>(null);
   const cacheRef = useRef<Map<string, CachedSnapshotData>>(new Map());
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const fetchSnapshotData = useCallback(async (patchId: string) => {
     try {

@@ -63,7 +63,7 @@ export default function LocationPermissionDialog({
               </div>
             </div>
             <p className="text-xs text-gray-500 pt-2 border-t">
-              🔒 Privacy: Your location data is only used locally in your browser and is never stored on our servers or shared with third parties.
+              Privacy: Your location data is only used locally in your browser and is never stored on our servers or shared with third parties.
             </p>
           </DialogDescription>
         </DialogHeader>

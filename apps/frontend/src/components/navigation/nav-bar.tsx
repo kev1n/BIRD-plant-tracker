@@ -101,9 +101,11 @@ export default function NavBar() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                  {user.role === 'user' && (
                   <DropdownMenuItem onClick={handleRequestEditing} className="cursor-pointer">
                     Request Editing
                   </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                     Logout
                   </DropdownMenuItem>
