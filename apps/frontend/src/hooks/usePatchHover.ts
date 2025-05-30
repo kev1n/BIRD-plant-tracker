@@ -10,15 +10,8 @@ interface PatchHoverReturn {
   isLoading: boolean;
 }
 
-interface CachedSnapshotData {
-  snapshot: Snapshot;
-  observations: Observation[];
-  timestamp: number;
-}
-
 export function usePatchHover(): PatchHoverReturn {
   const [hoveredPatch, setHoveredPatch] = useState<PolygonHoverData | null>(null);
-  const cacheRef = useRef<Map<string, CachedSnapshotData>>(new Map());
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Cleanup timeout on unmount
@@ -37,13 +30,6 @@ export function usePatchHover(): PatchHoverReturn {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
       
-      // Check cache first (cache for 5 minutes)
-      const cached = cacheRef.current.get(patchId);
-      const now = Date.now();
-      if (cached && (now - cached.timestamp) < 5 * 60 * 1000) {
-        return cached;
-      }
-
       const snapshot_response = await fetch(`${baseUrl}/snapshot/patch/${patchId}/latest`, {
         credentials: 'include',
         headers: {
@@ -94,10 +80,7 @@ export function usePatchHover(): PatchHoverReturn {
         );
       }
 
-      const result = { snapshot, observations, timestamp: now };
-      
-      // Cache the result
-      cacheRef.current.set(patchId, result);
+      const result = { snapshot, observations, timestamp: Date.now() };
       
       return result;
     } catch (error) {

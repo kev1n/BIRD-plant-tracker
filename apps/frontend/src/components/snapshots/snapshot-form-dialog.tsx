@@ -144,6 +144,7 @@ export default function SnapshotForm({
       // Reset form and refresh data
       if (newSnapshot) {
         fetchLatestSnapshot(patchID, null);
+        fetchHistoricalSnapshotMetadata(patchID);
         setNotes('');
         setDate(new Date());
         setObservations([]);
