@@ -1,4 +1,5 @@
 import { getCategoryIcon } from '@/components/observations/category-icon';
+import DateTimePickerCellEditor from '@/components/spreadsheet/date-time-picker-cell-editor';
 import PlantSelectorCellEditor from '@/components/spreadsheet/plant-selector-cell-editor';
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
 import {
@@ -1414,7 +1415,7 @@ export default function SpreadSheetView() {
       filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
-      cellEditor: 'agDateStringCellEditor',
+      cellEditor: 'dateTimePickerCellEditor',
       cellStyle: params => {
         const isEditable = params.data.observationID === editingRowId || params.data.observationID === isNewObs;
         return {
@@ -1577,6 +1578,7 @@ export default function SpreadSheetView() {
     },
     components: {
       plantSelectorCellEditor: PlantSelectorCellEditor,
+      dateTimePickerCellEditor: DateTimePickerCellEditor,
     },
     rowSelection: 'multiple',
     rowMultiSelectWithClick: true,
@@ -1676,25 +1678,29 @@ export default function SpreadSheetView() {
 
       {/* Save Actions for Editing */}
       {editingRowId != null && (
-        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center gap-2">
-              <Save className="h-5 w-5 text-blue-600" />
-              <h3 className="text-sm font-medium text-blue-800">Editing Observation</h3>
-              <span className="text-sm text-blue-700">Choose how to save your changes:</span>
+              <Save className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                <h3 className="text-sm font-medium text-blue-800">Editing Observation</h3>
+                <span className="text-xs sm:text-sm text-blue-700">Choose how to save your changes:</span>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="default" size="sm" onClick={() => saveEdit()}>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
+              <Button variant="default" size="sm" onClick={() => saveEdit()} className="w-full sm:w-auto">
                 <Save className="h-4 w-4 mr-1" />
-                Save to Current Snapshot
+                <span className="hidden xs:inline">Save to Current Snapshot</span>
+                <span className="xs:hidden">Save Current</span>
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm">
-                    Save with Snapshot Copy
+                  <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                    <span className="hidden xs:inline">Save with Snapshot Copy</span>
+                    <span className="xs:hidden">Save Copy</span>
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
                   <AlertDialogHeader>
                     <h2 className="text-lg font-semibold">Duplicate Snapshot & Save</h2>
                     <p className="text-sm text-gray-600">
@@ -1702,9 +1708,9 @@ export default function SpreadSheetView() {
                       The original snapshot remains unchanged, preserving historical data.
                     </p>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => duplicateSnapshotWithEdited()}>
+                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => duplicateSnapshotWithEdited()} className="w-full sm:w-auto">
                       Create Copy & Save
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -1712,11 +1718,12 @@ export default function SpreadSheetView() {
               </AlertDialog>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm">
-                    Save to New Snapshot
+                  <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                    <span className="hidden xs:inline">Save to New Snapshot</span>
+                    <span className="xs:hidden">New Snapshot</span>
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
                   <AlertDialogHeader>
                     <h2 className="text-lg font-semibold">Create New Snapshot</h2>
                     <p className="text-sm text-gray-600">
@@ -1724,15 +1731,15 @@ export default function SpreadSheetView() {
                       Use this when the change represents a new state, not a correction.
                     </p>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => newSnapshotWithEdited()}>
+                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => newSnapshotWithEdited()} className="w-full sm:w-auto">
                       Create New Snapshot
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              <Button variant="outline" size="sm" onClick={() => cancelEdit()}>
+              <Button variant="outline" size="sm" onClick={() => cancelEdit()} className="w-full sm:w-auto">
                 <X className="h-4 w-4 mr-1" />
                 Cancel
               </Button>
@@ -1743,25 +1750,29 @@ export default function SpreadSheetView() {
 
       {/* Save Actions for New Observation */}
       {isNewObs != null && (
-        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-green-600" />
-              <h3 className="text-sm font-medium text-green-800">Adding New Observation</h3>
-              <span className="text-sm text-green-700">Choose where to save this observation:</span>
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                <h3 className="text-sm font-medium text-green-800">Adding New Observation</h3>
+                <span className="text-xs sm:text-sm text-green-700">Choose where to save this observation:</span>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="default" size="sm" onClick={() => addNewToRecentSnapshot()}>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
+              <Button variant="default" size="sm" onClick={() => addNewToRecentSnapshot()} className="w-full sm:w-auto">
                 <Save className="h-4 w-4 mr-1" />
-                Add to Recent Snapshot
+                <span className="hidden xs:inline">Add to Recent Snapshot</span>
+                <span className="xs:hidden">Add Recent</span>
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm">
-                    Add to Snapshot Copy
+                  <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                    <span className="hidden xs:inline">Add to Snapshot Copy</span>
+                    <span className="xs:hidden">Add Copy</span>
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
                   <AlertDialogHeader>
                     <h2 className="text-lg font-semibold">Duplicate Snapshot & Add</h2>
                     <p className="text-sm text-gray-600">
@@ -1769,9 +1780,9 @@ export default function SpreadSheetView() {
                       The original snapshot remains unchanged.
                     </p>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => duplicateSnapshotWithNew()}>
+                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => duplicateSnapshotWithNew()} className="w-full sm:w-auto">
                       Create Copy & Add
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -1779,11 +1790,12 @@ export default function SpreadSheetView() {
               </AlertDialog>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm">
-                    Create New Snapshot
+                  <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                    <span className="hidden xs:inline">Create New Snapshot</span>
+                    <span className="xs:hidden">New Snapshot</span>
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
                   <AlertDialogHeader>
                     <h2 className="text-lg font-semibold">Create New Snapshot</h2>
                     <p className="text-sm text-gray-600">
@@ -1791,15 +1803,15 @@ export default function SpreadSheetView() {
                       Use this when starting a fresh observation session.
                     </p>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => newSnapshotWithNewObs()}>
+                  <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => newSnapshotWithNewObs()} className="w-full sm:w-auto">
                       Create New Snapshot
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              <Button variant="outline" size="sm" onClick={() => cancelAdd()}>
+              <Button variant="outline" size="sm" onClick={() => cancelAdd()} className="w-full sm:w-auto">
                 <X className="h-4 w-4 mr-1" />
                 Cancel
               </Button>
