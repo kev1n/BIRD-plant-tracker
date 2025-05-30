@@ -66,7 +66,7 @@ export default function ObservationItem({
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground min-w-16">Planted:</span>
                   <span className="font-medium">
-                    {new Date(observation.datePlanted).toLocaleDateString()}
+                    {new Date(observation.datePlanted).toLocaleString()}
                   </span>
                 </div>
               )}

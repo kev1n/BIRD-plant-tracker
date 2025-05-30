@@ -747,7 +747,7 @@ export default function SpreadSheetView() {
       },
       plantQuantity: 0,
       hasBloomed:    null,
-      datePlanted:   null,
+      datePlanted:   new Date(),
       Snapshots: {
         dateCreated: new Date().toISOString(),
         patchID:     'REQUIRED',
@@ -1187,7 +1187,19 @@ export default function SpreadSheetView() {
     },
     { 
       field: "Observation Date",
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.dateCreated || '',
+      valueGetter: (params: ValueGetterParams<Observation>) => {
+        const dateStr = params.data?.Snapshots?.dateCreated;
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+      },
       sortable: true,
       filter: true,
       headerClass: 'ag-header-cell-center', // Centers the header

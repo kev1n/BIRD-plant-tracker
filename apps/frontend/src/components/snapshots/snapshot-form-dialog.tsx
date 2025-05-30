@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import DatePicker from '@/components/ui/datepicker';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 import {
   Dialog,
   DialogContent,
@@ -42,7 +42,7 @@ export default function SnapshotForm({
 }) {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState<string>('');
-  const [date, setDate] = useState<Date | null>(null);
+  const [date, setDate] = useState<Date | null>(new Date());
   const [observations, setObservations] = useState<Observation[]>([]);
   const { user } = useUser();
   const { fetchLatestSnapshot } = useContext(LatestSnapshotContext);
@@ -54,7 +54,7 @@ export default function SnapshotForm({
       setDate(new Date(snapshotTemplate.dateCreated)); // Ensure the date is in the correct format, fallback to empty string if null
     } else {
       setNotes('');
-      setDate(null);
+      setDate(new Date());
     }
   }, [snapshotTemplate, newSnapshot]);
 
@@ -194,7 +194,7 @@ export default function SnapshotForm({
       if (newSnapshot) {
         fetchLatestSnapshot(patchID, null);
         setNotes('');
-        setDate(null);
+        setDate(new Date());
         setObservations([]);
       } else {
         fetchLatestSnapshot(patchID, null);
@@ -240,13 +240,18 @@ export default function SnapshotForm({
               <CardTitle className="flex items-center gap-2 text-base justify-between">
                 <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                Snapshot Date
+                Snapshot Date & Time
                 </div>
                 <Badge className="text-xs">Required</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <DatePicker date={date} setDate={d => setDate(d)} pickerName="Select Date" />
+              <DateTimePicker 
+                date={date} 
+                setDate={(d) => setDate(d)} 
+                placeholder="Select date and time"
+                displayFormat="MM/dd/yyyy hh:mm aa"
+              />
             </CardContent>
           </Card>
 

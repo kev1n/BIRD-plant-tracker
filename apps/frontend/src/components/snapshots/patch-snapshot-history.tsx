@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from '@/components/ui/dialog';
 import { Calendar, History } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
@@ -44,7 +44,7 @@ export default function PatchSnapshotHistory({
         const convertedData: DateIDPair[] = data.data.map(
           (entry: { snapshotID: number; dateCreated: string }) => ({
             snapshotID: entry.snapshotID,
-            dateCreated: new Date(entry.dateCreated+"T00:00:00"), 
+            dateCreated: new Date(entry.dateCreated), 
           })
         );
         setHistoricalSnapshots(convertedData);

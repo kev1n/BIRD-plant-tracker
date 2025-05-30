@@ -46,6 +46,9 @@ export default function SnapshotRecord({
           year: 'numeric',
           month: 'short',
           day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
         })}
       </div>
       <div className="flex-1 text-right">
