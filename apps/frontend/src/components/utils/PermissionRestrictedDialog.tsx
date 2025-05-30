@@ -30,37 +30,36 @@ export default function PermissionRestrictedDialog({ children, actionName }: { c
     }
   };
 
-  // If user is not authenticated, don't show anything
-  if (!user) {
-    return <></>;
-  }
-
   // If user has 'user' role, show permission dialog
-  if (user.role === 'user') {
+  if (!user || user.role === 'user') {
     return (
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <div style={{ display: 'inline-block', cursor: 'pointer' }}>
-            <div style={{ pointerEvents: 'none' }}>
+          <span style={{ cursor: 'pointer' }}>
+            <span style={{ pointerEvents: 'none', display: 'contents' }}>
               {children}
-            </div>
-          </div>
+            </span>
+          </span>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <h2 className="text-lg font-semibold text-red-600">Editing Permissions Required</h2>
             <p className="text-sm text-gray-600">
-              You don&apos;t have permission to {actionName}. Your current role is "user" and this action requires editing permissions.
+              You don&apos;t have permission to {actionName}. {user?.role === 'user' && 'Your current role is "user" and this action requires editing permissions.'} {!user && 'You are not logged in.'}
             </p>
-            <p className="text-sm text-gray-600 mt-2">
-              Would you like to request editing permissions from an administrator?
-            </p>
+            {user && (
+              <p className="text-sm text-gray-600 mt-2">
+                Would you like to request editing permissions from an administrator?
+              </p>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRequestEditing}>
-                Request Editing Permissions
-            </AlertDialogAction>
+            {user && (
+              <AlertDialogAction onClick={handleRequestEditing}>
+                  Request Editing Permissions
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
