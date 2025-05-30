@@ -201,6 +201,10 @@ function GridOverlay({
 
         // Make patchs clickable
           base_rect.on('click', () => {
+            // Clear hover state before navigating
+            if (onPatchLeave) {
+              onPatchLeave();
+            }
             navigate(`/map/${label}`, { replace: true });
           });
 
@@ -307,6 +311,7 @@ export default function MapView() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [panToCoords, setPanToCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [showDialogWithDelay, setShowDialogWithDelay] = useState(false);
 
   const [plantToColor, setPlantToColor] = useState<Map<number, string>>(new Map());
   const [patchesToColors, setPatchesToColors] = useState<Map<string, string[]>>(new Map());
@@ -321,9 +326,36 @@ export default function MapView() {
     handleLocationDecline,
   } = useLocationPermission();
 
+  // Add 2-second delay before showing the location dialog
+  useEffect(() => {
+    if (hasCheckedPermissions && showLocationDialog) {
+      const timer = setTimeout(() => {
+        setShowDialogWithDelay(true);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    } else if (!showLocationDialog) {
+      setShowDialogWithDelay(false);
+    }
+  }, [hasCheckedPermissions, showLocationDialog]);
+
   // Polygon data and hover management
   const { polygons, patchOverlaps, isLoading: polygonLoading } = usePolygonData();
   const { hoveredPatch, handlePatchHover, handlePatchLeave } = usePatchHover();
+
+  // Clear hover state when component unmounts or when navigating away
+  useEffect(() => {
+    return () => {
+      handlePatchLeave();
+    };
+  }, [handlePatchLeave]);
+
+  // Clear hover state when patch changes (user clicks on a patch)
+  useEffect(() => {
+    if (patch) {
+      handlePatchLeave();
+    }
+  }, [patch, handlePatchLeave]);
 
   // Handle panning to user location
   const handlePanToLocation = (coords: { latitude: number; longitude: number }) => {
@@ -336,11 +368,30 @@ export default function MapView() {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
 
+    const handleMouseLeave = () => {
+      // Clear hover state when mouse leaves the window
+      handlePatchLeave();
+    };
+
+    const handleDocumentClick = () => {
+      // Clear hover state on any click to prevent persistent tooltips
+      handlePatchLeave();
+    };
+
     if (hoveredPatch) {
       document.addEventListener('mousemove', handleMouseMove);
-      return () => document.removeEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseleave', handleMouseLeave);
+      document.addEventListener('click', handleDocumentClick);
+      window.addEventListener('blur', handleMouseLeave); // Also clear on window blur
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseleave', handleMouseLeave);
+        document.removeEventListener('click', handleDocumentClick);
+        window.removeEventListener('blur', handleMouseLeave);
+      };
     }
-  }, [hoveredPatch]);
+  }, [hoveredPatch, handlePatchLeave]);
 
   // Parse patch into row and column if patch is defined
   let patchInfo = null;
@@ -356,7 +407,7 @@ export default function MapView() {
       <LeafletAssets />
 
       {/* Location Permission Dialog */}
-      {hasCheckedPermissions && (
+      {showDialogWithDelay && (
         <LocationPermissionDialog 
           open={showLocationDialog}
           onAccept={handleLocationAccept}

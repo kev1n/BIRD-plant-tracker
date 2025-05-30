@@ -89,6 +89,7 @@ export default function SnapshotView({
       }
 
       const snapshot_data = await snapshot_response.json();
+      console.log(snapshot_data);
       setCurrentSnapshot({
         snapshotID: snapshot_data.data.snapshotID,
         dateCreated: new Date(snapshot_data.data.dateCreated),

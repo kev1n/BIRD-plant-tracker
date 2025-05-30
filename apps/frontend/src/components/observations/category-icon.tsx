@@ -34,6 +34,30 @@ const GrassIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+// Custom bush icon component
+const BushIcon = ({ className }: { className?: string }) => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <g stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+      {/* Main bush body - overlapping circular shapes */}
+      <circle cx="5" cy="11" r="3.5" />
+      <circle cx="11" cy="11" r="3.5" />
+      <circle cx="8" cy="8" r="3" />
+      
+      {/* Small branches/twigs sticking out */}
+      <path d="M2.5 9 L1.5 8" />
+      <path d="M13.5 9 L14.5 8" />
+      <path d="M8 5.5 L8.5 4.5" />
+    </g>
+  </svg>
+);
+
 const getCategoryIcon = (listName: string) => {
   const name = listName.toLowerCase();
   
@@ -46,7 +70,7 @@ const getCategoryIcon = (listName: string) => {
         };
       case 'shrub':
         return {
-          icon: <Leaf className="w-4 h-4 text-secondary-green" />,
+          icon: <BushIcon className="w-4 h-4 text-secondary-green" />,
           tooltip: 'Shrubs'
         };
       case 'grass':

@@ -66,6 +66,7 @@ export default function ObservationForm({
 }) {
   const [plants, setPlants] = useState<PlantInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [open, setOpen] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(ObservationSchema),
     defaultValues: {
@@ -169,7 +170,7 @@ export default function ObservationForm({
                 <FormDescription>
                   Search and select a plant from the list or add a new one by clicking "New Plant"
                 </FormDescription>
-                <Popover>
+                <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
@@ -208,6 +209,7 @@ export default function ObservationForm({
                               key={plant.plantID}
                               onSelect={() => {
                                 field.onChange(plant);
+                                setOpen(false);
                               }}
                               className="flex items-start justify-between p-3 cursor-pointer hover:bg-accent"
                             >

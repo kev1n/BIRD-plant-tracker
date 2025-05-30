@@ -91,6 +91,7 @@ export default function Signup() {
           placeholder="johnsmith"
           value={formState.username || ''}
           onChange={handleChange}
+          required
         />
 
         <Input.Text

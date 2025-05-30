@@ -1,3 +1,4 @@
+import { getCategoryIcon } from '@/components/observations/category-icon';
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
 import {
   AlertDialog,
@@ -11,7 +12,17 @@ import {
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import PermissionRestrictedDialog from '@/components/utils/PermissionRestrictedDialog';
-import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams, ValueSetterParams } from 'ag-grid-community';
+import {
+  AllCommunityModule,
+  ColDef,
+  GridOptions,
+  iconSetMaterial,
+  ModuleRegistry,
+  RowClassParams,
+  themeQuartz,
+  ValueGetterParams,
+  ValueSetterParams
+} from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { Download, EllipsisVertical, Plus, Save, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -1101,6 +1112,7 @@ export default function SpreadSheetView() {
       headerName: "",
       width: 60,
       resizable: false,
+      pinned: 'left',
       cellRenderer: (params: ValueGetterParams<Observation>) => 
       <DropdownMenu>
         <PermissionRestrictedDialog actionName="open actions menu">
@@ -1183,10 +1195,13 @@ export default function SpreadSheetView() {
         </DropdownMenuContent>  
       </DropdownMenu>,
       headerClass: 'ag-header-cell-center',
-      cellStyle: {textAlign: 'center'}
+      cellStyle: {textAlign: 'center'},
+      sortable: false,
+      filter: false
     },
     { 
       field: "Observation Date",
+      headerName: "Observation Date",
       valueGetter: (params: ValueGetterParams<Observation>) => {
         const dateStr = params.data?.Snapshots?.dateCreated;
         if (!dateStr) return '';
@@ -1201,23 +1216,37 @@ export default function SpreadSheetView() {
         });
       },
       sortable: true,
-      filter: true,
-      headerClass: 'ag-header-cell-center', // Centers the header
-      cellStyle: { textAlign: 'center' }, // Centers the cell content
+      filter: 'agTextColumnFilter',
+      headerClass: 'ag-header-cell-center',
+      cellStyle: { textAlign: 'center' },
+      minWidth: 180,
+      flex: 1,
+      filterParams: {
+        filterOptions: ['contains', 'equals', 'startsWith'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Observer Name",
+      headerName: "Observer",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.users?.username || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      minWidth: 120,
+      flex: 1,
+      filterParams: {
+        filterOptions: ['contains', 'equals', 'startsWith', 'endsWith'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Patch ID",
+      headerName: "Patch",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.patchID || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === isNewObs),
       cellEditor: 'agTextCellEditor',
@@ -1241,12 +1270,19 @@ export default function SpreadSheetView() {
         }
         return false;
       },
+      minWidth: 100,
+      flex: 0.8,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Plant Quantity",
+      headerName: "Quantity",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.plantQuantity,
       sortable: true,
-      filter: true,
+      filter: 'agNumberColumnFilter',
       type: 'numericColumn',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
@@ -1262,19 +1298,25 @@ export default function SpreadSheetView() {
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.plantQuantity;
         const newValue = params.newValue;
-        // only do anything if it actually changed:
         if (newValue !== oldValue) {
           params.data.plantQuantity = newValue;
-          return true;    // tells AG-Grid "I applied the change"
+          return true;
         }
-        return false;     // "nothing changed, revert to oldValue"
+        return false;
+      },
+      minWidth: 100,
+      flex: 0.8,
+      filterParams: {
+        filterOptions: ['equals', 'lessThan', 'greaterThan', 'inRange'],
+        defaultOption: 'equals'
       }
     },
     { 
       field: "Plant Common Name",
+      headerName: "Common Name",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.plantCommonName || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === isNewObs),
       cellEditor: 'agTextCellEditor',
@@ -1295,21 +1337,46 @@ export default function SpreadSheetView() {
         }
         return false;
       },
+      minWidth: 150,
+      flex: 1.2,
+      filterParams: {
+        filterOptions: ['contains', 'equals', 'startsWith'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Plant Scientific Name",
+      headerName: "Scientific Name",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.plantScientificName || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      minWidth: 150,
+      flex: 1.2,
+      filterParams: {
+        filterOptions: ['contains', 'equals', 'startsWith'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Date Planted",
-      cellDataType: 'dateString',
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.datePlanted || null,
+      headerName: "Date Planted",
+      valueGetter: (params: ValueGetterParams<Observation>) => {
+        const dateStr = params.data?.datePlanted;
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+      },
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
       cellEditor: 'agDateStringCellEditor',
@@ -1324,27 +1391,48 @@ export default function SpreadSheetView() {
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.datePlanted;
         const newValue = params.newValue;
-        // only do anything if it actually changed:
         if (newValue !== oldValue) {
           params.data.datePlanted = newValue;
-          return true;    // tells AG-Grid "I applied the change"
+          return true;
         }
-        return false;     // "nothing changed, revert to oldValue"
+        return false;
       },
+      minWidth: 120,
+      flex: 1,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "isNative",
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.isNative,
+      headerName: "Native",
+      valueGetter: (params: ValueGetterParams<Observation>) => {
+        const isNative = params.data?.PlantInfo?.isNative;
+        if (isNative === null || isNative === undefined) return 'Unknown';
+        return isNative ? 'Yes' : 'No';
+      },
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      minWidth: 80,
+      flex: 0.6,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Has Bloomed",
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.hasBloomed,
+      headerName: "Bloomed",
+      valueGetter: (params: ValueGetterParams<Observation>) => {
+        const hasBloomed = params.data?.hasBloomed;
+        if (hasBloomed === null || hasBloomed === undefined) return 'Unknown';
+        return hasBloomed ? 'Yes' : 'No';
+      },
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
       cellEditor: 'agSelectCellEditor',
@@ -1362,36 +1450,60 @@ export default function SpreadSheetView() {
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.hasBloomed;
         const newValue = params.newValue;
-        // only do anything if it actually changed:
         if (newValue !== oldValue) {
           params.data.hasBloomed = newValue;
-          return true;    // tells AG-Grid "I applied the change"
+          return true;
         }
-        return false;     // "nothing changed, revert to oldValue"
+        return false;
       },
+      minWidth: 90,
+      flex: 0.7,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Subcategory",
+      headerName: "Category",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.subcategory || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      minWidth: 120,
+      flex: 1,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      },
+      cellRenderer: (params: ValueGetterParams<Observation>) => {
+        const subcategory = params.data?.PlantInfo?.subcategory;
+        if (!subcategory) return '';
+        const icon = getCategoryIcon(subcategory);
+        return <div className="flex items-center gap-2">
+          {icon}{subcategory}
+        </div>;
+      }
     },
     { 
       field: "Additional Notes",
+      headerName: "Notes",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.notes || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === isNewObs),
       cellEditor: 'agLargeTextCellEditor',
       cellStyle: params => {
         const isEditable = params.data.observationID === isNewObs;
         return {
-          textAlign: 'center',
+          textAlign: 'left',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
           ...(isEditable && { border: '2px solid #3b82f6' }),
+          whiteSpace: 'normal',
+          wordWrap: 'break-word',
+          lineHeight: '1.4'
         };
       },
       cellEditorParams: {
@@ -1409,11 +1521,47 @@ export default function SpreadSheetView() {
         }
         return false;
       },
+      minWidth: 200,
+      flex: 2,
+      wrapText: true,
+      autoHeight: true,
+      filterParams: {
+        filterOptions: ['contains'],
+        defaultOption: 'contains'
+      }
     }
   ];  
 
-  
-  
+  // Grid Options for enhanced functionality
+  const gridOptions: GridOptions = {
+    defaultColDef: {
+      resizable: true,
+      sortable: true,
+      filter: true,
+      floatingFilter: false,
+    },
+    rowSelection: 'multiple',
+    rowMultiSelectWithClick: true,
+    suppressRowClickSelection: true,
+    animateRows: true,
+    enableCellTextSelection: true,
+    ensureDomOrder: true,
+    suppressContextMenu: false,
+    allowContextMenuWithControlKey: true,
+    autoSizeStrategy: {
+      type: 'fitCellContents'
+    },
+    getRowClass: (params: RowClassParams<Observation>) => {
+      if (params.data?.observationID === editingRowId) {
+        return 'editing-row';
+      }
+      if (params.data?.observationID === isNewObs) {
+        return 'new-row';
+      }
+      return '';
+    }
+  };
+
   // AG Grid Theme
   const myTheme = themeQuartz
     .withPart(iconSetMaterial)
@@ -1421,7 +1569,7 @@ export default function SpreadSheetView() {
       accentColor: "#374F31",
       backgroundColor: "#FFFFFF",
       borderColor: "#000000",
-      browserColorScheme: "dark",
+      browserColorScheme: "light",
       chromeBackgroundColor: {
         ref: "foregroundColor",
         mix: 0.07,
@@ -1431,7 +1579,12 @@ export default function SpreadSheetView() {
       foregroundColor: "#000000",
       headerBackgroundColor: "#799A1888",
       headerFontFamily: "inherit",
-      headerFontSize: 14
+      headerFontSize: 14,
+      rowBorder: true,
+      wrapperBorder: true,
+      wrapperBorderRadius: "8px",
+      cellHorizontalPaddingScale: 0.5,
+      rowVerticalPaddingScale: 0.5
     });
 
   // CSV Export function
@@ -1459,6 +1612,27 @@ export default function SpreadSheetView() {
 
   return (
     <div className="flex flex-col h-full py-4">
+      {/* Custom CSS for row styling */}
+      <style>{`
+        .editing-row {
+          background-color: #dbeafe !important;
+          border: 2px solid #3b82f6 !important;
+        }
+        .new-row {
+          background-color: #dcfce7 !important;
+          border: 2px solid #16a34a !important;
+        }
+        .ag-floating-filter-input {
+          font-size: 12px;
+        }
+        .ag-header-cell-menu-button {
+          opacity: 0.7;
+        }
+        .ag-header-cell-menu-button:hover {
+          opacity: 1;
+        }
+      `}</style>
+
       {/* Unsaved Changes Alert & Save Actions Bar */}
       
 
@@ -1617,10 +1791,18 @@ export default function SpreadSheetView() {
         <AgGridReact
           rowData={rowData}
           columnDefs={colDefs}
-          pagination={true}
-          paginationAutoPageSize={true}
+          {...gridOptions}
           theme={myTheme}
           ref={gridRef}
+          pagination={true}
+          paginationAutoPageSize={true}
+          paginationPageSizeSelector={[10, 25, 50, 100]}
+          suppressRowHoverHighlight={false}
+          suppressColumnMoveAnimation={false}
+          suppressAnimationFrame={false}
+          enableBrowserTooltips={true}
+          tooltipShowDelay={500}
+          tooltipHideDelay={2000}
         />
       </div>
     </div>
