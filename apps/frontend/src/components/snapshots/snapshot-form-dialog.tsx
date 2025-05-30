@@ -59,6 +59,7 @@ export default function SnapshotForm({
   }, [snapshotTemplate, newSnapshot]);
 
   useEffect(() => {
+    // Only load observations when editing an existing snapshot (not when creating new or duplicating)
     if (observationsTemplate && newSnapshot === false) {
       setObservations(observationsTemplate);
     } else {
@@ -78,7 +79,16 @@ export default function SnapshotForm({
     setNotes(snapshotTemplate.notes || '');
     // date should be the current date and time
     setDate(new Date());
-    setObservations(observationsTemplate);
+    // Copy observations but mark them as new so they get new IDs
+    const duplicatedObservations = observationsTemplate.map((obs, index) => ({
+      ...obs,
+      observationID: -(index + 1), // Use negative temporary IDs for new observations
+      snapshotID: -1, // Will be set by backend to the new snapshot ID
+      isNew: true, // Mark as new so backend creates new records
+      modified: false, // Not modified since it's a new copy
+      deletedOn: null,
+    }));
+    setObservations(duplicatedObservations);
   };
 
   async function onSubmit() {
@@ -91,7 +101,9 @@ export default function SnapshotForm({
       return;
     }
     const snapshotData = {
-      snapshotID: snapshotTemplate && snapshotTemplate.snapshotID !== -1 ? snapshotTemplate.snapshotID : undefined,
+      // Always create a new snapshot for both "new" and "duplicate" operations
+      // Only use existing snapshotID when editing (newSnapshot === false and not duplicating)
+      snapshotID: newSnapshot ? undefined : (snapshotTemplate?.snapshotID !== -1 ? snapshotTemplate?.snapshotID : undefined),
       dateCreated: date,
       patchID: patchID,
       notes: notes.trim(),
