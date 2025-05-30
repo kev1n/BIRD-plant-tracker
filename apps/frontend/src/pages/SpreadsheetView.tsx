@@ -1,4 +1,5 @@
 import { getCategoryIcon } from '@/components/observations/category-icon';
+import PlantSelectorCellEditor from '@/components/spreadsheet/plant-selector-cell-editor';
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
 import {
   AlertDialog,
@@ -27,7 +28,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { Download, EllipsisVertical, Plus, Save, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from "sonner";
-import { Observation, Snapshot, updatedObservation } from 'types/database_types';
+import { Observation, PlantInfo, Snapshot, updatedObservation } from 'types/database_types';
 import { useUser } from '../hooks/useUser';
 
 // Register all Community features
@@ -226,6 +227,13 @@ export default function SpreadSheetView() {
             datePlanted: obs.datePlanted
           })
         });
+      }
+
+      // if there was only one observation, then tell the user that they've just created an empty snapshot
+      if (observations.length === 0) {
+        toast("Observation deleted and duplicated into new snapshot successfully. This snapshot is now empty because it only had the deleted observation prior to deletion.");
+      } else {
+        toast("Observation deleted and duplicated into new snapshot successfully.");
       }
 
       // Refresh data to show the changes
@@ -1318,10 +1326,10 @@ export default function SpreadSheetView() {
       sortable: true,
       filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
-      editable: params => (params.data.observationID === isNewObs),
-      cellEditor: 'agTextCellEditor',
+      editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
+      cellEditor: 'plantSelectorCellEditor',
       cellStyle: params => {
-        const isEditable = params.data.observationID === isNewObs;
+        const isEditable = params.data.observationID === editingRowId || params.data.observationID === isNewObs;
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
@@ -1331,7 +1339,29 @@ export default function SpreadSheetView() {
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.PlantInfo.plantCommonName;
         const newValue = params.newValue;
-        if (newValue !== oldValue) {
+        
+        // Check if newValue is a PlantInfo object (from plant selector) or just a string
+        if (typeof newValue === 'object' && newValue !== null && 'plantID' in newValue) {
+          // Full plant object selected - update all plant fields
+          const plantInfo = newValue as PlantInfo;
+          params.data.PlantInfo = {
+            plantID: plantInfo.plantID,
+            plantCommonName: plantInfo.plantCommonName,
+            plantScientificName: plantInfo.plantScientificName,
+            isNative: plantInfo.isNative,
+            subcategory: plantInfo.subcategory,
+          };
+          
+          // Immediately refresh the row to show updated plant-related columns
+          if (gridRef.current?.api && params.node) {
+            gridRef.current.api.refreshCells({
+              rowNodes: [params.node],
+              force: true
+            });
+          }
+          return true;
+        } else if (typeof newValue === 'string' && newValue !== oldValue) {
+          // Just the common name changed
           params.data.PlantInfo.plantCommonName = newValue;
           return true;
         }
@@ -1539,6 +1569,9 @@ export default function SpreadSheetView() {
       sortable: true,
       filter: true,
       floatingFilter: false,
+    },
+    components: {
+      plantSelectorCellEditor: PlantSelectorCellEditor,
     },
     rowSelection: 'multiple',
     rowMultiSelectWithClick: true,
