@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 
+const DOCUMENTATION_BASE_URL = "https://docusaurus-gilt-theta.vercel.app/docs/";
+
 export default function AboutUs() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-12">
@@ -36,35 +38,35 @@ export default function AboutUs() {
         <h2 className="text-xl font-semibold px-4">Documentation: Click Each Box to Learn More</h2>
         
         <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
-          <Link to="/docs/navigation-guide" className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
+          <Link to={DOCUMENTATION_BASE_URL + "frontend-guide"} className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
             <h3 className="text-lg font-semibold mb-3">Navigation Guide</h3>
             <p className="text-gray-600">
               Start here for a quick overview and basic navigating through the website
             </p>
           </Link>
 
-          <Link to="/docs/map-guide" className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
+          <Link to={DOCUMENTATION_BASE_URL + "frontend-guide/map-view"} className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
             <h3 className="text-lg font-semibold mb-3">Map Guide</h3>
             <p className="text-gray-600">
               Learn how to use the interactive map features
             </p>
           </Link>
 
-          <Link to="/docs/spreadsheet-guide" className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
+          <Link to={DOCUMENTATION_BASE_URL + "frontend-guide/spreadsheet"} className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
             <h3 className="text-lg font-semibold mb-3">Spreadsheet Guide</h3>
             <p className="text-gray-600">
               Learn how to use the spreadsheet of plants
             </p>
           </Link>
 
-          <Link to="/docs/permissions" className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
+          <Link to={DOCUMENTATION_BASE_URL + "frontend-guide/admin"} className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
             <h3 className="text-lg font-semibold mb-3">Permissions for Various Roles</h3>
             <p className="text-gray-600">
               Understand how different users on the website can interact with it
             </p>
           </Link>
 
-          <Link to="/docs/faq" className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
+          <Link to={DOCUMENTATION_BASE_URL + "faq"} className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-primary-green">
             <h3 className="text-lg font-semibold mb-3">FAQ</h3>
             <p className="text-gray-600">
               Frequently asked questions
