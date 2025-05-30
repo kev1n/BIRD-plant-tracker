@@ -1,4 +1,5 @@
 import { getCategoryIcon } from '@/components/observations/category-icon';
+import DateTimePickerCellEditor from '@/components/spreadsheet/date-time-picker-cell-editor';
 import PlantSelectorCellEditor from '@/components/spreadsheet/plant-selector-cell-editor';
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
 import {
@@ -1409,7 +1410,7 @@ export default function SpreadSheetView() {
       filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
-      cellEditor: 'agDateStringCellEditor',
+      cellEditor: 'dateTimePickerCellEditor',
       cellStyle: params => {
         const isEditable = params.data.observationID === editingRowId || params.data.observationID === isNewObs;
         return {
@@ -1572,6 +1573,7 @@ export default function SpreadSheetView() {
     },
     components: {
       plantSelectorCellEditor: PlantSelectorCellEditor,
+      dateTimePickerCellEditor: DateTimePickerCellEditor,
     },
     rowSelection: 'multiple',
     rowMultiSelectWithClick: true,
