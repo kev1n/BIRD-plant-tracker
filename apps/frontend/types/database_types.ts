@@ -39,3 +39,9 @@ export interface Snapshot {
   notes: string | null;
   userID: string;
 }
+
+export interface updatedObservation {
+  plantQuantity: number;
+  datePlanted: Date | null;
+  hasBloomed: boolean | null;
+}

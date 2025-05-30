@@ -31,7 +31,6 @@ const authMiddleware = async (
     req.user = user;
     next();
   } catch {
-    // console.error('Auth middleware error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

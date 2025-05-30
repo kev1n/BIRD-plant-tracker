@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button';
-import SnapshotView from './snapshot-view';
 import { useContext } from 'react';
+import { toast } from 'sonner';
+import PermissionRestrictedDialog from '../utils/PermissionRestrictedDialog';
 import HistoricalSnapshotContext from './historical-snapshot-context';
+import SnapshotView from './snapshot-view';
+  
 export default function SnapshotRecord({
   snapshotID,
   snapshotDate,
@@ -29,10 +32,10 @@ export default function SnapshotRecord({
       if (response.ok) {
         fetchHistoricalSnapshotMetadata(patchID);
       } else {
-        console.error('Failed to delete snapshot:', response.statusText);
+        toast.error('Failed to delete snapshot');
       }
     } catch (error) {
-      console.error('Error deleting snapshot:', error);
+      toast.error('Error deleting snapshot: ' + error);
     }
   };
 
@@ -48,9 +51,11 @@ export default function SnapshotRecord({
       <div className="flex-1 text-right">
         <div className="flex flex-row justify-end space-x-2">
           <SnapshotView patch={patchID} historicalSnapshotID={snapshotID} triggerTitle={'View'} />
-          <Button variant="outline" onClick={() => deleteSnapshot(snapshotID)}>
-            Delete
-          </Button>
+          <PermissionRestrictedDialog actionName="delete snapshots">
+            <Button variant="outline" onClick={() => deleteSnapshot(snapshotID)}>
+              Delete
+            </Button>
+          </PermissionRestrictedDialog>
         </div>
       </div>
     </div>

@@ -1,6 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,15 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -26,6 +15,18 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ReactNode, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
 
 const patchSoilSchema = z.object({
   soilType: z.enum(["sand", "sandy loam", "pond"]),
@@ -36,9 +37,11 @@ type FormValues = z.infer<typeof patchSoilSchema>;
 export default function PatchSoilEditor({
   patchID,
   updateCallback,
+  trigger,
 }: {
   patchID: string;
   updateCallback: (soilType: string) => void;
+  trigger?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -68,20 +71,25 @@ export default function PatchSoilEditor({
       if (response.ok) {
         updateCallback(values.soilType);
         setOpen(false);
+        toast.success('Soil type updated successfully');
       } else {
-        alert('Error updating soil type');
+        toast.error('Error updating soil type');
       }
     } catch (error) {
-      console.error('Error:', error);
+      toast.error('Error updating soil type: ' + error);
     }
   }
+
+  const defaultTrigger = (
+    <Button variant="outline" className="ml-3 p-2 h-full">
+      <img src="/icons/pen.svg" alt="Edit" className="w-4 h-4" />
+    </Button>
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="ml-3 p-2 h-full">
-          <img src="/icons/pen.svg" alt="Edit" className="w-4 h-4" />
-        </Button>
+        {trigger || defaultTrigger}
       </DialogTrigger>
 
       <DialogContent>

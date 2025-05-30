@@ -3,11 +3,16 @@ import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { Button } from '@/components/ui/button'; // Ensure you have the Button component
 import { Calendar } from '@/components/ui/calendar'; // Ensure you have the Calendar component
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'; // Ensure you have the RadioGroup component
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import {
   Form,
   FormControl,
@@ -17,22 +22,16 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import { useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Ensure you have the Popover component
 import { Input } from '@/components/ui/input';
-import { Observation } from 'types/database_types'; // Ensure you have the correct type for Observation
-import { useEffect } from 'react';
-import { PlantInfo } from 'types/database_types'; // Ensure you have the correct type for PlantInfo
-import NewPlantFormDialog from '../plant-selector/new-plant-form-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popoverDialog'; // Ensure you have the Popover component
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'; // Ensure you have the RadioGroup component
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Observation, PlantInfo } from 'types/database_types'; // Ensure you have the correct type for Observation
 import DeletePlantButton from '../plant-selector/delete-plant-button';
+import NewPlantFormDialog from '../plant-selector/new-plant-form-dialog';
 const PlantInfoSchema = z.object({
   plantID: z.number(),
   plantCommonName: z.string(),
@@ -96,7 +95,7 @@ export default function ObservationForm({
           setPlants([]);
         }
       } catch (error) {
-        console.error('Error fetching plants:', error);
+        toast.error('Error fetching plants: ' + error);
       }
     };
     if (searchTerm.length > 0) {
@@ -147,7 +146,6 @@ export default function ObservationForm({
       hasBloomed: values.hasBloomed !== undefined ? values.hasBloomed : null,
       deletedOn: null, // or handle as needed
     };
-    console.log('Submitting observation data:', observationData);
     if (submitCallback) {
       submitCallback(observationData);
     }
@@ -199,14 +197,13 @@ export default function ObservationForm({
                       />
                       <NewPlantFormDialog newPlant={true} />
                       <CommandList>
-                        <CommandEmpty>No framework found.</CommandEmpty>
+                        <CommandEmpty>No plants found.</CommandEmpty>
                         <CommandGroup>
                           {plants.map(plant => (
                             <CommandItem
                               value={plant.plantCommonName}
                               key={plant.plantID}
                               onSelect={() => {
-                                console.log('Selected plant:', plant);
                                 field.onChange(plant);
                               }}
                             >

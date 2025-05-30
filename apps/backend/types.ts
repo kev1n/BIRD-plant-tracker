@@ -123,4 +123,5 @@ export interface UpdateUserBody {
   email?: string;
   firstname?: string;
   lastname?: string;
+  roleRequested?: string;
 }

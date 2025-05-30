@@ -2,7 +2,7 @@
 // to update user roles
 
 // update a user between editor and user (for RoleRequest components)
-async function updateRole(email: string, approved: boolean) {
+async function updateRole(email: string, approved: boolean): Promise<boolean> {
     const newRole = approved ? 'editor' : 'user';
   
     const token = localStorage.getItem('authToken');
@@ -21,14 +21,16 @@ async function updateRole(email: string, approved: boolean) {
       if (!response.ok){
         throw new Error('Failed to update user role');
       }
+      return true;
     } catch (err){
       console.error('Error updating user:', err);
+      return false;
     }
 }
 
 // Update a user between editor and admin (for UserRoleInfo components)
 
-async function updateAdmin(email:string, approved: boolean) {
+async function updateAdmin(email:string, approved: boolean): Promise<boolean> {
     const newRole = approved ? 'admin' : 'editor';
   
     const token = localStorage.getItem('authToken');
@@ -47,8 +49,10 @@ async function updateAdmin(email:string, approved: boolean) {
       if (!response.ok) {
         throw new Error('Failed to update admin role');
       }
+      return true;
     } catch (err) {
       console.error('Error updating user:', err);
+      return false;
     }
 }
 
