@@ -132,7 +132,7 @@ export default function ImportContainer() {
         >
           {selectedFile ? (
             <div className="space-y-2">
-              <CheckCircle className="h-8 w-8 text-green-600 mx-auto" />
+              <CheckCircle className="h-8 w-8 text-primary-green mx-auto" />
               <div className="space-y-1">
                 <p className="text-sm font-medium text-foreground">{selectedFile.name}</p>
                 <p className="text-xs text-muted-foreground">
@@ -157,14 +157,14 @@ export default function ImportContainer() {
 
         {/* File Info */}
         {selectedFile && (
-          <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-md">
-            <FileText className="h-4 w-4 text-green-600 flex-shrink-0" />
+          <div className="flex items-start space-x-3 p-3 bg-primary-green/10 rounded-md">
+            <FileText className="h-4 w-4 text-primary-green flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-green-800 truncate">
+              <p className="text-sm font-medium text-primary-green truncate">
                 {selectedFile.name}
               </p>
-              <p className="text-xs text-green-600">
-                Ready to import • {formatFileSize(selectedFile.size)}
+              <p className="text-xs text-primary-green">
+                {formatFileSize(selectedFile.size)} • CSV file
               </p>
             </div>
           </div>

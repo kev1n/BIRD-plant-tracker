@@ -41,37 +41,37 @@ const getCategoryIcon = (listName: string) => {
     switch (name) {
       case 'tree':
         return {
-          icon: <TreePine className="w-4 h-4 text-green-600" />,
+          icon: <TreePine className="w-4 h-4 text-primary-green" />,
           tooltip: 'Trees'
         };
       case 'shrub':
         return {
-          icon: <Leaf className="w-4 h-4 text-emerald-600" />,
+          icon: <Leaf className="w-4 h-4 text-secondary-green" />,
           tooltip: 'Shrubs'
         };
       case 'grass':
         return {
-          icon: <GrassIcon className="w-4 h-4 text-amber-600" />,
+          icon: <GrassIcon className="w-4 h-4 text-primary-light-grey" />,
           tooltip: 'Grasses'
         };
       case 'forb':
         return {
-          icon: <Flower2 className="w-4 h-4 text-pink-600" />,
+          icon: <Flower2 className="w-4 h-4 text-secondary-green" />,
           tooltip: 'Forbs'
         };
       case 'other':
         return {
-          icon: <MoreHorizontal className="w-4 h-4 text-slate-600" />,
+          icon: <MoreHorizontal className="w-4 h-4 text-secondary-light-grey" />,
           tooltip: 'Others'
         };
       case 'uncategorized':
         return {
-          icon: <HelpCircle className="w-4 h-4 text-gray-500" />,
+          icon: <HelpCircle className="w-4 h-4 text-primary-light-grey" />,
           tooltip: 'Uncategorized'
         };
       default:
         return {
-          icon: <Leaf className="w-4 h-4 text-green-600" />,
+          icon: <Leaf className="w-4 h-4 text-secondary-green" />,
           tooltip: 'Unknown Category'
         };
     }

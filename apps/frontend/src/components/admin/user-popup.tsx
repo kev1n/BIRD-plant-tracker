@@ -58,7 +58,7 @@ export default function UserPopup(props: User) {
         {props.roleRequested && (
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <AlertCircle className="h-3 w-3 text-orange-500" />
+              <AlertCircle className="h-3 w-3 text-primary-yellow" />
               <span className="text-xs text-muted-foreground">Requested Role</span>
             </div>
             <Badge variant="warning" className="text-xs">

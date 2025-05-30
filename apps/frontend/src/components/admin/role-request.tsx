@@ -78,7 +78,7 @@ export default function RoleRequest(props: RoleRequestProps) {
         <div className="flex items-start space-x-3">
           {/* Avatar */}
           <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarFallback className="bg-orange-100 text-orange-700 font-semibold text-sm">
+            <AvatarFallback className="bg-primary-yellow/20 text-primary-dark-grey font-semibold text-sm">
               {getInitials(props.firstname, props.lastname, props.username)}
             </AvatarFallback>
           </Avatar>

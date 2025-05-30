@@ -181,7 +181,7 @@ export default function SnapshotForm({
                 <Calendar className="w-4 h-4" />
                 Snapshot Date & Time
                 </div>
-                <Badge className="text-xs">Required</Badge>
+                <Badge className="text-xs" variant="secondary">Required</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -209,7 +209,7 @@ export default function SnapshotForm({
                   <FileText className="w-4 h-4" />
                   Notes
                 </div>  
-                <Badge className="text-xs">Required</Badge>
+                <Badge className="text-xs"  variant="secondary">Required</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>

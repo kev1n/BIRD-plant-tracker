@@ -218,7 +218,7 @@ export default function ObservationForm({
                                   </span>
                                   {plant.isNative !== null && (
                                     <Badge 
-                                      variant={plant.isNative ? "default" : "destructive"}
+                                      variant={plant.isNative ? "native" : "nonnative"}
                                       className="text-xs"
                                     >
                                       {plant.isNative ? 'Native' : 'Non-native'}
