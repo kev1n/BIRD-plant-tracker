@@ -25,9 +25,15 @@ interface SidebarProps {
   coords?: { latitude: number; longitude: number } | null;
   locationPermissionStatus: LocationPermissionStatus;
   onPanToLocation?: (coords: { latitude: number; longitude: number }) => void;
+  plantToColor: Map<number, string>;
+  setPlantToColor: (map: Map<number, string>) => void;
+  patchesToColors: Map<string, string[]>;
+  setPatchesToColors: (map: Map<string, string[]>) => void;
 }
 
-function Sidebar({ patchInfo, coords, locationPermissionStatus, onPanToLocation }: SidebarProps) {
+function Sidebar({ patchInfo, coords, locationPermissionStatus, onPanToLocation, 
+  plantToColor, setPlantToColor, patchesToColors, setPatchesToColors
+}: SidebarProps) {
   return (
     <div className="w-full md:w-80 bg-gray-50 h-full overflow-y-auto shadow-md flex flex-col">
       {/* WhereAmI and FiltersList - always shown */}
@@ -37,7 +43,12 @@ function Sidebar({ patchInfo, coords, locationPermissionStatus, onPanToLocation 
           locationPermissionStatus={locationPermissionStatus}
           onPanToLocation={onPanToLocation}
         />
-        <FiltersList />
+        <FiltersList 
+          plantToColor={plantToColor}
+          setPlantToColor={setPlantToColor}
+          patchesToColors={patchesToColors}
+          setPatchesToColors={setPatchesToColors}
+        />
       </div>
       
       {/* Patch info - only shown on mobile when a patch is selected, but without the snapshot view */}
@@ -64,12 +75,14 @@ function GridOverlay({
   patchOverlaps, 
   onPatchHover, 
   onPatchLeave,
-  coords
+  coords,
+  patchesToColors,
 }: { 
   patchOverlaps: PatchPolygonOverlap[]; 
   onPatchHover?: (patchId: string, polygonId: string) => void;
   onPatchLeave?: () => void;
   coords?: { latitude: number; longitude: number } | null;
+  patchesToColors: Map<string, string[]>;
 }) {
 
   // initialize variables
@@ -80,6 +93,31 @@ function GridOverlay({
 
   // Extract grid patch from URL params
   const { patch } = useParams<{ patch?: string }>();
+
+  const make_rectangle_stripes = (
+    colors: string[],
+    topLeft: LatLngTuple,
+    bottomRight: LatLngTuple
+  ) => {
+    if (colors.length === 0) return [];
+    const [lat1, lng1] = topLeft;
+    const [lat2, lng2] = bottomRight;
+    const lngStep = (lng2 - lng1) / colors.length;
+    const rects: Rectangle[] = [];
+
+    colors.forEach((color, i) => {
+      const rectTopLeft: LatLngTuple = [lat1, lng1 + i * lngStep];
+      const rectBottomRight: LatLngTuple = [lat2, lng1 + (i + 1) * lngStep];
+      const rect = new Rectangle([rectTopLeft, rectBottomRight], {
+        color: '#000000',
+        weight: 0.5,
+        fillColor: color,
+        fillOpacity: 0.7,
+      });
+      rects.push(rect);
+    });
+    return rects;
+  };
 
   useEffect(() => {
     if (!map) return;
@@ -124,45 +162,64 @@ function GridOverlay({
         let fillColor = '#000000'; // Default
         let fillOpacity = 0;
 
+        let striping = false;
+        let filtering_colors:string[] = [];
+
         if (isUserHere) {
           fillColor = '#4CAF50';
           fillOpacity = 0.9;
         } else if (isSelected) {
           fillColor = '#4a90e2';
           fillOpacity = 0.9;
-        } else if (isInPolygon) {
+        } 
+        else if (patchesToColors.has(label) && patchesToColors.get(label)?.length) {
+          filtering_colors = patchesToColors?.get(label) || [];
+          striping = true;
+        }
+        else if (isInPolygon) {
           // Use different colors based on polygon
           fillColor = polygonId === 'northern-section' ? '#4CAF50' : '#FF9800';
           fillOpacity = 0.3;
         }
-
         // Create rectangle for grid patch
-        const rect = new Rectangle([topLeft, bottomRight], {
+        const base_rect = new Rectangle([topLeft, bottomRight], {
           color: '#000000',
           weight: 0.5,
           fillColor,
           fillOpacity,
         });
-
-        // Make patchs clickable
-        rect.on('click', () => {
-          navigate(`/map/${label}`, { replace: true });
-        });
-
-        // Add hover events for patches within polygons
-        if (isInPolygon && onPatchHover && onPatchLeave && polygonId) {
-          rect.on('mouseover', () => {
-            onPatchHover(label, polygonId);
-            rect.setStyle({ weight: 2 });
-          });
-
-          rect.on('mouseout', () => {
-            onPatchLeave();
-            rect.setStyle({ weight: 1 });
-          });
+        
+        let rects_list:Rectangle[] = [];
+        if (striping && filtering_colors) {
+          rects_list = make_rectangle_stripes(filtering_colors, topLeft, bottomRight);
         }
 
-        rect.addTo(gridRef.current);
+        // Add each rectangle to the grid layer
+        for (const rect of rects_list) {
+          rect.addTo(gridRef.current);
+        }
+
+        // Make patchs clickable
+          base_rect.on('click', () => {
+            navigate(`/map/${label}`, { replace: true });
+          });
+
+          // Add hover events for patches within polygons
+          if (isInPolygon && onPatchHover && onPatchLeave && polygonId) {
+            base_rect.on('mouseover', () => {
+              onPatchHover(label, polygonId);
+              base_rect.setStyle({ weight: 2 });
+            });
+
+            base_rect.on('mouseout', () => {
+              onPatchLeave();
+              base_rect.setStyle({ weight: 1 });
+            });
+          }
+
+          base_rect.addTo(gridRef.current);
+
+        
       }
     }
 
@@ -220,7 +277,7 @@ function GridOverlay({
         map.removeLayer(gridRef.current);
       }
     };
-  }, [map, navigate, patch, location, coords, patchOverlaps, onPatchHover, onPatchLeave]);
+  }, [map, navigate, patch, location, coords, patchOverlaps, onPatchHover, onPatchLeave, patchesToColors]);
 
   return null;
 }
@@ -250,6 +307,9 @@ export default function MapView() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [panToCoords, setPanToCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  const [plantToColor, setPlantToColor] = useState<Map<number, string>>(new Map());
+  const [patchesToColors, setPatchesToColors] = useState<Map<string, string[]>>(new Map());
   
   // Use the custom location permission hook
   const {
@@ -322,6 +382,10 @@ export default function MapView() {
           coords={coords} 
           locationPermissionStatus={locationPermissionStatus}
           onPanToLocation={handlePanToLocation}
+          plantToColor={plantToColor}
+          setPlantToColor={setPlantToColor}
+          patchesToColors={patchesToColors}
+          setPatchesToColors={setPatchesToColors}
         />
       </div>
       
@@ -340,6 +404,10 @@ export default function MapView() {
             coords={coords} 
             locationPermissionStatus={locationPermissionStatus}
             onPanToLocation={handlePanToLocation}
+            plantToColor={plantToColor}
+            setPlantToColor={setPlantToColor}
+            patchesToColors={patchesToColors}
+            setPatchesToColors={setPatchesToColors}
           />
         </div>
       )}
@@ -370,6 +438,7 @@ export default function MapView() {
                 onPatchHover={handlePatchHover}
                 onPatchLeave={handlePatchLeave}
                 coords={coords}
+                patchesToColors={patchesToColors}
               />
             </>
           )}
@@ -418,4 +487,3 @@ export default function MapView() {
     </div>
   );
 }
-

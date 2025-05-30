@@ -85,22 +85,17 @@ export default function SnapshotForm({
       toast.error('Please select a date for the snapshot.');
       return;
     }
-    if (notes.trim() === '') {
-      toast.error('Please enter notes for the snapshot.');
-      return;
-    }
     if (!user || !user.id) {
       toast.error('You must be logged in to submit a snapshot. Please log in and try again.');
       return;
     }
     const newSnapshotData: Snapshot = {
-      snapshotID: snapshotTemplate ? snapshotTemplate.snapshotID : undefined,
+      snapshotID: snapshotTemplate && snapshotTemplate.snapshotID!=-1 ? snapshotTemplate.snapshotID : undefined,
       dateCreated: date,
       patchID: patchID,
       notes: notes.trim(),
       userID: user.id,
     };
-    console.log('Submitting snapshot data:', newSnapshotData);
     const validation = snapshotSchema.safeParse(newSnapshotData);
     if (!validation.success) {
       toast.error('Failed to submit snapshot data due to validation errors. Please check the input and try again.');
@@ -110,9 +105,6 @@ export default function SnapshotForm({
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-      console.log(
-        `Submitting snapshot data to: ${baseUrl}/snapshot/${newSnapshot ? 'oop' : snapshotTemplate?.snapshotID}`
-      );
       const api_path =
         baseUrl + (newSnapshot ? '/snapshot/' : `/snapshot/${snapshotTemplate?.snapshotID}`); // Use POST for new, PUT for existing
       const response = await fetch(api_path, {

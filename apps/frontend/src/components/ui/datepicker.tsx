@@ -4,18 +4,22 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popoverDialog"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 
 export default function DatePicker({ 
   date, 
   setDate,
-  pickerName
+  pickerName,
+  className="",
+  displayFormat = "PPP"
 }: { 
   date: Date | null, 
   setDate: (date: Date | null) => void 
   pickerName?: string
+  className?: string
+  displayFormat?: string
 }) {
   return (
     <Popover modal={true}>
@@ -24,10 +28,11 @@ export default function DatePicker({
           variant={"outline"}
           className={cn(
             "w-[150px] justify-start text-left font-normal",
-            !date && "text-muted-foreground"
+            !date && "text-muted-foreground",
+            className
           )}
         >
-          {date ? format(date, "PPP") : <span>{pickerName}</span>}
+          {date ? format(date, displayFormat) : <span>{pickerName}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

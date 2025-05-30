@@ -120,7 +120,7 @@ export default function ObservationsSection({
                 trigger={
                   <Button variant="outline">
                     <Plus className="w-4 h-4 mr-2" />
-                    Add New Plant
+                    Add New Plant Observation
                   </Button>
                 }
               />

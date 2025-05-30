@@ -96,7 +96,6 @@ export default function SnapshotView({
         notes: snapshot_data.data.notes || 'No notes available for this patch.',
         userID: snapshot_data.data.userID,
       });
-      console.log('Snapshot data:', snapshot_data); // For debugging purposes
       setAuthor(snapshot_data.data.users.username || 'Not available');
       setPatchFound(snapshot_data);
 
