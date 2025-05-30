@@ -23,6 +23,7 @@ export function usePatchHover(): PatchHoverReturn {
 
   const fetchSnapshotData = useCallback(async (patchId: string) => {
     try {
+      console.log('fetching snapshot data for patchId', patchId);
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
       
@@ -40,6 +41,7 @@ export function usePatchHover(): PatchHoverReturn {
         },
       });
 
+      
       if (snapshot_response.status === 404) {
         return null; // No snapshot available
       }
@@ -48,10 +50,11 @@ export function usePatchHover(): PatchHoverReturn {
         throw new Error('Failed to fetch snapshot');
       }
 
+
       const snapshot_data = await snapshot_response.json();
       const snapshot: Snapshot = {
         snapshotID: snapshot_data.data.snapshotID,
-        dateCreated: new Date(snapshot_data.data.dateCreated + 'T00:00:00'),
+        dateCreated: new Date(snapshot_data.data.dateCreated),
         patchID: snapshot_data.data.patchID,
         notes: snapshot_data.data.notes || 'No notes available for this patch.',
         userID: snapshot_data.data.userID,

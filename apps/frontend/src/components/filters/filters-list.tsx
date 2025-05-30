@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
 } from '@/components/ui/command';
 import DatePicker from '@/components/ui/datepicker';
 import { Label } from '@/components/ui/label';
@@ -272,13 +272,14 @@ export default function FiltersList({
                       >
                         {plant.plantCommonName}{' '}
                         {plant.plantScientificName && `(${plant.plantScientificName})`}{' '}
-                        {plant.isNative != null && plant.isNative ? (
-                          <span className="text-green-500">[Native]</span>
-                        ) : (
-                          <span className="text-red-500">[Non-native]</span>
+                        {plant.isNative === true && (
+                          <span className="text-secondary-green">[Native]</span>
+                        )}
+                        {plant.isNative === false && (
+                          <span className="text-primary-yellow">[Non-native]</span>
                         )}
                         {plant.subcategory && (
-                          <span className="text-gray-500">[{plant.subcategory}]</span>
+                          <span className="text-primary-light-grey">[{plant.subcategory}]</span>
                         )}
                         <Check
                           className={cn(
@@ -321,14 +322,14 @@ export default function FiltersList({
                       setPlantToColor(new Map(plantToColor.set(plant.plantID, newColor)));
                     }}
                   >
-                    <RefreshCw className="h-4 w-4 text-blue-500 hover:text-blue-700" />
+                    <RefreshCw className="h-4 w-4 text-primary-light-grey hover:text-primary-dark-grey" />
                   </button>
                   <button
                     onClick={() =>
                       setSelectedPlants(selectedPlants.filter(p => p.plantID !== plant.plantID))
                     }
                   >
-                    <X className="h-4 w-4 ml-1 text-red-500 hover:text-red-700" />
+                    <X className="h-4 w-4 ml-1 text-destructive hover:text-destructive/80" />
                   </button>
                   </div>
                 </div>

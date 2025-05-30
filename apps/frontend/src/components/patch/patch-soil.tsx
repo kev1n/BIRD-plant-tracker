@@ -11,13 +11,13 @@ const getSoilIcon = (soilType: string) => {
   const type = soilType?.toLowerCase();
   switch (type) {
     case 'sand':
-      return <Mountain className="w-4 h-4 text-amber-600" />;
+      return <Mountain className="w-4 h-4 text-primary-light-grey" />;
     case 'sandy loam':
-      return <Waves className="w-4 h-4 text-green-600" />;
+      return <Waves className="w-4 h-4 text-secondary-green" />;
     case 'pond':
-      return <Droplets className="w-4 h-4 text-blue-600" />;
+      return <Droplets className="w-4 h-4 text-primary-green" />;
     default:
-      return <Mountain className="w-4 h-4 text-slate-500" />;
+      return <Mountain className="w-4 h-4 text-secondary-light-grey" />;
   }
 };
 
@@ -25,13 +25,13 @@ const getSoilColor = (soilType: string) => {
   const type = soilType?.toLowerCase();
   switch (type) {
     case 'sand':
-      return 'bg-amber-100 text-amber-800 border-amber-200';
+      return 'bg-primary-light-grey/20 text-primary-light-grey border-primary-light-grey/30';
     case 'sandy loam':
-      return 'bg-green-100 text-green-800 border-green-200';
+      return 'bg-secondary-green/20 text-secondary-green border-secondary-green/30';
     case 'pond':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
+      return 'bg-primary-green/20 text-primary-green border-primary-green/30';
     default:
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return 'bg-secondary-light-grey/20 text-secondary-light-grey border-secondary-light-grey/30';
   }
 };
 
@@ -39,13 +39,13 @@ const getSoilIconBackground = (soilType: string) => {
   const type = soilType?.toLowerCase();
   switch (type) {
     case 'sand':
-      return 'bg-amber-50';
+      return 'bg-primary-light-grey/10';
     case 'sandy loam':
-      return 'bg-green-50';
+      return 'bg-secondary-green/10';
     case 'pond':
-      return 'bg-blue-50';
+      return 'bg-primary-green/10';
     default:
-      return 'bg-slate-50';
+      return 'bg-secondary-light-grey/10';
   }
 };
 
@@ -115,8 +115,8 @@ export default function PatchSoil({ patchID }: { patchID: string }) {
                 patchID={patchID} 
                 updateCallback={setSoilType}
                 trigger={
-                  <Button variant="ghost" size="sm" className="hover:bg-slate-50">
-                    <Edit className="w-4 h-4 text-slate-600" />
+                  <Button variant="ghost" size="sm" className="hover:bg-secondary-light-grey/10">
+                    <Edit className="w-4 h-4 text-primary-light-grey" />
                     <span className="sr-only">Edit soil type</span>
                   </Button>
                 }

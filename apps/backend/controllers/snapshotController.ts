@@ -285,3 +285,56 @@ export async function getAllSnapshotsDatesForPatch(req: Request, res: Response) 
     res.status(500).json({ error: `Internal server error: ${error}` });
   }
 }
+
+export async function createOrUpdateSnapshotWithObservations(req: AuthRequest, res: Response) {
+  try {
+    const { snapshot, observations } = req.body;
+    const userID = req.user?.id;
+
+    if (!userID) {
+      res.status(400).json({ error: 'User not authenticated' });
+      return;
+    }
+
+    if (!snapshot || !observations || !Array.isArray(observations)) {
+      res.status(400).json({ error: 'Snapshot and observations data required' });
+      return;
+    }
+
+    // Start a transaction using Supabase RPC function
+    const { data, error } = await supabase.rpc('create_or_update_snapshot_with_observations', {
+      snapshot_data: {
+        snapshot_id: snapshot.snapshotID || null,
+        date_created: snapshot.dateCreated,
+        patch_id: snapshot.patchID,
+        notes: snapshot.notes || null,
+        user_id: userID,
+      },
+      observations_data: observations.map((obs: any) => ({
+        observation_id: obs.observationID || null,
+        snapshot_id: obs.snapshotID || null, // Will be set by the function
+        plant_quantity: obs.plantQuantity,
+        plant_id: obs.PlantInfo?.plantID || obs.plantID,
+        date_planted: obs.datePlanted || null,
+        has_bloomed: obs.hasBloomed !== undefined ? obs.hasBloomed : null,
+        is_new: obs.isNew || false,
+        modified: obs.modified || false,
+        deleted_on: obs.deletedOn || null,
+      })),
+      is_new_snapshot: !snapshot.snapshotID || snapshot.snapshotID === -1,
+    });
+
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'Snapshot and observations processed successfully',
+      snapshotID: data.snapshot_id,
+      observationsProcessed: data.observations_count,
+    });
+  } catch (error) {
+    res.status(500).json({ error: `Internal server error: ${error}` });
+  }
+}

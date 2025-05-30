@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button'; // Ensure you have the Button component
 import {
   Command,
@@ -31,6 +32,8 @@ import { toast } from 'sonner';
 import { Observation, PlantInfo } from 'types/database_types'; // Ensure you have the correct type for Observation
 import DeletePlantButton from '../plant-selector/delete-plant-button';
 import NewPlantFormDialog from '../plant-selector/new-plant-form-dialog';
+import { getCategoryIcon } from './category-icon';
+
 const PlantInfoSchema = z.object({
   plantID: z.number(),
   plantCommonName: z.string(),
@@ -80,7 +83,10 @@ export default function ObservationForm({
       try {
         const token = localStorage.getItem('authToken');
         const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-        const api_path = `${baseUrl}/plants?name=${searchTerm}`;
+        // If no search term, get all plants with a limit, otherwise search by name
+        const api_path = searchTerm.length > 0 
+          ? `${baseUrl}/plants?name=${searchTerm}`
+          : `${baseUrl}/plants?limit=20`; // Load first 20 plants by default
         const response = await fetch(api_path, {
           credentials: 'include',
           headers: {
@@ -98,11 +104,9 @@ export default function ObservationForm({
         toast.error('Error fetching plants: ' + error);
       }
     };
-    if (searchTerm.length > 0) {
-      fetchPlants();
-    } else {
-      setPlants([]);
-    }
+    
+    // Always fetch plants (either search results or default list)
+    fetchPlants();
   }, [searchTerm]);
   useEffect(() => {
     if (observation) {
@@ -150,7 +154,6 @@ export default function ObservationForm({
       submitCallback(observationData);
     }
   }
-
   return (
     <div className="p-4">
       <Form {...form}>
@@ -195,7 +198,7 @@ export default function ObservationForm({
                           setSearchTerm(value);
                         }}
                       />
-                      <NewPlantFormDialog newPlant={true} />
+                      
                       <CommandList>
                         <CommandEmpty>No plants found.</CommandEmpty>
                         <CommandGroup>
@@ -206,37 +209,44 @@ export default function ObservationForm({
                               onSelect={() => {
                                 field.onChange(plant);
                               }}
+                              className="flex items-start justify-between p-3 cursor-pointer hover:bg-accent"
                             >
-                              {plant.plantCommonName}{' '}
-                              {plant.plantScientificName && `(${plant.plantScientificName})`}{' '}
-                              {plant.isNative != null && plant.isNative ? (
-                                <span className="text-green-500">[Native]</span>
-                              ) : (
-                                <span className="text-red-500">[Non-native]</span>
-                              )}
-                              {plant.subcategory && (
-                                <span className="text-gray-500">[{plant.subcategory}]</span>
-                              )}
-                              <Check
-                                className={cn(
-                                  'ml-auto',
-                                  field?.value?.plantCommonName === plant.plantCommonName
-                                    ? 'opacity-100'
-                                    : 'opacity-0'
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-medium text-foreground min-w-32">
+                                    {plant.plantCommonName}
+                                  </span>
+                                  {plant.isNative !== null && (
+                                    <Badge 
+                                      variant={plant.isNative ? "native" : "nonnative"}
+                                      className="text-xs"
+                                    >
+                                      {plant.isNative ? 'Native' : 'Non-native'}
+                                    </Badge>
+                                  )}
+                                  {plant.subcategory && getCategoryIcon(plant.subcategory)}
+                                </div>
+                                {plant.plantScientificName && (
+                                  <p className="text-sm text-muted-foreground italic mt-1">
+                                    {plant.plantScientificName}
+                                  </p>
                                 )}
-                              />
-                              <DeletePlantButton
-                                plantCommonName={plant.plantCommonName}
-                                plantID={plant.plantID.toString()}
-                                callBack={() => {
-                                  setSearchTerm('');
-                                  setPlants([]);
-                                }}
-                              />
+                              </div>
+                              <div className="flex items-center gap-2 ml-4">
+                                <DeletePlantButton
+                                  plantCommonName={plant.plantCommonName}
+                                  plantID={plant.plantID.toString()}
+                                  callBack={() => {
+                                    setSearchTerm('');
+                                    setPlants([]);
+                                  }}
+                                />
+                              </div>
                             </CommandItem>
                           ))}
                         </CommandGroup>
                       </CommandList>
+                      <NewPlantFormDialog newPlant={true} />
                     </Command>
                   </PopoverContent>
                 </Popover>

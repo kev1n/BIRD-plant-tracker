@@ -1226,7 +1226,7 @@ export default function SpreadSheetView() {
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       valueSetter: (params: ValueSetterParams<Observation>) => {
@@ -1256,7 +1256,7 @@ export default function SpreadSheetView() {
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       valueSetter: (params: ValueSetterParams<Observation>) => {
@@ -1283,7 +1283,7 @@ export default function SpreadSheetView() {
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       valueSetter: (params: ValueSetterParams<Observation>) => {
@@ -1318,7 +1318,7 @@ export default function SpreadSheetView() {
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       valueSetter: (params: ValueSetterParams<Observation>) => {
@@ -1353,7 +1353,7 @@ export default function SpreadSheetView() {
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       cellEditorParams: {
@@ -1391,7 +1391,7 @@ export default function SpreadSheetView() {
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       cellEditorParams: {

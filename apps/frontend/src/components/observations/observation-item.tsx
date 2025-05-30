@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Edit, Leaf, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { useContext } from 'react';
 import { Observation } from 'types/database_types';
 import ObservationFormDialog from './observation-form-dialog';
@@ -22,10 +22,8 @@ export default function ObservationItem({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             {/* Plant Name and Scientific Name */}
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
-                <Leaf className="w-4 h-4 text-green-600" />
-              </div>
+            <div className="flex mb-3 justify-between">
+
               <div>
                 <h3 className="font-semibold text-foreground">
                   {observation.PlantInfo.plantCommonName}
@@ -36,22 +34,20 @@ export default function ObservationItem({
                   </p>
                 )}
               </div>
-            </div>
 
-            {/* Native Status Badge */}
+              {/* Native Status Badge */}
             {observation.PlantInfo.isNative != null && (
               <div className="mb-3">
                 <Badge 
-                  variant={observation.PlantInfo.isNative ? "default" : "secondary"}
-                  className={observation.PlantInfo.isNative 
-                    ? "bg-green-100 text-green-800 hover:bg-green-200" 
-                    : "bg-orange-100 text-orange-800 hover:bg-orange-200"
-                  }
+                  variant={observation.PlantInfo.isNative ? "native" : "nonnative"}
                 >
                   {observation.PlantInfo.isNative ? 'Native' : 'Non-native'}
                 </Badge>
               </div>
             )}
+            </div>
+
+            
 
             <div className="border-t border-border my-3" />
 
@@ -75,7 +71,7 @@ export default function ObservationItem({
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground min-w-16">Bloomed:</span>
                   <Badge 
-                    variant={observation.hasBloomed ? "default" : "outline"} 
+                    variant={observation.hasBloomed ? "success" : "outline"} 
                     className={"text-xs"}
                   >
                     {observation.hasBloomed ? 'Yes' : 'No'}
@@ -87,16 +83,14 @@ export default function ObservationItem({
 
           {/* Action Buttons */}
           {editing && (
-            <div className="flex gap-1 ml-4">
+            <div className="flex gap-2 ml-4">
               <ObservationFormDialog
                 newObservation={false}
                 observation={observation}
-                submitCallback={updatedObservation => {
-                  updateObservation(updatedObservation);
-                }}
+                submitCallback={updateObservation}
                 trigger={
-                  <Button variant="ghost" size="sm" className="hover:bg-blue-50">
-                    <Edit className="w-4 h-4 text-blue-600" />
+                  <Button variant="ghost" size="sm">
+                    <Edit className="w-4 h-4 text-primary-light-grey" />
                     <span className="sr-only">Edit observation</span>
                   </Button>
                 }
@@ -104,10 +98,9 @@ export default function ObservationItem({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="hover:bg-red-50"
                 onClick={() => deleteObservation(observation.tempKey)}
               >
-                <Trash2 className="w-4 h-4 text-red-600" />
+                <Trash2 className="w-4 h-4 text-destructive" />
                 <span className="sr-only">Delete observation</span>
               </Button>
             </div>

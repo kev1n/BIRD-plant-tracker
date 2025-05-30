@@ -94,7 +94,7 @@ export default function ObservationsSection({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Sprout className="w-5 h-5 text-green-600" />
+              <Sprout className="w-5 h-5 text-secondary-green" />
               <div>
                 <CardTitle>Plant Observations</CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -129,8 +129,8 @@ export default function ObservationsSection({
 
           {totalObservations === 0 ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Sprout className="w-8 h-8 text-green-600" />
+              <div className="w-16 h-16 bg-secondary-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sprout className="w-8 h-8 text-secondary-green" />
               </div>
               <h3 className="text-lg font-medium text-muted-foreground mb-2">No plants recorded yet</h3>
               <p className="text-muted-foreground mb-4">
@@ -139,14 +139,15 @@ export default function ObservationsSection({
             </div>
           ) : (
             <div className="space-y-3">
-              <ObservationsList observations={trees} listName={'Trees'} editing={editing} />
-              <ObservationsList observations={shrubs} listName={'Shrubs'} editing={editing} />
-              <ObservationsList observations={grasses} listName={'Grasses'} editing={editing} />
-              <ObservationsList observations={forbs} listName={'Forbs'} editing={editing} />
-              <ObservationsList observations={others} listName={'Others'} editing={editing} />
+              <ObservationsList observations={trees} listName={'Trees'} subCategory={'tree'} editing={editing} />
+              <ObservationsList observations={shrubs} listName={'Shrubs'} subCategory={'shrub'} editing={editing} />
+              <ObservationsList observations={grasses} listName={'Grasses'} subCategory={'grass'} editing={editing} />
+              <ObservationsList observations={forbs} listName={'Forbs'} subCategory={'forb'} editing={editing} />
+              <ObservationsList observations={others} listName={'Others'} subCategory={'other'} editing={editing} />
               <ObservationsList
                 observations={uncategorized}
                 listName={'Uncategorized'}
+                subCategory={'uncategorized'}
                 editing={editing}
               />
             </div>
