@@ -5,37 +5,19 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Flower2, HelpCircle, Leaf, MoreHorizontal, TreePine, Wheat } from 'lucide-react';
 import { Observation } from '../../../types/database_types';
+import { getCategoryIcon } from './category-icon';
 import ObservationItem from './observation-item';
-
-const getCategoryIcon = (listName: string) => {
-  const name = listName.toLowerCase();
-  switch (name) {
-    case 'trees':
-      return <TreePine className="w-4 h-4 text-green-600" />;
-    case 'shrubs':
-      return <Leaf className="w-4 h-4 text-emerald-600" />;
-    case 'grasses':
-      return <Wheat className="w-4 h-4 text-amber-600" />;
-    case 'forbs':
-      return <Flower2 className="w-4 h-4 text-pink-600" />;
-    case 'others':
-      return <MoreHorizontal className="w-4 h-4 text-slate-600" />;
-    case 'uncategorized':
-      return <HelpCircle className="w-4 h-4 text-gray-500" />;
-    default:
-      return <Leaf className="w-4 h-4 text-green-600" />;
-  }
-};
 
 export default function ObservationsList({
   observations,
   listName,
+  subCategory,
   editing,
 }: {
   observations: Observation[];
   listName: string;
+  subCategory: string;
   editing: boolean;
 }) {
   if (observations.length === 0) {
@@ -48,7 +30,7 @@ export default function ObservationsList({
         <AccordionTrigger className="hover:no-underline">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              {getCategoryIcon(listName)}
+              {getCategoryIcon(subCategory)}
               <span className="font-medium">{listName}</span>
             </div>
             <Badge 

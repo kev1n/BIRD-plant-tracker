@@ -139,14 +139,15 @@ export default function ObservationsSection({
             </div>
           ) : (
             <div className="space-y-3">
-              <ObservationsList observations={trees} listName={'Trees'} editing={editing} />
-              <ObservationsList observations={shrubs} listName={'Shrubs'} editing={editing} />
-              <ObservationsList observations={grasses} listName={'Grasses'} editing={editing} />
-              <ObservationsList observations={forbs} listName={'Forbs'} editing={editing} />
-              <ObservationsList observations={others} listName={'Others'} editing={editing} />
+              <ObservationsList observations={trees} listName={'Trees'} subCategory={'tree'} editing={editing} />
+              <ObservationsList observations={shrubs} listName={'Shrubs'} subCategory={'shrub'} editing={editing} />
+              <ObservationsList observations={grasses} listName={'Grasses'} subCategory={'grass'} editing={editing} />
+              <ObservationsList observations={forbs} listName={'Forbs'} subCategory={'forb'} editing={editing} />
+              <ObservationsList observations={others} listName={'Others'} subCategory={'other'} editing={editing} />
               <ObservationsList
                 observations={uncategorized}
                 listName={'Uncategorized'}
+                subCategory={'uncategorized'}
                 editing={editing}
               />
             </div>
