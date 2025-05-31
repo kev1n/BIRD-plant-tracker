@@ -60,6 +60,7 @@ export default function PatchSnapshotHistory({
   };
 
   useEffect(() => {
+    if (!open) return; 
     fetchHistoricalSnapshotMetadata(patch);
   }, [patch, open]);
 
