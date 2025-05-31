@@ -47,7 +47,9 @@ We will write documentation/metadata for how to reproduce and manage the technol
 * We are not creating a paper map
 
 # Flowchart
-Note that the mockup visuals seen throughout this specification are for reference only.
+Note that the mockup visuals seen throughout this specification are for reference only:
+
 https://excalidraw.com/#room=89b4ce3a63abfdb5b853,jqXdficgSbOPQoPnWcewHg
+
 https://excalidraw.com/#room=6d85b47c5161c6a55199,nGgC1ssmnl9j8HkDhEEneA
 

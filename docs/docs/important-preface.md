@@ -89,12 +89,12 @@ There are four user roles, listed from most to least permissions. Bullet points 
 
 * All Editor permissions
 * Can promote or revoke Editors
-* Can delete **all** snapshots and observations
 
 ### 3. Editor
 
 * Can create new snapshots and observations
 * Can edit **all** snapshots and observations
+* Can delete **all** snapshots and observations
 
 ### 4. User
 
