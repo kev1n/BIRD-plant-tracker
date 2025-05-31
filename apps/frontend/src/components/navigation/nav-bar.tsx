@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { UserContext } from '@/contexts/user-context';
+import { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import ProfileLogo from '../../assets/logos/avatar.svg';
@@ -10,22 +11,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 export default function NavBar() {
   const navigate = useNavigate();
-  const { user, setUser, isLoading } = useUser();
+  const { user, isLoading, } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { logout } = useContext(UserContext);
 
   const handleLogout = async () => {
-    try {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-      const response = await fetch(`${baseUrl}/auth/logout`, { method: 'POST' });
-      if (response.ok) {
-        setUser(null);
-        navigate('/login');
-      } else {
-        toast.error('Logout failed: ' + response.statusText);
-      }
-    } catch (error) {
-      toast.error('Logout error: ' + error);
-    }
+    await logout();
+    toast.success('Logged out successfully');
+    navigate('/login');
   };
 
   const handleRequestEditing = async () => {
