@@ -7,9 +7,12 @@ sidebar_label: Spreadsheet View
 
 This section covers the spreadsheet interface for viewing, analyzing, and exporting plant observation data. These features are available to all user roles, though editing capabilities are restricted by role.
 
-## Spreadsheet Functionality
+## Spreadsheet Documentation
 
-- **[Spreadsheet Guide](./spreadsheet-guide.md)**: A comprehensive guide to navigating the spreadsheet, filtering, sorting, manipulating data, and exporting.
+- **[Viewing Data](./viewing-data.md)**: Navigate the spreadsheet, understand columns, use scrolling and pagination
+- **[Filtering and Sorting](./filtering-and-sorting.md)**: Filter data by columns, reorder columns, and customize your view
+- **[Data Actions](./data-actions.md)**: Create, edit, duplicate, and delete observations
+- **[Exporting Data](./exporting-data.md)**: Download data for offline analysis or reporting
 
 ## Key Features of the Spreadsheet
 

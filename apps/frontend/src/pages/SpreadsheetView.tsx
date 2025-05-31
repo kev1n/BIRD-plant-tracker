@@ -1482,13 +1482,24 @@ export default function SpreadSheetView() {
         };
       },
       cellEditorParams: {
-        values: ['true', 'false']
+        values: ['Yes', 'No', 'Unknown']
       },
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.hasBloomed;
         const newValue = params.newValue;
-        if (newValue !== oldValue) {
-          params.data.hasBloomed = newValue;
+        
+        // Convert display values back to boolean/null
+        let convertedValue: boolean | null;
+        if (newValue === 'Yes') {
+          convertedValue = true;
+        } else if (newValue === 'No') {
+          convertedValue = false;
+        } else {
+          convertedValue = null; // 'Unknown'
+        }
+        
+        if (convertedValue !== oldValue) {
+          params.data.hasBloomed = convertedValue;
           return true;
         }
         return false;
