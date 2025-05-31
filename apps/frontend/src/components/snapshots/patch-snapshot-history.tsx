@@ -26,6 +26,7 @@ export default function PatchSnapshotHistory({
   trigger?: ReactNode;
 }) {
   const [historicalSnapshots, setHistoricalSnapshots] = useState<DateIDPair[]>([]);
+  const [open, setOpen] = useState(false);
 
   const fetchHistoricalSnapshotMetadata = async (patch: string) => {
     try {
@@ -59,8 +60,9 @@ export default function PatchSnapshotHistory({
   };
 
   useEffect(() => {
+    if (!open) return; 
     fetchHistoricalSnapshotMetadata(patch);
-  }, [patch]);
+  }, [patch, open]);
 
   return (
     <HistoricalSnapshotContext.Provider
@@ -68,7 +70,7 @@ export default function PatchSnapshotHistory({
         fetchHistoricalSnapshotMetadata,
       }}
     >
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           {trigger || <Button variant="outline">History</Button>}
         </DialogTrigger>
