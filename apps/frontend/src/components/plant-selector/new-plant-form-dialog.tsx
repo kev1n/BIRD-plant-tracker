@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import PlantForm from './new-plant-form';
 export default function NewPlantFormDialog({ newPlant }: { newPlant: boolean }) {
@@ -14,7 +15,7 @@ export default function NewPlantFormDialog({ newPlant }: { newPlant: boolean }) 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{newPlant ? 'New Plant' : 'Edit Plant'}</Button>
+        <Button variant="outline"><Plus className="w-4 h-4 mr-2" />{newPlant ? 'New Plant' : 'Edit Plant'}</Button>
       </DialogTrigger>
 
       <DialogContent className="overflow-y-scroll max-h-[80vh]">

@@ -1,3 +1,7 @@
+import { getCategoryIcon } from '@/components/observations/category-icon';
+import PageHead from '@/components/PageHead';
+import DateTimePickerCellEditor from '@/components/spreadsheet/date-time-picker-cell-editor';
+import PlantSelectorCellEditor from '@/components/spreadsheet/plant-selector-cell-editor';
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
 import {
   AlertDialog,
@@ -10,12 +14,23 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AllCommunityModule, ColDef, iconSetMaterial, ModuleRegistry, themeQuartz, ValueGetterParams, ValueSetterParams } from 'ag-grid-community';
+import PermissionRestrictedDialog from '@/components/utils/PermissionRestrictedDialog';
+import {
+  AllCommunityModule,
+  ColDef,
+  GridOptions,
+  iconSetMaterial,
+  ModuleRegistry,
+  RowClassParams,
+  themeQuartz,
+  ValueGetterParams,
+  ValueSetterParams
+} from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
-import { EllipsisVertical, Plus, Save, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Download, EllipsisVertical, Plus, Save, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from "sonner";
-import { Observation, Snapshot, updatedObservation } from 'types/database_types';
+import { Observation, PlantInfo, Snapshot, updatedObservation } from 'types/database_types';
 import { useUser } from '../hooks/useUser';
 
 // Register all Community features
@@ -28,6 +43,7 @@ export default function SpreadSheetView() {
   const [isNewObs, setIsNewObs] = useState<number|null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { user } = useUser();
+  const gridRef = useRef<AgGridReact>(null);
   
   // Unsaved changes warning effect
   useEffect(() => {
@@ -125,7 +141,7 @@ export default function SpreadSheetView() {
   // Delete an observation from a newly duplicated snapshot. This is for situations where
   // an observation *was* accurate for a time, and is not representative anymore. This preserves the
   // integrity of all other observations that are still in the snapshot.
-  async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: number) {
+  async function duplicateSnapshotAndDeleteObservation(obsID: number, snapshotID: number) {    
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
@@ -213,6 +229,13 @@ export default function SpreadSheetView() {
             datePlanted: obs.datePlanted
           })
         });
+      }
+
+      // if there was only one observation, then tell the user that they've just created an empty snapshot
+      if (observations.length === 0) {
+        toast("Observation deleted and duplicated into new snapshot successfully. This snapshot is now empty because it only had the deleted observation prior to deletion.");
+      } else {
+        toast("Observation deleted and duplicated into new snapshot successfully.");
       }
 
       // Refresh data to show the changes
@@ -745,7 +768,7 @@ export default function SpreadSheetView() {
       },
       plantQuantity: 0,
       hasBloomed:    null,
-      datePlanted:   null,
+      datePlanted:   new Date(),
       Snapshots: {
         dateCreated: new Date().toISOString(),
         patchID:     'REQUIRED',
@@ -775,17 +798,17 @@ export default function SpreadSheetView() {
     const plantQuantity = newRow.plantQuantity;
 
     if (patchID === 'REQUIRED'){
-      alert('Please enter the patch ID for the new observation.');
+      toast.error('Please enter the patch ID for the new observation.');  
       return;
     }
 
     if (plantName === 'REQUIRED'){
-      alert('Please enter the plant common name for the new observation.');
+      toast.error('Please enter the plant common name for the new observation.');
       return;
     }
 
     if (plantQuantity === 0){
-      alert('Please enter plant quantity greater than 0 for the new observation.');
+      toast.error('Please enter plant quantity greater than 0 for the new observation.');
       return;
     }
 
@@ -826,12 +849,12 @@ export default function SpreadSheetView() {
       const { plants } = await plant_response.json();
       
       if (!plants || plants.length === 0) {
-        alert(`No plant found matching "${plantName}"`);
+        toast.error(`No plant found matching "${plantName}"`);
         return;
       }
 
       if (plants.length > 1){
-        alert(`Please enter a more specific plant name. "${plantName}" is not specific enough.`);
+        toast.error(`Please enter a more specific plant name. "${plantName}" is not specific enough.`);
         return;
       }
 
@@ -881,17 +904,17 @@ export default function SpreadSheetView() {
     const plantQuantity = newRow.plantQuantity;
 
     if (patchID === 'REQUIRED'){
-      alert('Please enter the patch ID for the new observation.');
+      toast.error('Please enter the patch ID for the new observation.');
       return;
     }
 
     if (plantName === 'REQUIRED'){
-      alert('Please enter the plant common name for the new observation.');
+      toast.error('Please enter the plant common name for the new observation.');
       return;
     }
 
     if (plantQuantity === 0){
-      alert('Please enter plant quantity greater than 0 for the new observation.');
+      toast.error('Please enter plant quantity greater than 0 for the new observation.');
       return;
     }
     try {
@@ -929,7 +952,7 @@ export default function SpreadSheetView() {
       const { plant } = await plant_response.json();
       
       if (!plant) {
-        alert(`No plant found matching "${plantName}"`);
+        toast.error(`No plant found matching "${plantName}"`);
         return;
       }
       const plantID = plant.plantID;
@@ -980,22 +1003,22 @@ export default function SpreadSheetView() {
     const plantQuantity = newRow.plantQuantity;
 
     if (patchID === 'REQUIRED'){
-      alert('Please enter the patch ID for the new observation.');
+      toast.error('Please enter the patch ID for the new observation.');
       return;
     }
 
     if (plantName === 'REQUIRED'){
-      alert('Please enter the plant common name for the new observation.');
+      toast.error('Please enter the plant common name for the new observation.');
       return;
     }
 
     if (plantQuantity === 0){
-      alert('Please enter plant quantity greater than 0 for the new observation.');
+      toast.error('Please enter plant quantity greater than 0 for the new observation.');
       return;
     }
 
     if (!user) {
-      alert('Please log in to access this feature');
+      toast.error('Please log in to access this feature');
       return;
     }
 
@@ -1041,7 +1064,7 @@ export default function SpreadSheetView() {
       const { plant } = await plant_response.json();
       
       if (!plant) {
-        alert(`No plant found matching "${plantName}"`);
+        toast.error(`No plant found matching "${plantName}"`);
         return;
       }
       const plantID = plant.plantID;
@@ -1099,13 +1122,16 @@ export default function SpreadSheetView() {
       headerName: "",
       width: 60,
       resizable: false,
+      pinned: 'left',
       cellRenderer: (params: ValueGetterParams<Observation>) => 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <div className="flex w-full h-full justify-center items-center">
-            <EllipsisVertical />
-            </div>
-        </DropdownMenuTrigger>
+        <PermissionRestrictedDialog actionName="open actions menu">
+          <DropdownMenuTrigger asChild>
+              <div className="flex w-full h-full justify-center items-center">
+              <EllipsisVertical />
+              </div>
+          </DropdownMenuTrigger>
+        </PermissionRestrictedDialog>
 
         <DropdownMenuContent>
           <DropdownMenuItem >
@@ -1121,21 +1147,24 @@ export default function SpreadSheetView() {
             <DropdownMenuSubContent>
               <SpreadsheetRowActionItem
                 actionName="Duplicate Observation"
-                prompt="Are you sure you want to DUPLICATE this observation?"
+                title="Duplicate Observation"
+                prompt="This will create a copy of the observation in the same snapshot as the original observation."
                 color=""
                 onConfirm={() => {if (params.data) { duplicateObservation(params.data); }}}
               />
 
               <SpreadsheetRowActionItem
                 actionName="Duplicate into New Empty Snapshot"
-                prompt="Are you sure you want to DUPLICATE this observation into an EMPTY SNAPSHOT?"
+                title="Duplicate Observation into Empty Snapshot"
+                prompt="This will create a snapshot containing only this observation. The snapshot can then be edited. Use this when most observations in a snapshot have changed, and you want to capture the new state of the patch."
                 color=""
                 onConfirm={() => { if (params.data) { duplicateObservationEmptySnapshot(params.data); }}}
               />
 
               <SpreadsheetRowActionItem
                 actionName="Duplicate Entire Snapshot"
-                prompt="Are you sure you want to DUPLICATE the ENTIRE SNAPSHOT?"
+                title="Duplicate Entire Snapshot"
+                prompt="This will create a copy of the snapshot and all of the observations associated with it. By default, the new snapshot will be set to today's date. The original snapshot remains unchanged. "
                 color=""
                 onConfirm={() => { 
                   if (params.data?.snapshotID) { 
@@ -1153,7 +1182,8 @@ export default function SpreadSheetView() {
             <DropdownMenuSubContent>
               <SpreadsheetRowActionItem
                 actionName="Delete Observation"
-                prompt="Are you sure you want to DELETE this observation?" 
+                title="Delete Observation from Snapshot"
+                prompt="This will delete the observation from its snapshot, and cannot be recovered. Only use this when you need to change an observation that was incorrectly recorded. Do not use this if the observation was accurate at some point, but is no longer." 
                 color="red"
                 onConfirm={() => {
                   const obsID = params.data?.observationID || -1;
@@ -1164,7 +1194,8 @@ export default function SpreadSheetView() {
 
               <SpreadsheetRowActionItem
                 actionName="Remove from Snapshot Copy"
-                prompt="Are you sure you want to DUPLICATE the snapshot WITHOUT THIS OBSERVATION?"
+                title="Copy snapshot and Delete Observation"
+                prompt="This will copy the snapshot containing this observation, without this observation. Use this when a particular observation is no longer accurate, but other observations in the snapshot are still accurate."
                 color="red"
                 onConfirm={() => {
                   const obsID = params.data?.observationID || -1;
@@ -1179,29 +1210,58 @@ export default function SpreadSheetView() {
         </DropdownMenuContent>  
       </DropdownMenu>,
       headerClass: 'ag-header-cell-center',
-      cellStyle: {textAlign: 'center'}
+      cellStyle: {textAlign: 'center'},
+      sortable: false,
+      filter: false
     },
     { 
       field: "Observation Date",
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.dateCreated || '',
+      headerName: "Observation Date",
+      valueGetter: (params: ValueGetterParams<Observation>) => {
+        const dateStr = params.data?.Snapshots?.dateCreated;
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+      },
       sortable: true,
-      filter: true,
-      headerClass: 'ag-header-cell-center', // Centers the header
-      cellStyle: { textAlign: 'center' }, // Centers the cell content
+      filter: 'agTextColumnFilter',
+      headerClass: 'ag-header-cell-center',
+      cellStyle: { textAlign: 'center' },
+      minWidth: 180,
+      flex: 1,
+      filterParams: {
+        filterOptions: ['contains', 'equals', 'startsWith'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Observer Name",
+      headerName: "Observer",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.users?.username || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      minWidth: 120,
+      flex: 1,
+      filterParams: {
+        filterOptions: ['contains', 'equals', 'startsWith', 'endsWith'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Patch ID",
+      headerName: "Patch",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.patchID || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === isNewObs),
       cellEditor: 'agTextCellEditor',
@@ -1210,7 +1270,7 @@ export default function SpreadSheetView() {
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       valueSetter: (params: ValueSetterParams<Observation>) => {
@@ -1225,12 +1285,19 @@ export default function SpreadSheetView() {
         }
         return false;
       },
+      minWidth: 100,
+      flex: 0.8,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Plant Quantity",
+      headerName: "Quantity",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.plantQuantity,
       sortable: true,
-      filter: true,
+      filter: 'agNumberColumnFilter',
       type: 'numericColumn',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
@@ -1240,95 +1307,169 @@ export default function SpreadSheetView() {
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.plantQuantity;
         const newValue = params.newValue;
-        // only do anything if it actually changed:
         if (newValue !== oldValue) {
           params.data.plantQuantity = newValue;
-          return true;    // tells AG-Grid "I applied the change"
-        }
-        return false;     // "nothing changed, revert to oldValue"
-      }
-    },
-    { 
-      field: "Plant Common Name",
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.plantCommonName || '',
-      sortable: true,
-      filter: true,
-      headerClass: 'ag-header-cell-center',
-      editable: params => (params.data.observationID === isNewObs),
-      cellEditor: 'agTextCellEditor',
-      cellStyle: params => {
-        const isEditable = params.data.observationID === isNewObs;
-        return {
-          textAlign: 'center',
-          backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
-        };
-      },
-      valueSetter: (params: ValueSetterParams<Observation>) => {
-        const oldValue = params.data.PlantInfo.plantCommonName;
-        const newValue = params.newValue;
-        if (newValue !== oldValue) {
-          params.data.PlantInfo.plantCommonName = newValue;
           return true;
         }
         return false;
       },
+      minWidth: 100,
+      flex: 0.8,
+      filterParams: {
+        filterOptions: ['equals', 'lessThan', 'greaterThan', 'inRange'],
+        defaultOption: 'equals'
+      }
     },
     { 
-      field: "Plant Scientific Name",
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.plantScientificName || '',
+      field: "Plant Common Name",
+      headerName: "Common Name",
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.plantCommonName || '',
       sortable: true,
-      filter: true,
-      headerClass: 'ag-header-cell-center',
-      cellStyle: { textAlign: 'center' },
-    },
-    { 
-      field: "Date Planted",
-      cellDataType: 'dateString',
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.datePlanted || null,
-      sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
-      cellEditor: 'agDateStringCellEditor',
+      cellEditor: 'plantSelectorCellEditor',
       cellStyle: params => {
         const isEditable = params.data.observationID === editingRowId || params.data.observationID === isNewObs;
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
+        };
+      },
+      valueSetter: (params: ValueSetterParams<Observation>) => {
+        const oldValue = params.data.PlantInfo.plantCommonName;
+        const newValue = params.newValue;
+        
+        // Check if newValue is a PlantInfo object (from plant selector) or just a string
+        if (typeof newValue === 'object' && newValue !== null && 'plantID' in newValue) {
+          // Full plant object selected - update all plant fields
+          const plantInfo = newValue as PlantInfo;
+          params.data.PlantInfo = {
+            plantID: plantInfo.plantID,
+            plantCommonName: plantInfo.plantCommonName,
+            plantScientificName: plantInfo.plantScientificName,
+            isNative: plantInfo.isNative,
+            subcategory: plantInfo.subcategory,
+          };
+          
+          // Immediately refresh the row to show updated plant-related columns
+          if (gridRef.current?.api && params.node) {
+            gridRef.current.api.refreshCells({
+              rowNodes: [params.node],
+              force: true
+            });
+          }
+          return true;
+        } else if (typeof newValue === 'string' && newValue !== oldValue) {
+          // Just the common name changed
+          params.data.PlantInfo.plantCommonName = newValue;
+          return true;
+        }
+        return false;
+      },
+      minWidth: 150,
+      flex: 1.2,
+      filterParams: {
+        filterOptions: ['contains', 'equals', 'startsWith'],
+        defaultOption: 'contains'
+      }
+    },
+    { 
+      field: "Plant Scientific Name",
+      headerName: "Scientific Name",
+      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.plantScientificName || '',
+      sortable: true,
+      filter: 'agTextColumnFilter',
+      headerClass: 'ag-header-cell-center',
+      cellStyle: { textAlign: 'center' },
+      minWidth: 150,
+      flex: 1.2,
+      filterParams: {
+        filterOptions: ['contains', 'equals', 'startsWith'],
+        defaultOption: 'contains'
+      }
+    },
+    { 
+      field: "Date Planted",
+      headerName: "Date Planted",
+      valueGetter: (params: ValueGetterParams<Observation>) => {
+        const dateStr = params.data?.datePlanted;
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+      },
+      sortable: true,
+      filter: 'agTextColumnFilter',
+      headerClass: 'ag-header-cell-center',
+      editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
+      cellEditor: 'dateTimePickerCellEditor',
+      cellStyle: params => {
+        const isEditable = params.data.observationID === editingRowId || params.data.observationID === isNewObs;
+        return {
+          textAlign: 'center',
+          backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.datePlanted;
         const newValue = params.newValue;
-        // only do anything if it actually changed:
         if (newValue !== oldValue) {
           params.data.datePlanted = newValue;
-          return true;    // tells AG-Grid "I applied the change"
+          return true;
         }
-        return false;     // "nothing changed, revert to oldValue"
+        return false;
       },
+      minWidth: 120,
+      flex: 1,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "isNative",
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.isNative,
+      headerName: "Native",
+      valueGetter: (params: ValueGetterParams<Observation>) => {
+        const isNative = params.data?.PlantInfo?.isNative;
+        if (isNative === null || isNative === undefined) return 'Unknown';
+        return isNative ? 'Yes' : 'No';
+      },
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      minWidth: 80,
+      flex: 0.6,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Has Bloomed",
-      valueGetter: (params: ValueGetterParams<Observation>) => params.data?.hasBloomed,
+      headerName: "Bloomed",
+      valueGetter: (params: ValueGetterParams<Observation>) => {
+        const hasBloomed = params.data?.hasBloomed;
+        if (hasBloomed === null || hasBloomed === undefined) return 'Unknown';
+        return hasBloomed ? 'Yes' : 'No';
+      },
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
       cellEditor: 'agSelectCellEditor',
@@ -1337,7 +1478,7 @@ export default function SpreadSheetView() {
         return {
           textAlign: 'center',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
         };
       },
       cellEditorParams: {
@@ -1346,36 +1487,60 @@ export default function SpreadSheetView() {
       valueSetter: (params: ValueSetterParams<Observation>) => {
         const oldValue = params.data.hasBloomed;
         const newValue = params.newValue;
-        // only do anything if it actually changed:
         if (newValue !== oldValue) {
           params.data.hasBloomed = newValue;
-          return true;    // tells AG-Grid "I applied the change"
+          return true;
         }
-        return false;     // "nothing changed, revert to oldValue"
+        return false;
       },
+      minWidth: 90,
+      flex: 0.7,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      }
     },
     { 
       field: "Subcategory",
+      headerName: "Category",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.PlantInfo?.subcategory || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       cellStyle: { textAlign: 'center' },
+      minWidth: 120,
+      flex: 1,
+      filterParams: {
+        filterOptions: ['contains', 'equals'],
+        defaultOption: 'contains'
+      },
+      cellRenderer: (params: ValueGetterParams<Observation>) => {
+        const subcategory = params.data?.PlantInfo?.subcategory;
+        if (!subcategory) return '';
+        const icon = getCategoryIcon(subcategory);
+        return <div className="flex items-center gap-2">
+          {icon}{subcategory}
+        </div>;
+      }
     },
     { 
       field: "Additional Notes",
+      headerName: "Notes",
       valueGetter: (params: ValueGetterParams<Observation>) => params.data?.Snapshots?.notes || '',
       sortable: true,
-      filter: true,
+      filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === isNewObs),
       cellEditor: 'agLargeTextCellEditor',
       cellStyle: params => {
         const isEditable = params.data.observationID === isNewObs;
         return {
-          textAlign: 'center',
+          textAlign: 'left',
           backgroundColor: isEditable ? '#f0f9ff' : 'transparent',
-          border: isEditable ? '2px solid #3b82f6' : 'none',
+          ...(isEditable && { border: '2px solid #3b82f6' }),
+          whiteSpace: 'normal',
+          wordWrap: 'break-word',
+          lineHeight: '1.4'
         };
       },
       cellEditorParams: {
@@ -1393,11 +1558,51 @@ export default function SpreadSheetView() {
         }
         return false;
       },
+      minWidth: 200,
+      flex: 2,
+      wrapText: true,
+      autoHeight: true,
+      filterParams: {
+        filterOptions: ['contains'],
+        defaultOption: 'contains'
+      }
     }
   ];  
 
-  
-  
+  // Grid Options for enhanced functionality
+  const gridOptions: GridOptions = {
+    defaultColDef: {
+      resizable: true,
+      sortable: true,
+      filter: true,
+      floatingFilter: false,
+    },
+    components: {
+      plantSelectorCellEditor: PlantSelectorCellEditor,
+      dateTimePickerCellEditor: DateTimePickerCellEditor,
+    },
+    rowSelection: 'multiple',
+    rowMultiSelectWithClick: true,
+    suppressRowClickSelection: true,
+    animateRows: true,
+    enableCellTextSelection: true,
+    ensureDomOrder: true,
+    suppressContextMenu: false,
+    allowContextMenuWithControlKey: true,
+    autoSizeStrategy: {
+      type: 'fitCellContents'
+    },
+    getRowClass: (params: RowClassParams<Observation>) => {
+      if (params.data?.observationID === editingRowId) {
+        return 'editing-row';
+      }
+      if (params.data?.observationID === isNewObs) {
+        return 'new-row';
+      }
+      return '';
+    }
+  };
+
   // AG Grid Theme
   const myTheme = themeQuartz
     .withPart(iconSetMaterial)
@@ -1405,7 +1610,7 @@ export default function SpreadSheetView() {
       accentColor: "#374F31",
       backgroundColor: "#FFFFFF",
       borderColor: "#000000",
-      browserColorScheme: "dark",
+      browserColorScheme: "light",
       chromeBackgroundColor: {
         ref: "foregroundColor",
         mix: 0.07,
@@ -1415,168 +1620,286 @@ export default function SpreadSheetView() {
       foregroundColor: "#000000",
       headerBackgroundColor: "#799A1888",
       headerFontFamily: "inherit",
-      headerFontSize: 14
+      headerFontSize: 14,
+      rowBorder: true,
+      wrapperBorder: true,
+      wrapperBorderRadius: "8px",
+      cellHorizontalPaddingScale: 0.5,
+      rowVerticalPaddingScale: 0.5
     });
 
+  // CSV Export function
+  const exportToCsv = () => {
+    if (gridRef.current && gridRef.current.api) {
+      const params = {
+        fileName: `plant-observations-${new Date().toISOString().split('T')[0]}.csv`,
+        columnSeparator: ',',
+        suppressQuotes: false,
+        skipColumnHeaders: false,
+        skipColumnGroupHeaders: false,
+        skipRowGroups: false,
+        skipPinnedTop: false,
+        skipPinnedBottom: false,
+        allColumns: false,
+        onlySelected: false,
+        onlySelectedAllPages: false
+      };
+      gridRef.current.api.exportDataAsCsv(params);
+      toast.success("Data exported to CSV successfully!");
+    } else {
+      toast.error("Export failed: Grid not ready");
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full py-4">
-      {/* Unsaved Changes Alert & Save Actions Bar */}
-      
+    <>
+      <PageHead 
+        title="Spreadsheet View" 
+        description="Tabular view for editing and managing plant observations data" 
+      />
+      <div className="flex flex-col h-full py-4">
+        {/* Custom CSS for row styling */}
+        <style>{`
+          .editing-row {
+            background-color: #dbeafe !important;
+            border: 2px solid #3b82f6 !important;
+          }
+          .new-row {
+            background-color: #dcfce7 !important;
+            border: 2px solid #16a34a !important;
+          }
+          .ag-floating-filter-input {
+            font-size: 12px;
+          }
+          .ag-header-cell-menu-button {
+            opacity: 0.7;
+          }
+          .ag-header-cell-menu-button:hover {
+            opacity: 1;
+          }
+        `}</style>
 
-      {/* Save Actions for Editing */}
-      {editingRowId != null && (
-        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Save className="h-5 w-5 text-blue-600" />
-              <h3 className="text-sm font-medium text-blue-800">Editing Observation</h3>
-              <span className="text-sm text-blue-700">Choose how to save your changes:</span>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="default" size="sm" onClick={() => saveEdit()}>
-                <Save className="h-4 w-4 mr-1" />
-                Save to Current Snapshot
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm">
-                    Save with Snapshot Copy
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Duplicate Snapshot & Save</h2>
-                    <p className="text-sm text-gray-600">
-                      This will create a copy of the entire snapshot with your changes. 
-                      The original snapshot remains unchanged, preserving historical data.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => duplicateSnapshotWithEdited()}>
-                      Create Copy & Save
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm">
-                    Save to New Snapshot
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Create New Snapshot</h2>
-                    <p className="text-sm text-gray-600">
-                      This will create a completely new snapshot containing only your edited observation.
-                      Use this when the change represents a new state, not a correction.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => newSnapshotWithEdited()}>
-                      Create New Snapshot
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <Button variant="outline" size="sm" onClick={() => cancelEdit()}>
-                <X className="h-4 w-4 mr-1" />
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* Unsaved Changes Alert & Save Actions Bar */}
+        
 
-      {/* Save Actions for New Observation */}
-      {isNewObs != null && (
-        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-green-600" />
-              <h3 className="text-sm font-medium text-green-800">Adding New Observation</h3>
-              <span className="text-sm text-green-700">Choose where to save this observation:</span>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="default" size="sm" onClick={() => addNewToRecentSnapshot()}>
-                <Save className="h-4 w-4 mr-1" />
-                Add to Recent Snapshot
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm">
-                    Add to Snapshot Copy
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Duplicate Snapshot & Add</h2>
-                    <p className="text-sm text-gray-600">
-                      This will copy the latest snapshot for this patch and add your new observation.
-                      The original snapshot remains unchanged.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => duplicateSnapshotWithNew()}>
-                      Create Copy & Add
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="secondary" size="sm">
-                    Create New Snapshot
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <h2 className="text-lg font-semibold">Create New Snapshot</h2>
-                    <p className="text-sm text-gray-600">
-                      This will create a completely new snapshot containing only your new observation.
-                      Use this when starting a fresh observation session.
-                    </p>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => newSnapshotWithNewObs()}>
-                      Create New Snapshot
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <Button variant="outline" size="sm" onClick={() => cancelAdd()}>
-                <X className="h-4 w-4 mr-1" />
-                Cancel
-              </Button>
+        {/* Save Actions for Editing */}
+        {editingRowId != null && (
+          <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div className="flex items-center gap-2">
+                <Save className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                  <h3 className="text-sm font-medium text-blue-800">Editing Observation</h3>
+                  <span className="text-xs sm:text-sm text-blue-700">Choose how to save your changes:</span>
+                </div>
+              </div>
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="default" size="sm" className="w-full sm:w-auto">
+                      <Save className="h-4 w-4 mr-1" />
+                      <span className="hidden xs:inline">Save to Current Snapshot</span>
+                      <span className="xs:hidden">Save Current</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Save to Current Snapshot</h2>
+                      <p className="text-sm text-gray-600">
+                        This will save your changes directly to the current snapshot. 
+                        This action will modify the existing snapshot data.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => saveEdit()} className="w-full sm:w-auto">
+                        Save Changes
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                      <span className="hidden xs:inline">Save with Snapshot Copy</span>
+                      <span className="xs:hidden">Save Copy</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Duplicate Snapshot & Save</h2>
+                      <p className="text-sm text-gray-600">
+                        This will create a copy of the entire snapshot with your changes. 
+                        The original snapshot remains unchanged, preserving historical data.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => duplicateSnapshotWithEdited()} className="w-full sm:w-auto">
+                        Create Copy & Save
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                      <span className="hidden xs:inline">Save to New Snapshot</span>
+                      <span className="xs:hidden">New Snapshot</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Create New Snapshot</h2>
+                      <p className="text-sm text-gray-600">
+                        This will create a completely new snapshot containing only your edited observation.
+                        Use this when the change represents a new state, not a correction.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => newSnapshotWithEdited()} className="w-full sm:w-auto">
+                        Create New Snapshot
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Button variant="outline" size="sm" onClick={() => cancelEdit()} className="w-full sm:w-auto">
+                  <X className="h-4 w-4 mr-1" />
+                  Cancel
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Add New Observation Button */}
-      {!isNewObs && editingRowId === null && (
-        <div className="mb-4 flex justify-end">
-          <Button onClick={handleAddRow} variant="default">
-            <Plus className="h-4 w-4 mr-2" />
-            New Observation
-          </Button>
-        </div>
-      )}
+        {/* Save Actions for New Observation */}
+        {isNewObs != null && (
+          <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div className="flex items-center gap-2">
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                  <h3 className="text-sm font-medium text-green-800">Adding New Observation</h3>
+                  <span className="text-xs sm:text-sm text-green-700">Choose where to save this observation:</span>
+                </div>
+              </div>
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="default" size="sm" className="w-full sm:w-auto">
+                      <Save className="h-4 w-4 mr-1" />
+                      <span className="hidden xs:inline">Add to Recent Snapshot</span>
+                      <span className="xs:hidden">Add Recent</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Add to Recent Snapshot</h2>
+                      <p className="text-sm text-gray-600">
+                        This will add your new observation to the most recent snapshot for this patch.
+                        The observation will be part of the existing snapshot data.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => addNewToRecentSnapshot()} className="w-full sm:w-auto">
+                        Add to Recent
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                      <span className="hidden xs:inline">Add to Snapshot Copy</span>
+                      <span className="xs:hidden">Add Copy</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Duplicate Snapshot & Add</h2>
+                      <p className="text-sm text-gray-600">
+                        This will copy the latest snapshot for this patch and add your new observation.
+                        The original snapshot remains unchanged.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => duplicateSnapshotWithNew()} className="w-full sm:w-auto">
+                        Create Copy & Add
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+                      <span className="hidden xs:inline">Create New Snapshot</span>
+                      <span className="xs:hidden">New Snapshot</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
+                    <AlertDialogHeader>
+                      <h2 className="text-lg font-semibold">Create New Snapshot</h2>
+                      <p className="text-sm text-gray-600">
+                        This will create a completely new snapshot containing only your new observation.
+                        Use this when starting a fresh observation session.
+                      </p>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => newSnapshotWithNewObs()} className="w-full sm:w-auto">
+                        Create New Snapshot
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Button variant="outline" size="sm" onClick={() => cancelAdd()} className="w-full sm:w-auto">
+                  <X className="h-4 w-4 mr-1" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
-      {/* Data Grid */}
-      <div className="flex-1">
-        <AgGridReact
-          rowData={rowData}
-          columnDefs={colDefs}
-          pagination={true}
-          paginationAutoPageSize={true}
-          theme={myTheme}
-        />
+        {/* Add New Observation Button and Export */}
+        {!isNewObs && editingRowId === null && (
+          <div className="mb-4 flex justify-end gap-2">
+            <Button onClick={exportToCsv} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+            <PermissionRestrictedDialog actionName="add new observations">
+              <Button onClick={handleAddRow} variant="default">
+                <Plus className="h-4 w-4 mr-2" />
+                New Observation
+              </Button>
+            </PermissionRestrictedDialog>
+          </div>
+        )}
+
+        {/* Data Grid */}
+        <div className="flex-1">
+          <AgGridReact
+            rowData={rowData}
+            columnDefs={colDefs}
+            {...gridOptions}
+            theme={myTheme}
+            ref={gridRef}
+            pagination={true}
+            paginationAutoPageSize={true}
+            paginationPageSizeSelector={[10, 25, 50, 100]}
+            suppressRowHoverHighlight={false}
+            suppressColumnMoveAnimation={false}
+            suppressAnimationFrame={false}
+            enableBrowserTooltips={true}
+            tooltipShowDelay={500}
+            tooltipHideDelay={2000}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

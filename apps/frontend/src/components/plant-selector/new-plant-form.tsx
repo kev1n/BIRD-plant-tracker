@@ -1,6 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -11,6 +8,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -18,9 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 const PlantInfoSchema = z.object({
   plantCommonName: z.string().min(1, { message: 'Common name is required' }),
@@ -47,7 +48,7 @@ export default function PlantForm({ setDialogOpen }: { setDialogOpen: (val: bool
     };
     const validation = PlantInfoSchema.safeParse(plantInfo);
     if (!validation.success) {
-      alert(validation.error.issues[0].message);
+      toast.error(validation.error.issues[0].message);
       return;
     }
     try {
@@ -74,8 +75,7 @@ export default function PlantForm({ setDialogOpen }: { setDialogOpen: (val: bool
       }
       setDialogOpen(false);
     } catch (error) {
-      console.error('Error submitting plant data:', error);
-      alert('Failed to submit plant data. Please try again.');
+      toast.error('Failed to submit plant data. Please try again: ' + error);
     }
   }
 
@@ -174,7 +174,7 @@ export default function PlantForm({ setDialogOpen }: { setDialogOpen: (val: bool
                     <SelectItem value="Shrub">Shrub</SelectItem>
                     <SelectItem value="Tree">Tree</SelectItem>
                     <SelectItem value="Grass">Grass</SelectItem>
-                    <SelectItem value="Forbs">Forb</SelectItem>
+                    <SelectItem value="Forb">Forb</SelectItem>
                     <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>

@@ -1,5 +1,7 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import DatePicker from '@/components/ui/datepicker';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 import {
   Dialog,
   DialogContent,
@@ -7,7 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useContext, useEffect, useState } from 'react';
+import { Calendar, Copy, FileText } from 'lucide-react';
+import { ReactNode, useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Observation, Snapshot } from 'types/database_types';
 import { z } from 'zod';
 import { useUser } from '../../hooks/useUser';
@@ -28,15 +32,17 @@ export default function SnapshotForm({
   patchID,
   snapshotTemplate,
   observationsTemplate,
+  trigger,
 }: {
   newSnapshot: boolean;
   patchID: string;
   snapshotTemplate?: Snapshot | null;
   observationsTemplate?: Observation[] | null;
+  trigger?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState<string>('');
-  const [date, setDate] = useState<Date | null>(null);
+  const [date, setDate] = useState<Date | null>(new Date());
   const [observations, setObservations] = useState<Observation[]>([]);
   const { user } = useUser();
   const { fetchLatestSnapshot } = useContext(LatestSnapshotContext);
@@ -48,11 +54,12 @@ export default function SnapshotForm({
       setDate(new Date(snapshotTemplate.dateCreated)); // Ensure the date is in the correct format, fallback to empty string if null
     } else {
       setNotes('');
-      setDate(null);
+      setDate(new Date());
     }
   }, [snapshotTemplate, newSnapshot]);
 
   useEffect(() => {
+    // Only load observations when editing an existing snapshot (not when creating new or duplicating)
     if (observationsTemplate && newSnapshot === false) {
       setObservations(observationsTemplate);
     } else {
@@ -62,158 +69,91 @@ export default function SnapshotForm({
 
   const duplicateLatestData = () => {
     if (!snapshotTemplate) {
-      console.error('No snapshot template to duplicate from');
+      toast.error('No snapshot template to duplicate from');
       return;
     }
     if (!observationsTemplate) {
-      console.error('No observations template to duplicate from');
+      toast.error('No observations template to duplicate from');
       return;
     }
     setNotes(snapshotTemplate.notes || '');
-    setDate(new Date(snapshotTemplate.dateCreated));
-    setObservations(observationsTemplate);
+    // date should be the current date and time
+    setDate(new Date());
+    // Copy observations but mark them as new so they get new IDs
+    const duplicatedObservations = observationsTemplate.map((obs, index) => ({
+      ...obs,
+      observationID: -(index + 1), // Use negative temporary IDs for new observations
+      snapshotID: -1, // Will be set by backend to the new snapshot ID
+      isNew: true, // Mark as new so backend creates new records
+      modified: false, // Not modified since it's a new copy
+      deletedOn: null,
+    }));
+    setObservations(duplicatedObservations);
   };
 
   async function onSubmit() {
     if (!date) {
-      alert('Please select a date for the snapshot.');
-      return;
-    }
-    if (notes.trim() === '') {
-      alert('Please enter notes for the snapshot.');
+      toast.error('Please select a date for the snapshot.');
       return;
     }
     if (!user || !user.id) {
-      console.error('User is not authenticated or missing user ID.');
-      alert('You must be logged in to submit a snapshot. Please log in and try again.');
+      toast.error('You must be logged in to submit a snapshot. Please log in and try again.');
       return;
     }
-    const newSnapshotData: Snapshot = {
-      snapshotID: snapshotTemplate ? snapshotTemplate.snapshotID : undefined,
+    const snapshotData = {
+      // Always create a new snapshot for both "new" and "duplicate" operations
+      // Only use existing snapshotID when editing (newSnapshot === false and not duplicating)
+      snapshotID: newSnapshot ? undefined : (snapshotTemplate?.snapshotID !== -1 ? snapshotTemplate?.snapshotID : undefined),
       dateCreated: date,
       patchID: patchID,
       notes: notes.trim(),
       userID: user.id,
     };
-    console.log('Submitting snapshot data:', newSnapshotData);
-    const validation = snapshotSchema.safeParse(newSnapshotData);
+    const validation = snapshotSchema.safeParse(snapshotData);
     if (!validation.success) {
-      console.error('Snapshot validation failed:', validation.error);
-      alert(
-        'Failed to submit snapshot data due to validation errors. Please check the input and try again.'
-      );
+      toast.error('Failed to submit snapshot data due to validation errors. Please check the input and try again.');
       return;
     }
 
     try {
       const token = localStorage.getItem('authToken');
       const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-      console.log(
-        `Submitting snapshot data to: ${baseUrl}/snapshot/${newSnapshot ? 'oop' : snapshotTemplate?.snapshotID}`
-      );
-      const api_path =
-        baseUrl + (newSnapshot ? '/snapshot/' : `/snapshot/${snapshotTemplate?.snapshotID}`); // Use POST for new, PUT for existing
-      const response = await fetch(api_path, {
-        method: newSnapshot ? 'POST' : 'PUT',
+      
+      // Use the new atomic endpoint
+      const response = await fetch(`${baseUrl}/snapshot/with-observations`, {
+        method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newSnapshotData),
+        body: JSON.stringify({
+          snapshot: snapshotData,
+          observations: observations,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit snapshot data');
+        const errorText = await response.text();
+        throw new Error(`Failed to submit snapshot and observations: ${errorText}`);
       }
 
-      let newSnapshotID: number | undefined = undefined;
-      if (newSnapshot) {
-        const responseData = await response.json();
-        if (responseData && responseData.snapshotID && responseData.snapshotID.snapshotID) {
-          newSnapshotID = responseData.snapshotID.snapshotID;
-          console.log('New snapshot created with ID:', newSnapshotID);
-        } else {
-          console.error('Failed to retrieve new snapshot ID from response:', responseData);
-          alert('Failed to create a new snapshot. Please try again later or contact support.');
-          return;
-        }
-      }
-      const obsPromises = observations.map(obs => {
-        if (obs.isNew) {
-          return fetch(`${baseUrl}/observation`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              snapshotID: newSnapshot ? newSnapshotID : snapshotTemplate?.snapshotID, // Use the new snapshot ID if creating a new snapshot
-              plantQuantity: obs.plantQuantity,
-              plantID: obs.PlantInfo.plantID,
-              datePlanted: obs.datePlanted || null,
-              hasBloomed: obs.hasBloomed !== undefined ? obs.hasBloomed : null, // Ensure this is sent if available
-            }),
-          });
-        } else if (obs.modified) {
-          return fetch(`${baseUrl}/observation/${obs.observationID}`, {
-            method: 'PUT',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              plantQuantity: obs.plantQuantity,
-              plantID: obs.PlantInfo.plantID,
-              datePlanted: obs.datePlanted || null,
-              hasBloomed: obs.hasBloomed !== undefined ? obs.hasBloomed : null,
-            }),
-          });
-        } else if (obs.deletedOn) {
-          return fetch(`${baseUrl}/observation/${obs.observationID}`, {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-        }
-      });
+      const responseData = await response.json();
+      toast.success(responseData.message);
 
-      await Promise.all(obsPromises)
-        .then(responses => {
-          responses.forEach(response => {
-            if (!response) {
-              console.error('One of the observation requests failed to return a response');
-              return;
-            }
-            if (!response.ok) {
-              throw new Error('Failed to submit one or more observations');
-            }
-          });
-        })
-        .catch(err => {
-          console.error('Error submitting observations:', err);
-          alert(
-            'Failed to submit one or more observations. Please check your input and try again.'
-          );
-          return;
-        });
-
+      // Reset form and refresh data
       if (newSnapshot) {
         fetchLatestSnapshot(patchID, null);
+        fetchHistoricalSnapshotMetadata(patchID);
         setNotes('');
-        setDate(null);
+        setDate(new Date());
         setObservations([]);
       } else {
         fetchLatestSnapshot(patchID, null);
         fetchHistoricalSnapshotMetadata(patchID);
       }
     } catch (error) {
-      console.error('Error submitting snapshot data:', error);
-      alert('Failed to submit snapshot data. Please try again.');
+      toast.error('Failed to submit snapshot data. Please try again: ' + error);
       return;
     }
     setOpen(false);
@@ -222,48 +162,86 @@ export default function SnapshotForm({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{newSnapshot ? 'New Snapshot' : 'Edit'}</Button>
+        {trigger || <Button variant={newSnapshot ? 'default' : 'outline'}>{newSnapshot ? 'New Snapshot' : 'Edit'}</Button>}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <div className="flex flex-row justify-between">
-            <div className="flex-1 text-left">
-              <DialogTitle>Patch {patchID}</DialogTitle>
-              <span>{newSnapshot ? 'New Snapshot' : 'Editing Snapshot'}</span>
-              {newSnapshot && (
-                <Button className="px-2 text-sm" onClick={duplicateLatestData}>
-                  Duplicate Latest Data
-                </Button>
-              )}
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-xl">{newSnapshot ? 'New Snapshot' : 'Edit Snapshot'}</DialogTitle>
+              <p className="text-muted-foreground">Patch {patchID}</p>
             </div>
-            <div className="flex-1 text-right">
-              <span className="text-red-500 font-bold">*</span>Snapshot Date:
-              <DatePicker date={date} setDate={d => setDate(d)} pickerName="Select Date" />
-            </div>
+            {newSnapshot && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={duplicateLatestData}
+                className="flex items-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                Duplicate Latest Data
+              </Button>
+            )}
           </div>
         </DialogHeader>
 
-        <ObservationsSection
-          observations={observations}
-          editing={true}
-          setObservations={setObservations}
-        />
-        <div className="border border-gray-300 rounded-lg p-4">
-          <textarea
-            className="w-full h-24"
-            placeholder={'Notes about this snapshot...'}
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
+        <div className="space-y-6">
+          {/* Date Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base justify-between">
+                <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Snapshot Date & Time
+                </div>
+                <Badge className="text-xs" variant="secondary">Required</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DateTimePicker 
+                date={date} 
+                setDate={(d) => setDate(d)} 
+                placeholder="Select date and time"
+                displayFormat="MM/dd/yyyy hh:mm aa"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Plant Observations */}
+          <ObservationsSection
+            observations={observations}
+            editing={true}
+            setObservations={setObservations}
           />
-        </div>
-        <div className="flex flex-row justify-between">
-          <div className="flex-1 text-left">
+
+          {/* Notes Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Notes
+                </div>  
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <textarea
+                className="w-full min-h-24 p-3 border border-border rounded-md resize-vertical"
+                placeholder="Enter notes about this snapshot..."
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex justify-between pt-4 border-t">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-          </div>
-          <div className="flex-1 text-right">
-            <Button onClick={onSubmit}>Submit</Button>
+            <Button onClick={onSubmit}>
+              {newSnapshot ? 'Create Snapshot' : 'Save Changes'}
+            </Button>
           </div>
         </div>
       </DialogContent>

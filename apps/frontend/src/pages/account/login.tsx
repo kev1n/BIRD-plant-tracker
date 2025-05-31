@@ -1,3 +1,4 @@
+import PageHead from '@/components/PageHead';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Form } from '../../components/form/form';
@@ -56,49 +57,55 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh]">
-      <Form
-        onSubmit={handleSubmit}
-        title="Log In"
-        isSubmitting={isLoading}
-        submitText={isLoading ? 'Logging in...' : 'Log In'}
-      >
-        {locationState?.message && (
-          <div className="text-green-600 mb-4 text-center">{locationState.message}</div>
-        )}
+    <>
+      <PageHead 
+        title="Login" 
+        description="Sign in to your BIRD Plant Tracker account" 
+      />
+      <div className="flex flex-col items-center justify-center min-h-[80vh]">
+        <Form
+          onSubmit={handleSubmit}
+          title="Log In"
+          isSubmitting={isLoading}
+          submitText={isLoading ? 'Logging in...' : 'Log In'}
+        >
+          {locationState?.message && (
+            <div className="text-green-600 mb-4 text-center">{locationState.message}</div>
+          )}
 
-        {error && <p className="text-destructive text-center mb-2">{error}</p>}
+          {error && <p className="text-destructive text-center mb-2">{error}</p>}
 
-        <Input.Text
-          title="Email"
-          name="email"
-          placeholder="example@domain.com"
-          value={formState.email}
-          onChange={handleChange}
-          required
-        />
+          <Input.Text
+            title="Email"
+            name="email"
+            placeholder="example@domain.com"
+            value={formState.email}
+            onChange={handleChange}
+            required
+          />
 
-        <Input.Password
-          title="Password"
-          name="password"
-          value={formState.password}
-          onChange={handleChange}
-          required
-        />
+          <Input.Password
+            title="Password"
+            name="password"
+            value={formState.password}
+            onChange={handleChange}
+            required
+          />
 
-        <div className="flex justify-end w-full mt-2">
-          <Link to="/forgot-password" className="text-primary text-sm hover:underline">
-            Forgot Password?
-          </Link>
-        </div>
+          <div className="flex justify-end w-full mt-2">
+            <Link to="/forgot-password" className="text-primary text-sm hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
 
-        <div className="mt-4 text-center">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-primary hover:underline">
-            Sign up
-          </Link>
-        </div>
-      </Form>
-    </div>
+          <div className="mt-4 text-center">
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-primary hover:underline">
+              Sign up
+            </Link>
+          </div>
+        </Form>
+      </div>
+    </>
   );
 }

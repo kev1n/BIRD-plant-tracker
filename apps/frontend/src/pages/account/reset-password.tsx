@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useUser } from '../../hooks/useUser';
 
 export default function ResetPassword() {
@@ -109,7 +110,7 @@ export default function ResetPassword() {
         replace: true,
       });
     } catch (err) {
-      console.error('Password reset error:', err);
+      toast.error('Password reset error: ' + err);
       setError(err instanceof Error ? err.message : 'Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);

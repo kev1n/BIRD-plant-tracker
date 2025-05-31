@@ -1,5 +1,5 @@
-import { useEffect, useState, ReactNode } from 'react';
-import React from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import type { User, UserContextType } from '../../types/auth';
 import { UserContext } from './user-context';
 
@@ -52,13 +52,11 @@ export function UserProvider({ children }: UserProviderProps): React.ReactElemen
         lastname: userData.lastname, 
         role: userData.role,
       };
-      console.log('User data:', parsedUserData);
       setUser(parsedUserData);
       setIsAuthenticated(true);
       return true;
 
-    } catch (error) {
-      console.error('Auth check error:', error);
+    } catch {
       setUser(null);
       setIsAuthenticated(false);
       return false;
@@ -84,12 +82,11 @@ export function UserProvider({ children }: UserProviderProps): React.ReactElemen
       }
 
       const { token } = await response.json();
-      console.log('Token received:', token);
       localStorage.setItem('authToken', token);
       await loadUser();
       return true;
     } catch (error) {
-      console.error('Login error:', error);
+      toast.error('Login error: ' + error);
       throw error;
     }
   };
@@ -109,7 +106,7 @@ export function UserProvider({ children }: UserProviderProps): React.ReactElemen
       setIsAuthenticated(false);
       localStorage.removeItem('authToken');
     } catch (error) {
-      console.error('Logout error:', error);
+      toast.error('Logout error: ' + error);
       throw error;
     }
   };
@@ -126,7 +123,7 @@ export function UserProvider({ children }: UserProviderProps): React.ReactElemen
         throw new Error('No authorization URL received');
       }
     } catch (error) {
-      console.error('Google auth error:', error);
+      toast.error('Google auth error: ' + error);
       throw new Error('Failed to initialize Google authentication');
     }
   };
@@ -148,7 +145,7 @@ export function UserProvider({ children }: UserProviderProps): React.ReactElemen
 
       return true;
     } catch (error) {
-      console.error('Password reset request error:', error);
+      toast.error('Password reset request error: ' + error);
       throw error;
     }
   };
@@ -171,7 +168,7 @@ export function UserProvider({ children }: UserProviderProps): React.ReactElemen
 
       return true;
     } catch (error) {
-      console.error('Password update error:', error);
+      toast.error('Password update error: ' + error);
       throw error;
     }
   };

@@ -20,7 +20,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "flex flex-col gap-4 p-4",
+        "flex flex-col gap-4 p-4 body-2",
         className
       )}
       {...props}
@@ -32,7 +32,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("body-3 leading-tight !text-left", className)}
+      className={cn("body-2 leading-tight !text-left", className)}
       {...props}
     />
   )
@@ -42,7 +42,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("body-1 !text-left", className)}
+      className={cn("body-2 !text-left", className)}
       {...props}
     />
   )

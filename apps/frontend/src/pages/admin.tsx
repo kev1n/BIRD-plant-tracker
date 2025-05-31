@@ -1,63 +1,247 @@
+import PageHead from '@/components/PageHead';
+import { AlertCircle, Upload, UserCheck, Users } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+
 import AllUsers from '@/components/admin/all-users';
 import ImportContainer from '@/components/admin/plant-import-form';
 import RoleRequest from '@/components/admin/role-request';
 import UserContainer from '@/components/admin/user-container';
 import UserRoleInfo from '@/components/admin/user-role-info';
-import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import type { User } from '../../types/auth';
-        
-export default function AdminPage(){
+
+export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('authToken');
+      const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+      
+      const response = await fetch(`${baseUrl}/auth/users`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const userData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(userData.error || 'Failed to fetch users');
+      }
+
+      setUsers(userData);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error fetching users');
+      toast.error('Error fetching users: ' + err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Function to update a specific user and handle role request processing
+  const updateUserRole = useCallback((email: string, newRole: string, wasRoleRequest: boolean = false) => {
+    setUsers(currentUsers => {
+      return currentUsers.map(user => {
+        if (user.email === email) {
+          const updatedUser: User = {
+            ...user,
+            role: newRole,
+            // Clear the role request since it's been processed
+            roleRequested: wasRoleRequest ? undefined : user.roleRequested
+          };
+          return updatedUser;
+        }
+        return user;
+      });
+    });
+  }, []);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-        const response = await fetch(`${baseUrl}/auth/users`,{
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        });
-    
-        const users = await response.json();
-    
-        if (!response.ok) {
-          throw new Error(users.error || 'Failed to fetch users');
-        }
-    
-        setUsers(users);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error fetching users');
-        console.error('Error fetching users:', err);
-      }
-    };
-
     fetchUsers();
-  })
+  }, [fetchUsers]);
 
-  // for the Role Requests panel, only show people actively requesting
-  const filteredUsers = [...users].filter((user) => user.roleRequested != null);
+  // Filter users with pending role requests
+  const pendingRoleRequests = users.filter(user => user.roleRequested != null);
 
-  return(
-    <div className="p-4">
-      {error ? (<p className="text-red-500">{error}</p>) : (
-      <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
-        <UserContainer 
-          users={filteredUsers} 
-          containerTitle='Role Requests' 
-          UserComponent={RoleRequest}
-        />
-        <AllUsers 
-          users={users} 
-          containerTitle='All Users' 
-          UserComponent={UserRoleInfo}
-        />
-         <ImportContainer/>
-      </div> 
-      )}
-    </div>
-  )
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-6 md:py-8">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-96" />
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Skeleton className="h-96" />
+              <Skeleton className="h-96" />
+              <Skeleton className="h-96" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <PageHead 
+        title="Admin Dashboard" 
+        description="Manage users, roles, and system configurations" 
+      />
+      <div className="min-h-screen bg-background">
+        {/* Page Header */}
+        <header className="border-b bg-card">
+          <div className="container mx-auto px-4 py-6 md:py-8">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+                Admin Dashboard
+              </h1>
+              <p className="text-muted-foreground text-base md:text-lg">
+                Manage users, roles, and system configurations
+              </p>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="container mx-auto px-4 py-6 md:py-8">
+          {error ? (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-6">
+              {/* Stats Overview */}
+              <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" aria-labelledby="stats-heading">
+                <h2 id="stats-heading" className="sr-only">User Statistics</h2>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{users.length}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
+                    <UserCheck className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{pendingRoleRequests.length}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Admins/Owners</CardTitle>
+                    <UserCheck className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {users.filter(user => user.role === 'admin' || user.role === 'owner').length}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Users/Editors</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {users.filter(user => user.role === 'user').length} / {users.filter(user => user.role === 'editor').length}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* Management Sections */}
+              <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+                {/* Role Requests Section */}
+                <section className="lg:col-span-1" aria-labelledby="role-requests-heading">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle id="role-requests-heading" className="flex items-center gap-2">
+                        <UserCheck className="h-5 w-5" />
+                        Role Requests
+                      </CardTitle>
+                      <CardDescription>
+                        Review and approve user role change requests
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <UserContainer 
+                        users={pendingRoleRequests} 
+                        containerTitle=""
+                        UserComponent={RoleRequest}
+                        onRefresh={updateUserRole}
+                      />
+                    </CardContent>
+                  </Card>
+                </section>
+
+                {/* All Users Section */}
+                <section className="lg:col-span-1" aria-labelledby="all-users-heading">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle id="all-users-heading" className="flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        User Management
+                      </CardTitle>
+                      <CardDescription>
+                        Search and manage all registered users
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <AllUsers 
+                        users={users} 
+                        containerTitle=""
+                        UserComponent={UserRoleInfo}
+                        onRefresh={updateUserRole}
+                      />
+                    </CardContent>
+                  </Card>
+                </section>
+
+                {/* Import Section */}
+                <section className="lg:col-span-2 xl:col-span-1" aria-labelledby="import-heading">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle id="import-heading" className="flex items-center gap-2">
+                        <Upload className="h-5 w-5" />
+                        Data Import
+                      </CardTitle>
+                      <CardDescription>
+                        Import plant data and manage bulk operations
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <ImportContainer />
+                    </CardContent>
+                  </Card>
+                </section>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    </>
+  );
 }

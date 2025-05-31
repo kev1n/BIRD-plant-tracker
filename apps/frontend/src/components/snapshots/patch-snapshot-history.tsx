@@ -1,21 +1,30 @@
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from '@/components/ui/dialog';
-import { useState, useEffect } from 'react';
-import SnapshotRecord from './snapshot-record';
+import { Calendar, History } from 'lucide-react';
+import { ReactNode, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import HistoricalSnapshotContext from './historical-snapshot-context';
+import SnapshotRecord from './snapshot-record';
 
 interface DateIDPair {
   snapshotID: number;
   dateCreated: Date;
 }
 
-export default function PatchSnapshotHistory({ patch }: { patch: string }) {
+export default function PatchSnapshotHistory({ 
+  patch, 
+  trigger 
+}: { 
+  patch: string;
+  trigger?: ReactNode;
+}) {
   const [historicalSnapshots, setHistoricalSnapshots] = useState<DateIDPair[]>([]);
 
   const fetchHistoricalSnapshotMetadata = async (patch: string) => {
@@ -35,7 +44,7 @@ export default function PatchSnapshotHistory({ patch }: { patch: string }) {
         const convertedData: DateIDPair[] = data.data.map(
           (entry: { snapshotID: number; dateCreated: string }) => ({
             snapshotID: entry.snapshotID,
-            dateCreated: new Date(entry.dateCreated+"T00:00:00"), 
+            dateCreated: new Date(entry.dateCreated), 
           })
         );
         setHistoricalSnapshots(convertedData);
@@ -44,13 +53,12 @@ export default function PatchSnapshotHistory({ patch }: { patch: string }) {
       } else {
         setHistoricalSnapshots([]);
       }
-    } catch (error) {
-      console.error('Error fetching historical snapshots:', error);
+    } catch (error) { 
+      toast.error('Error fetching historical snapshots: ' + error);
     }
   };
 
   useEffect(() => {
-    console.log(`Fetching historical snapshots for patch: ${patch}`);
     fetchHistoricalSnapshotMetadata(patch);
   }, [patch]);
 
@@ -62,27 +70,49 @@ export default function PatchSnapshotHistory({ patch }: { patch: string }) {
     >
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline">History</Button>
+          {trigger || <Button variant="outline">History</Button>}
         </DialogTrigger>
-        <DialogContent className="overflow-y-scroll max-h-[80vh]">
+        <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle>Patch Snapshot History for {patch}</DialogTitle>
+            <DialogTitle className="flex items-center gap-3">
+              <History className="w-5 h-5" />
+              Snapshot History
+            </DialogTitle>
+            <p className="text-muted-foreground">Patch {patch}</p>
           </DialogHeader>
-          <div className="overflow-y-scroll max-h-[80vh]">
-            {historicalSnapshots.length > 0 ? (
-            historicalSnapshots.map((snapshot, index) => (
-              <SnapshotRecord
-                key={index}
-                snapshotID={snapshot.snapshotID}
-                snapshotDate={snapshot.dateCreated} // Pass the date for display
-                patchID={patch}
-              />
-            ))
-          ) : (
-            <p>No historical snapshots available for this patch.</p>
-          )}
-          </div>
           
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Calendar className="w-4 h-4" />
+                Historical Records
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {historicalSnapshots.length > 0 ? (
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                  {historicalSnapshots.map((snapshot, index) => (
+                    <SnapshotRecord
+                      key={index}
+                      snapshotID={snapshot.snapshotID}
+                      snapshotDate={snapshot.dateCreated}
+                      patchID={patch}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+                    <History className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-medium text-muted-foreground mb-1">No History Available</h3>
+                  <p className="text-sm text-muted-foreground">
+                    No historical snapshots are available for this patch.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </DialogContent>
       </Dialog>
     </HistoricalSnapshotContext.Provider>

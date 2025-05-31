@@ -11,5 +11,6 @@ snapshotRoutes.get('/:snapshotID', snapshotController.getSnapshot);
 snapshotRoutes.get('/patch/:patchID/latest',snapshotController.getLatestPatchSnapshot)
 snapshotRoutes.get('/', snapshotController.getAllSnapshots)
 snapshotRoutes.get('/patch/:patchID/dates', snapshotController.getAllSnapshotsDatesForPatch);
+snapshotRoutes.post('/with-observations', authMiddleware, snapshotController.createOrUpdateSnapshotWithObservations);
 
 export default snapshotRoutes;

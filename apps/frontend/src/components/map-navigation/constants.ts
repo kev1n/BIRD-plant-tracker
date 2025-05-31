@@ -14,8 +14,8 @@ const FEET_TO_DEGREES_LNG =
 
 // Grid boundaries
 const TOP_LEFT: LatLngTuple = [42.0500576, -87.6739709];
-const BOTTOM_RIGHT: LatLngTuple = [42.0485898, -87.6729095];
-const CENTER: LatLngTuple = [42.04937, -87.673388];
+const BOTTOM_RIGHT: LatLngTuple = [42.0485500, -87.6729095];
+const CENTER: LatLngTuple = [42.04927, -87.673388];
 
 // Calculate grid dimensions
 const latDiff = TOP_LEFT[0] - BOTTOM_RIGHT[0];
