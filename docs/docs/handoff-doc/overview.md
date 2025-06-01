@@ -4,12 +4,15 @@ Below are the frontend and backend tech stacks of the **Clark Street Bird Sanctu
 
 ### Frontend
 
-| Framework       | Purpose                |
+| Tool       | Purpose                |
 | --------------- | -----------------------|
 | React           | UI components          |
 | React Router v7 | Navigation Across Pages|
 | Tailwind        | Styling components     |
 | Supabase        | Authentication         |
+| Leaflet         | Map interface          |
+| AG Grid         | Data grid/ spreadsheet  |
+| Docusaurus      | Documentation          |
 
 ### Backend
 | Framework       | Purpose                       |
@@ -20,28 +23,52 @@ Below are the frontend and backend tech stacks of the **Clark Street Bird Sanctu
 
 ## Key directories
 
-### Frontend
+### Frontend (`apps/frontend/`)
 ```
-src/    → Contains the source code for the React application, including components, pages, and other related files.
+src/
+├── components/         → React components organized by feature
+│   ├── map/           → Map interface components
+│   ├── spreadsheet/   → Spreadsheet view components
+│   ├── observations/  → Plant observation components
+│   ├── admin/         → Admin dashboard components
+│   ├── navigation/    → Navigation components
+│   └── ui/            → Reusable UI components
+├── pages/             → React Router page components
+│   ├── MapView.tsx    → Main map interface page
+│   ├── SpreadsheetView.tsx → Data management interface
+│   ├── admin.tsx      → Admin dashboard page
+│   └── account/       → User account pages
+├── hooks/             → Custom React hooks
+├── contexts/          → React context providers
+├── layouts/           → Page layout components
+├── utils/             → Helper functions and utilities
+└── App.tsx            → Main application component
 
-public/ → Holds static assets such as the index.html file, images, and other resources that are publicly accessible.
-
-.github/ → Contains GitHub-specific configurations, such as workflows for GitHub Actions.
-
-.vscode/ → Includes settings specific to Visual Studio Code, which can help maintain consistent development environments.
+public/                → Static assets (index.html, images, etc.)
+types/                 → TypeScript type definitions
+tailwind.config.js     → Tailwind CSS configuration
+vite.config.ts         → Vite build tool configuration
+package.json           → Frontend dependencies and scripts
 ```
 
-### Backend
+### Backend (`apps/backend/`)
 ```
-src/     → Houses the source code for the backend application, including route handlers, middleware, and other server-side logic.
+routes/                → API endpoint handlers
+├── authRoutes.ts      → Authentication endpoints
+├── plantRoutes.ts     → Plant data management
+├── obsRoutes.ts       → Observation endpoints
+├── snapshotRoutes.ts  → Data snapshot endpoints
+├── patchRoutes.ts     → Patch management endpoints
+└── userRoutes.ts      → User management endpoints
 
-uploads/ → Used for storing uploaded files, such as images or documents, that are handled by the backend.
-
-.github/ → Contains GitHub-specific configurations, such as workflows for GitHub Actions.
-
-.vscode/ → Includes settings specific to Visual Studio Code, which can help maintain consistent development environments.
+controllers/           → Business logic controllers
+middleware/            → Express middleware functions
+config/                → Server configuration files
+utilities/             → Backend utility functions
+tests/                 → Backend test files
+types.ts               → TypeScript type definitions
+package.json           → Backend dependencies and scripts
 ```
-
 
 ## Decision Log
 | Choice                         | Rationale                                                             |

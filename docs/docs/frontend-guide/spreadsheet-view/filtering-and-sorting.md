@@ -31,10 +31,7 @@ To reorder columns, **click and drag** the title of the column, that is in green
 
 ## Sorting
 
-<video controls width="100%" muted>
-  <source src="../spreadsheet-images/sorting.mp4" />
-  Your browser does not support the video tag.
-</video>
+![sorting gif](../spreadsheet-images/sorting.gif)
 
 To sort data, **click on the column header** of the column you want to sort. This will sort the data in ascending order.
 

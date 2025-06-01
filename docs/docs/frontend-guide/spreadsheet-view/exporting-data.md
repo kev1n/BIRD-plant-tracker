@@ -8,20 +8,16 @@ The spreadsheet provides functionality to export your plant observation data for
 
 ## Export Options
 
-*Note: This section is currently under development. Export functionality is available to all user roles and allows downloading of filtered or complete datasets.*
+*Export functionality is available to all user roles and allows downloading of filtered or complete datasets.*
 
 ### Supported Export Formats
 
 - **CSV**: Comma-separated values format for use in Excel or other spreadsheet applications
-- **Excel**: Native Excel format with formatting preserved
 
 ### Export Process
 
 1. Apply any desired filters to narrow down your dataset
 2. Use the export functionality to download your data
-3. Choose your preferred format (CSV or Excel)
-
-*Detailed export instructions and screenshots will be added as this feature is documented.*
 
 ## Use Cases for Exporting
 
