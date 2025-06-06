@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from '@/components/ui/command';
 import DatePicker from '@/components/ui/datepicker';
 import { Label } from '@/components/ui/label';
@@ -70,6 +70,15 @@ export default function FiltersList({
 
   useEffect(() => {
     const fetchHighlightedPatches = async () => {
+      // Only make the API call if there are filters applied
+      const hasFilters = selectedPlants.length > 0 || beginDate || endDate || !latest;
+      
+      if (!hasFilters) {
+        // Clear patches when no filters are applied
+        setPatchesToColors(new Map<string, string[]>());
+        return;
+      }
+
       try {
         const token = localStorage.getItem('authToken');
         const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
@@ -134,18 +143,12 @@ export default function FiltersList({
           });
           setPatchesToColors(newPatchesToColors);
         } else {
-          toast.error('Error: Unable to filter patches');
+          console.error('Failed to filter patches');
           setPatchesToColors(new Map<string, string[]>());
-          setPlantToColor(new Map<number, string>());
-          setSelectedPlants([]);
-          return;
         }
-      } catch {
-        toast.error('Error: Unable to filter patches');
+      } catch (error) {
+        console.error('Error filtering patches:', error);
         setPatchesToColors(new Map<string, string[]>());
-        setPlantToColor(new Map<number, string>());
-        setSelectedPlants([]);
-        return;
       }
     };
 
@@ -157,8 +160,6 @@ export default function FiltersList({
     latest,
     soilList,
     plantToColor,
-    setPlantToColor,
-    setPatchesToColors,
   ]);
 
   const clearFilters = () => {
