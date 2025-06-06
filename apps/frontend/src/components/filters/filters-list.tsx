@@ -70,15 +70,6 @@ export default function FiltersList({
 
   useEffect(() => {
     const fetchHighlightedPatches = async () => {
-      // Only make the API call if there are filters applied
-      const hasFilters = selectedPlants.length > 0 || beginDate || endDate || !latest;
-      
-      if (!hasFilters) {
-        // Clear patches when no filters are applied
-        setPatchesToColors(new Map<string, string[]>());
-        return;
-      }
-
       try {
         const token = localStorage.getItem('authToken');
         const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
@@ -143,11 +134,11 @@ export default function FiltersList({
           });
           setPatchesToColors(newPatchesToColors);
         } else {
-          console.error('Failed to filter patches');
+          toast.error('Failed to filter patches');
           setPatchesToColors(new Map<string, string[]>());
         }
       } catch (error) {
-        console.error('Error filtering patches:', error);
+        toast.error(`Error: Unable to filter patches with error ${error}`);
         setPatchesToColors(new Map<string, string[]>());
       }
     };
@@ -160,6 +151,8 @@ export default function FiltersList({
     latest,
     soilList,
     plantToColor,
+    setPlantToColor,
+    setPatchesToColors
   ]);
 
   const clearFilters = () => {
