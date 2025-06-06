@@ -15,6 +15,6 @@ Welcome to the plant tracker! This section will help you get set up and start us
 ## What's Next?
 
 Once you've logged in, you can:
-- Start recording observations on the [Map View](../core-features/map-view.md)
-- Browse existing data in the [Spreadsheet View](../data-analysis/spreadsheet.md)
+- Start recording observations on the [Map View](../map-view/)
+- Browse existing data in the [Spreadsheet View](../spreadsheet-view/)
 - Learn about the system concepts in the [Important Preface](../../important-preface.md) 

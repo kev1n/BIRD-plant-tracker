@@ -16,17 +16,17 @@ If you're new to the system, start with:
 ## Map View & Data Collection
 
 Learn how to use the interactive map for data input and management:
-- [Map View Guide](./map-view/index) - Navigate patches, create observations and snapshots.
+- [Map View Guide](./map-view/) - Navigate patches, create observations and snapshots.
 
 ## Spreadsheet View & Analysis
 
 Explore and analyze your data using the spreadsheet interface:
-- [Spreadsheet Guide](./spreadsheet-view/index) - View, filter, sort, and export data.
+- [Spreadsheet Guide](./spreadsheet-view/) - View, filter, sort, and export data.
 
 ## Administration
 
 For users with administrative privileges:
-- [Admin Panel](./administration/index) - User management and data import (Admin/Owner only)
+- [Admin Panel](./administration/) - User management and data import (Admin/Owner only)
 
 ## User Roles
 
