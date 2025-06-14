@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatDateForDisplay } from '@/lib/date-utils';
 import { Edit, Trash2 } from 'lucide-react';
 import { useContext } from 'react';
 import { Observation } from 'types/database_types';
@@ -62,7 +63,7 @@ export default function ObservationItem({
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground min-w-16">Planted:</span>
                   <span className="font-medium">
-                    {new Date(observation.datePlanted).toLocaleString()}
+                    {formatDateForDisplay(observation.datePlanted)}
                   </span>
                 </div>
               )}

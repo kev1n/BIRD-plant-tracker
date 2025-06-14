@@ -1,10 +1,12 @@
 import { Button } from '@/components/ui/button';
+import { formatDateForDisplay } from '@/lib/date-utils';
+import { CalendarIcon } from 'lucide-react';
 import { useContext } from 'react';
 import { toast } from 'sonner';
 import PermissionRestrictedDialog from '../utils/PermissionRestrictedDialog';
 import HistoricalSnapshotContext from './historical-snapshot-context';
 import SnapshotView from './snapshot-view';
-  
+
 export default function SnapshotRecord({
   snapshotID,
   snapshotDate,
@@ -42,14 +44,12 @@ export default function SnapshotRecord({
   return (
     <div className="flex flex-row justify-between my-1">
       <div className="flex-1 text-left">
-        {snapshotDate.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        })}
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="w-4 h-4" />
+          <span>
+            {formatDateForDisplay(snapshotDate)}
+          </span>
+        </div>
       </div>
       <div className="flex-1 text-right">
         <div className="flex flex-row justify-end space-x-2">

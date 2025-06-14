@@ -7,6 +7,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { parseDateAsLocal } from '@/lib/date-utils';
 import { Calendar, History } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -45,7 +46,7 @@ export default function PatchSnapshotHistory({
         const convertedData: DateIDPair[] = data.data.map(
           (entry: { snapshotID: number; dateCreated: string }) => ({
             snapshotID: entry.snapshotID,
-            dateCreated: new Date(entry.dateCreated), 
+            dateCreated: parseDateAsLocal(entry.dateCreated), 
           })
         );
         setHistoricalSnapshots(convertedData);

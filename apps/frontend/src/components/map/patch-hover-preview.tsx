@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatDateForDisplay } from '@/lib/date-utils';
 import { PolygonHoverData } from '../../../types/polygon.types';
 
 interface PatchHoverPreviewProps {
@@ -57,7 +58,7 @@ export default function PatchHoverPreview({ hoverData, position }: PatchHoverPre
           {!isLoading && !error && snapshot && (
             <div className="space-y-2">
               <div className="text-xs text-gray-500">
-                Last updated: {snapshot.dateCreated.toLocaleString()}
+                Last updated: {formatDateForDisplay(snapshot.dateCreated)}
               </div>
               
               {plantSummary && Object.keys(plantSummary).length > 0 ? (

@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { formatDateForDisplay, parseDateAsLocal } from '@/lib/date-utils';
 import { AlertCircle, Calendar, Camera, FileText, History, User } from 'lucide-react';
 import { JSX, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -92,7 +93,7 @@ export default function SnapshotView({
       console.log(snapshot_data);
       setCurrentSnapshot({
         snapshotID: snapshot_data.data.snapshotID,
-        dateCreated: new Date(snapshot_data.data.dateCreated),
+        dateCreated: parseDateAsLocal(snapshot_data.data.dateCreated),
         patchID: snapshot_data.data.patchID,
         notes: snapshot_data.data.notes || 'No notes available for this patch.',
         userID: snapshot_data.data.userID,
@@ -181,14 +182,7 @@ export default function SnapshotView({
                     <div className="flex items-center gap-2 text-muted-foreground mb-1">
                       <Calendar className="w-4 h-4"/>
                       <span>
-                        {current_snapshot.dateCreated.toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: true,
-                        })}
+                        {formatDateForDisplay(current_snapshot.dateCreated)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">

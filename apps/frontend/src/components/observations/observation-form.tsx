@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button'; // Ensure you have the Button component
-import { DateTimePicker } from '@/components/ui/date-time-picker'; // Import DateTimePicker instead of Calendar
+import { DateInput } from '@/components/ui/date-input'; // Import DateInput instead of DateTimePicker
 import {
   Form,
   FormControl,
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'; // Ensure you have the RadioGroup component
+import { parseDateAsLocal } from '@/lib/date-utils';
 import { useEffect } from 'react';
 import { Observation } from 'types/database_types'; // Ensure you have the correct type for Observation
 import PlantSelector from '../plant-selector/plant-selector';
@@ -77,7 +78,7 @@ export default function ObservationForm({
           subcategory: observation.PlantInfo.subcategory,
         },
         plantQuantity: observation.plantQuantity,
-        datePlanted: observation.datePlanted ? new Date(observation.datePlanted) : undefined,
+        datePlanted: observation.datePlanted ? parseDateAsLocal(observation.datePlanted) : undefined,
         hasBloomed: observation.hasBloomed !== null ? observation.hasBloomed : undefined,
         deletedOn: observation.deletedOn ? new Date(observation.deletedOn) : undefined,
       });
@@ -202,13 +203,12 @@ export default function ObservationForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-base font-bold">Date Planted</FormLabel>
-                <FormDescription>Select the date and time the plant was planted</FormDescription>
+                <FormDescription>Select the date the plant was planted</FormDescription>
                 <FormControl>
-                  <DateTimePicker
+                  <DateInput
                     date={field.value || null}
                     setDate={(date) => field.onChange(date)}
-                    placeholder="Select date and time"
-                    displayFormat="MM/dd/yyyy hh:mm aa"
+                    placeholder="MM/DD/YYYY"
                   />
                 </FormControl>
                 <FormMessage />

@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DateTimePicker } from '@/components/ui/date-time-picker';
+import { DateInput } from '@/components/ui/date-input';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { parseDateAsLocal } from '@/lib/date-utils';
 import { Calendar, Copy, FileText } from 'lucide-react';
 import { ReactNode, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -51,7 +52,7 @@ export default function SnapshotForm({
   useEffect(() => {
     if (snapshotTemplate && newSnapshot === false) {
       setNotes(snapshotTemplate.notes || '');
-      setDate(new Date(snapshotTemplate.dateCreated)); // Ensure the date is in the correct format, fallback to empty string if null
+      setDate(parseDateAsLocal(snapshotTemplate.dateCreated)); // Ensure the date is in the correct format, fallback to empty string if null
     } else {
       setNotes('');
       setDate(new Date());
@@ -192,17 +193,16 @@ export default function SnapshotForm({
               <CardTitle className="flex items-center gap-2 text-base justify-between">
                 <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                Snapshot Date & Time
+                Snapshot Date
                 </div>
                 <Badge className="text-xs" variant="secondary">Required</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <DateTimePicker 
+              <DateInput 
                 date={date} 
                 setDate={(d) => setDate(d)} 
-                placeholder="Select date and time"
-                displayFormat="MM/dd/yyyy hh:mm aa"
+                placeholder="MM/DD/YYYY"
               />
             </CardContent>
           </Card>

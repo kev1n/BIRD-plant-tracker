@@ -1,30 +1,31 @@
 import { getCategoryIcon } from '@/components/observations/category-icon';
 import PageHead from '@/components/PageHead';
-import DateTimePickerCellEditor from '@/components/spreadsheet/date-time-picker-cell-editor';
+import DateInputCellEditor from '@/components/spreadsheet/date-input-cell-editor';
 import PlantSelectorCellEditor from '@/components/spreadsheet/plant-selector-cell-editor';
 import SpreadsheetRowActionItem from '@/components/spreadsheet/spreadsheet-row-action-item';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTrigger
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import PermissionRestrictedDialog from '@/components/utils/PermissionRestrictedDialog';
+import { formatDateForDisplay } from '@/lib/date-utils';
 import {
-  AllCommunityModule,
-  ColDef,
-  GridOptions,
-  iconSetMaterial,
-  ModuleRegistry,
-  RowClassParams,
-  themeQuartz,
-  ValueGetterParams,
-  ValueSetterParams
+    AllCommunityModule,
+    ColDef,
+    GridOptions,
+    iconSetMaterial,
+    ModuleRegistry,
+    RowClassParams,
+    themeQuartz,
+    ValueGetterParams,
+    ValueSetterParams
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { Download, EllipsisVertical, Plus, Save, X } from 'lucide-react';
@@ -1220,15 +1221,7 @@ export default function SpreadSheetView() {
       valueGetter: (params: ValueGetterParams<Observation>) => {
         const dateStr = params.data?.Snapshots?.dateCreated;
         if (!dateStr) return '';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        });
+        return formatDateForDisplay(dateStr);
       },
       sortable: true,
       filter: 'agTextColumnFilter',
@@ -1402,21 +1395,13 @@ export default function SpreadSheetView() {
       valueGetter: (params: ValueGetterParams<Observation>) => {
         const dateStr = params.data?.datePlanted;
         if (!dateStr) return '';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        });
+        return formatDateForDisplay(dateStr);
       },
       sortable: true,
       filter: 'agTextColumnFilter',
       headerClass: 'ag-header-cell-center',
       editable: params => (params.data.observationID === editingRowId || params.data.observationID === isNewObs),
-      cellEditor: 'dateTimePickerCellEditor',
+      cellEditor: 'dateInputCellEditor',
       cellStyle: params => {
         const isEditable = params.data.observationID === editingRowId || params.data.observationID === isNewObs;
         return {
@@ -1590,7 +1575,7 @@ export default function SpreadSheetView() {
     },
     components: {
       plantSelectorCellEditor: PlantSelectorCellEditor,
-      dateTimePickerCellEditor: DateTimePickerCellEditor,
+      dateInputCellEditor: DateInputCellEditor,
     },
     rowSelection: 'multiple',
     rowMultiSelectWithClick: true,
